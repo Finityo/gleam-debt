@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { DebtCard } from "@/components/DebtCard";
@@ -14,6 +15,8 @@ import {
 import heroImage from "@/assets/hero-financial-freedom.jpg";
 
 const Index = () => {
+  const navigate = useNavigate();
+  
   // Mock data for demo
   const mockDebts = [
     {
@@ -66,6 +69,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6"
+                onClick={() => navigate('/auth')}
               >
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -173,7 +177,10 @@ const Index = () => {
               <h2 className="text-3xl font-bold text-foreground mb-2">Active Debts</h2>
               <p className="text-muted-foreground">Track and manage all your debt accounts in one place</p>
             </div>
-            <Button className="bg-gradient-primary hover:shadow-glow transition-all">
+            <Button 
+              className="bg-gradient-primary hover:shadow-glow transition-all"
+              onClick={() => navigate('/auth')}
+            >
               <CreditCard className="mr-2 w-4 h-4" />
               Connect Accounts
             </Button>
@@ -201,6 +208,7 @@ const Index = () => {
             <Button 
               size="lg" 
               className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6"
+              onClick={() => navigate('/auth')}
             >
               Start Your Journey
               <ArrowRight className="ml-2 w-5 h-5" />
