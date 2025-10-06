@@ -77,8 +77,8 @@ const Index = () => {
                 </Button>
                 <Button 
                   size="lg" 
-                  variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm text-lg px-8 py-6"
+                  variant="ghost"
+                  className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6"
                   onClick={() => {
                     document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
                   }}
