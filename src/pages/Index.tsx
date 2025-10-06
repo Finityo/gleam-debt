@@ -79,6 +79,9 @@ const Index = () => {
                   size="lg" 
                   variant="outline"
                   className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm text-lg px-8 py-6"
+                  onClick={() => {
+                    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
                 >
                   <BarChart3 className="mr-2 w-5 h-5" />
                   See How It Works
@@ -135,7 +138,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section id="features" className="container mx-auto px-4 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-foreground mb-4">
