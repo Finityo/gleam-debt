@@ -69,9 +69,14 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   const config = {
     token: linkToken,
     onSuccess: onSuccessCallback,
-    onExit: (err: any) => {
+    onExit: (err: any, metadata: any) => {
       if (err) {
         console.error('Plaid Link exited with error:', err);
+        toast({
+          title: 'Connection Cancelled',
+          description: 'Bank connection was not completed.',
+          variant: 'destructive',
+        });
       }
     },
   };
