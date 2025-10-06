@@ -15,8 +15,12 @@
 
 ### Backend Infrastructure (Lovable Cloud)
 - Set up Supabase backend with secure secrets management
-- Stored Twilio credentials: Account SID, Auth Token, and Phone Number
-- Created edge functions for SMS OTP sending and verification
+- Stored Twilio credentials:
+  - Account SID: `AC253ebc5eb1e397bb491ecc0796bddf17`
+  - Auth Token: Stored in secrets
+  - Phone Number: Stored in secrets
+  - Verify Service SID: `VAb6751a969fa3dc1b001972329e2f4756`
+- Created edge functions for SMS OTP sending and verification using Twilio Verify API
 - **⚠️ TODO: Twilio phone number needs to be registered in Twilio dashboard for SMS to work**
 
 ### Frontend Components
