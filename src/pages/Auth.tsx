@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { z } from 'zod';
+
+const emailSchema = z.string().email('Invalid email address');
+const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -15,26 +20,72 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  useEffect(() => {
+    // Redirect if already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/dashboard');
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        navigate('/dashboard');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate inputs
+    try {
+      emailSchema.parse(email);
+      passwordSchema.parse(password);
+    } catch (error: any) {
+      toast({
+        title: 'Validation Error',
+        description: error.errors?.[0]?.message || 'Invalid input',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       });
 
-      if (error) throw error;
-
-      toast({
-        title: 'Success!',
-        description: 'Account created! You can now sign in.',
-      });
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast({
+            title: 'Account exists',
+            description: 'This email is already registered. Please sign in instead.',
+            variant: 'destructive',
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: 'Success!',
+          description: 'Account created! You can now sign in.',
+        });
+        setEmail('');
+        setPassword('');
+      }
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'Failed to create account',
         variant: 'destructive',
       });
     } finally {
@@ -44,6 +95,20 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate inputs
+    try {
+      emailSchema.parse(email);
+      passwordSchema.parse(password);
+    } catch (error: any) {
+      toast({
+        title: 'Validation Error',
+        description: error.errors?.[0]?.message || 'Invalid input',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -52,13 +117,21 @@ const Auth = () => {
         password,
       });
 
-      if (error) throw error;
-
-      navigate('/dashboard');
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          toast({
+            title: 'Invalid credentials',
+            description: 'Email or password is incorrect. Please try again.',
+            variant: 'destructive',
+          });
+        } else {
+          throw error;
+        }
+      }
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'Failed to sign in',
         variant: 'destructive',
       });
     } finally {

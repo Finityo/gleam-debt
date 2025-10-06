@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PlaidLink } from '@/components/PlaidLink';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut } from 'lucide-react';
+import type { User, Session } from '@supabase/supabase-js';
 
 interface Account {
   id: string;
@@ -23,28 +24,46 @@ interface Account {
 }
 
 const Dashboard = () => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    checkUser();
-  }, []);
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (!session) {
+          navigate('/auth');
+        } else if (event === 'SIGNED_IN') {
+          // Defer the account fetch to avoid blocking the callback
+          setTimeout(() => {
+            fetchAccounts();
+          }, 0);
+        }
+      }
+    );
 
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    
-    setUser(user);
-    await fetchAccounts();
-    setLoading(false);
-  };
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (!session) {
+        navigate('/auth');
+      } else {
+        fetchAccounts();
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const fetchAccounts = async () => {
     try {
