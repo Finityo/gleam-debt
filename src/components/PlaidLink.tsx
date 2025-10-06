@@ -35,9 +35,13 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
 
   const onSuccessCallback = async (public_token: string, metadata: any) => {
     try {
-      const { error } = await supabase.functions.invoke('plaid-exchange-token', {
+      console.log('Starting token exchange...');
+      
+      const { data, error } = await supabase.functions.invoke('plaid-exchange-token', {
         body: { public_token, metadata },
       });
+
+      console.log('Exchange response:', { data, error });
 
       if (error) throw error;
 
@@ -45,6 +49,11 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
         title: 'Success!',
         description: 'Your bank account has been connected successfully.',
       });
+
+      // Reload the page to show the connected accounts
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
 
       onSuccess?.();
     } catch (error: any) {
