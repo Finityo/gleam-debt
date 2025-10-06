@@ -1,9 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PlaidLinkProps {
   onSuccess?: () => void;
@@ -11,93 +10,73 @@ interface PlaidLinkProps {
 
 export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const createLinkToken = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data, error } = await supabase.functions.invoke('plaid-create-link-token');
         
-        if (!session) {
-          toast.error('Please log in to connect your bank account');
-          return;
-        }
-
-        const { data, error } = await supabase.functions.invoke('create-link-token', {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-
         if (error) throw error;
         
         setLinkToken(data.link_token);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error creating link token:', error);
-        toast.error('Failed to initialize bank connection');
+        toast({
+          title: 'Error',
+          description: 'Failed to initialize bank connection. Please try again.',
+          variant: 'destructive',
+        });
       }
     };
 
     createLinkToken();
-  }, []);
+  }, [toast]);
 
-  const onPlaidSuccess = useCallback(async (public_token: string, metadata: any) => {
-    setLoading(true);
+  const onSuccessCallback = async (public_token: string, metadata: any) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('No active session');
-      }
-
-      const { data, error } = await supabase.functions.invoke('exchange-public-token', {
+      const { error } = await supabase.functions.invoke('plaid-exchange-token', {
         body: { public_token, metadata },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
       });
 
       if (error) throw error;
 
-      toast.success(`Successfully linked ${metadata.institution.name}!`);
+      toast({
+        title: 'Success!',
+        description: 'Your bank account has been connected successfully.',
+      });
+
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error exchanging token:', error);
-      toast.error('Failed to link bank account');
-    } finally {
-      setLoading(false);
+      toast({
+        title: 'Error',
+        description: 'Failed to connect bank account. Please try again.',
+        variant: 'destructive',
+      });
     }
-  }, [onSuccess]);
+  };
 
   const config = {
     token: linkToken,
-    onSuccess: onPlaidSuccess,
+    onSuccess: onSuccessCallback,
+    onExit: (err: any) => {
+      if (err) {
+        console.error('Plaid Link exited with error:', err);
+      }
+    },
   };
 
   const { open, ready } = usePlaidLink(config);
 
-  if (!linkToken) {
-    return (
-      <Button disabled>
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Loading...
-      </Button>
-    );
-  }
-
   return (
     <Button 
       onClick={() => open()} 
-      disabled={!ready || loading}
+      disabled={!ready}
+      size="lg"
+      className="w-full sm:w-auto"
     >
-      {loading ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Connecting...
-        </>
-      ) : (
-        'Connect Bank Account'
-      )}
+      Connect Bank Account
     </Button>
   );
 };
