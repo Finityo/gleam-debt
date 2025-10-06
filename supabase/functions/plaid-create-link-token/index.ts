@@ -47,12 +47,6 @@ serve(async (req) => {
         products: ['auth', 'transactions'],
         country_codes: ['US'],
         language: 'en',
-        account_filters: {
-          depository: {
-            account_subtypes: ['checking', 'savings']
-          }
-        },
-        required_if_supported_auth_type_requested: false,
       }),
     });
 
