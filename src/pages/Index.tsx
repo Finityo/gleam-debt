@@ -65,23 +65,34 @@ const Index = () => {
               Connect your accounts, visualize your progress, and accelerate your journey to financial freedom with our smart debt payoff system.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button 
-                size="lg" 
-                className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6"
-                onClick={() => navigate('/auth')}
-              >
-                Get Started Free
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm text-lg px-8 py-6"
-              >
-                <BarChart3 className="mr-2 w-5 h-5" />
-                See How It Works
-              </Button>
+            <div className="flex flex-col gap-4 items-center pt-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6"
+                  onClick={() => navigate('/auth')}
+                >
+                  Get Started Free
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm text-lg px-8 py-6"
+                >
+                  <BarChart3 className="mr-2 w-5 h-5" />
+                  See How It Works
+                </Button>
+              </div>
+              <p className="text-white/70 text-sm">
+                Already have an account?{' '}
+                <button 
+                  onClick={() => navigate('/auth')}
+                  className="text-white underline hover:text-accent transition-colors font-medium"
+                >
+                  Log in
+                </button>
+              </p>
             </div>
           </div>
         </div>
