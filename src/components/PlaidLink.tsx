@@ -34,17 +34,27 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   }, [toast]);
 
   const onSuccessCallback = async (public_token: string, metadata: any) => {
+    console.log('=== PLAID SUCCESS CALLBACK TRIGGERED ===');
+    console.log('Public token received:', public_token ? 'YES' : 'NO');
+    console.log('Metadata:', metadata);
+    
     try {
-      console.log('Starting token exchange...');
+      console.log('Calling plaid-exchange-token function...');
       
       const { data, error } = await supabase.functions.invoke('plaid-exchange-token', {
         body: { public_token, metadata },
       });
 
-      console.log('Exchange response:', { data, error });
+      console.log('Function response - data:', data);
+      console.log('Function response - error:', error);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
+      console.log('SUCCESS! Account connected');
+      
       toast({
         title: 'Success!',
         description: 'Your bank account has been connected successfully.',
@@ -52,12 +62,14 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
 
       // Reload the page to show the connected accounts
       setTimeout(() => {
+        console.log('Reloading page...');
         window.location.reload();
       }, 1500);
 
       onSuccess?.();
     } catch (error: any) {
-      console.error('Error exchanging token:', error);
+      console.error('=== ERROR IN CALLBACK ===');
+      console.error('Error details:', error);
       toast({
         title: 'Error',
         description: 'Failed to connect bank account. Please try again.',
