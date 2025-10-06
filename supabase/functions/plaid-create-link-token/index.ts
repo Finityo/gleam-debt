@@ -47,6 +47,12 @@ serve(async (req) => {
         products: ['auth', 'transactions'],
         country_codes: ['US'],
         language: 'en',
+        auth: {
+          automated_microdeposits_enabled: false,
+          same_day_microdeposits_enabled: false,
+          instant_match_enabled: false,
+          database_insights_enabled: false,
+        },
       }),
     });
 
