@@ -18,10 +18,9 @@
 - Stored Twilio credentials:
   - Account SID: `AC253ebc5eb1e397bb491ecc0796bddf17`
   - Auth Token: Stored in secrets
-  - Phone Number: Stored in secrets
   - Verify Service SID: `VAb6751a969fa3dc1b001972329e2f4756`
 - Created edge functions for SMS OTP sending and verification using Twilio Verify API
-- **⚠️ TODO: Twilio phone number needs to be registered in Twilio dashboard for SMS to work**
+- **Note:** Twilio Verify API automatically handles phone number selection - no need to register a specific number
 
 ### Frontend Components
 - Auth page (/auth) with tabbed interface for Email and Phone login
