@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,6 +57,113 @@ export function DebtCalculator() {
   const [strategy, setStrategy] = useState<Strategy>("snowball");
   const [result, setResult] = useState<ComputeResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load saved data on mount
+  useEffect(() => {
+    loadSavedData();
+  }, []);
+
+  // Auto-save debts when they change
+  useEffect(() => {
+    if (debts.length > 0 && debts[0].name !== "") {
+      saveDebts();
+    }
+  }, [debts]);
+
+  // Auto-save settings when they change
+  useEffect(() => {
+    if (extra !== "" || oneTime !== "" || strategy !== "snowball") {
+      saveSettings();
+    }
+  }, [extra, oneTime, strategy]);
+
+  const loadSavedData = async () => {
+    try {
+      // Load debts
+      const { data: debtsData, error: debtsError } = await supabase
+        .from('debts')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (debtsError) throw debtsError;
+
+      if (debtsData && debtsData.length > 0) {
+        setDebts(debtsData.map(d => ({
+          id: d.id,
+          name: d.name,
+          last4: d.last4 || '',
+          balance: Number(d.balance),
+          minPayment: Number(d.min_payment),
+          apr: Number(d.apr),
+          dueDate: d.due_date || ''
+        })));
+      }
+
+      // Load settings
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('debt_calculator_settings')
+        .select('*')
+        .single();
+
+      if (!settingsError && settingsData) {
+        setExtra(Number(settingsData.extra_monthly));
+        setOneTime(Number(settingsData.one_time));
+        setStrategy(settingsData.strategy as Strategy);
+      }
+    } catch (error: any) {
+      console.error('Error loading saved data:', error);
+    }
+  };
+
+  const saveDebts = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Delete existing debts
+      await supabase.from('debts').delete().eq('user_id', user.id);
+
+      // Insert new debts (only non-empty ones)
+      const debtsToSave = debts.filter(d => d.name.trim() !== '');
+      if (debtsToSave.length > 0) {
+        const { error } = await supabase.from('debts').insert(
+          debtsToSave.map(d => ({
+            user_id: user.id,
+            name: d.name,
+            last4: d.last4 || null,
+            balance: d.balance,
+            min_payment: d.minPayment,
+            apr: d.apr,
+            due_date: d.dueDate || null
+          }))
+        );
+
+        if (error) throw error;
+      }
+    } catch (error: any) {
+      console.error('Error saving debts:', error);
+    }
+  };
+
+  const saveSettings = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('debt_calculator_settings')
+        .upsert({
+          user_id: user.id,
+          extra_monthly: Number(extra) || 0,
+          one_time: Number(oneTime) || 0,
+          strategy
+        });
+
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Error saving settings:', error);
+    }
+  };
 
   const updateDebt = (index: number, field: keyof DebtInput, value: any) => {
     const newDebts = [...debts];

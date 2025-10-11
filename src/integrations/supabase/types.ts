@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      debt_calculator_settings: {
+        Row: {
+          created_at: string
+          extra_monthly: number | null
+          id: string
+          one_time: number | null
+          strategy: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          extra_monthly?: number | null
+          id?: string
+          one_time?: number | null
+          strategy?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          extra_monthly?: number | null
+          id?: string
+          one_time?: number | null
+          strategy?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      debts: {
+        Row: {
+          apr: number
+          balance: number
+          created_at: string
+          due_date: string | null
+          id: string
+          last4: string | null
+          min_payment: number
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          apr: number
+          balance: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          last4?: string | null
+          min_payment: number
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          apr?: number
+          balance?: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          last4?: string | null
+          min_payment?: number
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       plaid_accounts: {
         Row: {
           account_id: string
