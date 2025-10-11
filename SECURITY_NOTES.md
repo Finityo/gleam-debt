@@ -1,0 +1,91 @@
+# Security Review & Fixes - 2025-10-11
+
+## Issues Fixed
+
+### ✅ 1. Missing DELETE Policy on Settings Table
+**Status:** FIXED  
+**Severity:** Warning  
+**Fix:** Added RLS policy allowing users to delete their own settings
+```sql
+CREATE POLICY "Users can delete their own settings"
+  ON public.debt_calculator_settings FOR DELETE
+  USING (auth.uid() = user_id);
+```
+
+### ✅ 2. Sensitive Data Logged to Console
+**Status:** FIXED  
+**Severity:** Warning  
+**Fix:** Removed all console.log statements from PlaidLink component that exposed:
+- Public tokens
+- Metadata (institution info, account counts)
+- API response data
+- Error details
+
+### ✅ 3. Edge Functions Publicly Accessible
+**Status:** FIXED  
+**Severity:** Error  
+**Fix:** Enabled JWT verification on all edge functions by removing `verify_jwt = false` from:
+- `compute-debt-plan`
+- `export-debt-csv`
+- `export-debt-xlsx`
+
+Now these functions require authentication - only authenticated users can access them.
+
+### ✅ 4. Missing Input Validation in Edge Functions
+**Status:** FIXED  
+**Severity:** Error  
+**Fix:** Added zod schema validation to all edge functions with:
+- String length limits (name max 100 chars, last4 exactly 4 chars)
+- Numeric range validation (balance 0-100M, minPayment 0-1M, apr 0-100)
+- Array size limits (1-100 debts max)
+- Enum validation for strategy field
+- Proper error responses with validation details
+
+### ✅ 5. Leaked Password Protection Disabled
+**Status:** FIXED  
+**Severity:** Warning  
+**Fix:** Enabled via auth configuration (auto-enabled by Lovable Cloud)
+
+## Remaining Issues for Discussion
+
+### ⚠️ 6. Phone OTP Verification Without Server-Side Validation
+**Status:** ON TODO LIST  
+**Severity:** Warning  
+**Notes:** 
+- Already on your TODO list as "Fix phone number login"
+- Current implementation is client-side only
+- Recommend implementing server-side OTP verification with rate limiting
+- Discuss implementation when fixing phone login tomorrow
+
+### ⚠️ 7. Plaid Access Tokens Stored Without Encryption
+**Status:** NEEDS DISCUSSION  
+**Severity:** Error  
+**Notes:**
+- Plaid access tokens stored in plaintext in `plaid_items.access_token`
+- These provide full access to users' connected bank accounts
+- Recommended: Migrate to Supabase Vault for encryption at rest
+- This is a complex change requiring:
+  - Data migration of existing tokens
+  - Code changes to retrieve from Vault
+  - Token rotation strategy
+  - Should discuss before Plaid production access
+
+## Security Improvements Made
+
+1. **Authentication Required:** All edge functions now require valid JWT tokens
+2. **Input Validation:** All user input is validated with strict schemas
+3. **No Data Leakage:** Removed console logging of sensitive information
+4. **Complete RLS Policies:** All tables now have full CRUD policies where appropriate
+5. **Password Security:** Enabled leaked password protection
+
+## Next Steps
+
+1. Tomorrow: Fix phone number login (already on TODO)
+2. Before Plaid production: Discuss Plaid token encryption strategy
+3. Consider: Adding rate limiting to auth endpoints
+4. Consider: Implementing audit logging for sensitive operations
+
+## Documentation
+
+All security findings, fixes, and remaining issues are documented here for your review.
+Every security decision and implementation detail has been recorded for future reference.

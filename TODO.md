@@ -7,7 +7,9 @@
 - 🔄 Bug fixes as they arise
 
 ## Tomorrow's Tasks
+- [ ] **Review security fixes** - Check SECURITY_NOTES.md for all fixes made
 - [ ] **Fix phone number login** - Currently not working, needs debugging
+  - Note: Security review flagged OTP verification as needing server-side validation
 - [ ] **Add additional data sheets** - Auto-populate sheets as data is retrieved
 - [ ] **Submit screenshots** for additional features/sheets
 - [ ] **Automate data display** based on retrieved information

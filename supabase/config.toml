@@ -1,10 +1,1 @@
 project_id = "jsvduobkznoszmxedkss"
-
-[functions.compute-debt-plan]
-verify_jwt = false
-
-[functions.export-debt-csv]
-verify_jwt = false
-
-[functions.export-debt-xlsx]
-verify_jwt = false

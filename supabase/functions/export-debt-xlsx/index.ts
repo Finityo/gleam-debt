@@ -1,10 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import ExcelJS from "npm:exceljs@4.4.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const debtSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  last4: z.string().max(4).optional(),
+  balance: z.number().min(0).max(100000000),
+  minPayment: z.number().min(0).max(1000000),
+  apr: z.number().min(0).max(100),
+  dueDate: z.string().optional()
+});
+
+const requestSchema = z.object({
+  debts: z.array(debtSchema).min(1).max(100),
+  extraMonthly: z.number().min(0).max(1000000),
+  oneTime: z.number().min(0).max(10000000).optional(),
+  strategy: z.enum(['snowball', 'avalanche'])
+});
 
 type Strategy = "snowball" | "avalanche";
 
@@ -193,12 +210,13 @@ serve(async (req) => {
   }
 
   try {
-    const body: ComputeRequest = await req.json();
+    const body = await req.json();
+    const validated = requestSchema.parse(body);
     
     // Normalize APR to decimal
-    body.debts.forEach(d => (d.apr = d.apr > 1 ? d.apr / 100 : d.apr));
+    validated.debts.forEach(d => (d.apr = d.apr > 1 ? d.apr / 100 : d.apr));
     
-    const result = computePlan(body);
+    const result = computePlan(validated);
     const xlsx = await exportXLSX(result);
 
     return new Response(xlsx, {
@@ -209,6 +227,12 @@ serve(async (req) => {
       },
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: error.errors }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
     console.error('Error in export-debt-xlsx:', error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,

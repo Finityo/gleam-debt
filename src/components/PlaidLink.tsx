@@ -21,7 +21,6 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
         
         setLinkToken(data.link_token);
       } catch (error: any) {
-        console.error('Error creating link token:', error);
         toast({
           title: 'Error',
           description: 'Failed to initialize bank connection. Please try again.',
@@ -34,26 +33,12 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   }, [toast]);
 
   const onSuccessCallback = async (public_token: string, metadata: any) => {
-    console.log('=== PLAID SUCCESS CALLBACK TRIGGERED ===');
-    console.log('Public token received:', public_token ? 'YES' : 'NO');
-    console.log('Metadata:', metadata);
-    
     try {
-      console.log('Calling plaid-exchange-token function...');
-      
       const { data, error } = await supabase.functions.invoke('plaid-exchange-token', {
         body: { public_token, metadata },
       });
 
-      console.log('Function response - data:', data);
-      console.log('Function response - error:', error);
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
-      }
-
-      console.log('SUCCESS! Account connected');
+      if (error) throw error;
       
       toast({
         title: 'Success!',
@@ -62,14 +47,11 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
 
       // Reload the page to show the connected accounts
       setTimeout(() => {
-        console.log('Reloading page...');
         window.location.reload();
       }, 1500);
 
       onSuccess?.();
     } catch (error: any) {
-      console.error('=== ERROR IN CALLBACK ===');
-      console.error('Error details:', error);
       toast({
         title: 'Error',
         description: 'Failed to connect bank account. Please try again.',
@@ -83,7 +65,6 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
     onSuccess: onSuccessCallback,
     onExit: (err: any, metadata: any) => {
       if (err) {
-        console.error('Plaid Link exited with error:', err);
         toast({
           title: 'Connection Cancelled',
           description: 'Bank connection was not completed.',
