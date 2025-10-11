@@ -52,8 +52,8 @@ export function DebtCalculator() {
   const [debts, setDebts] = useState<DebtInput[]>([
     { name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "" }
   ]);
-  const [extra, setExtra] = useState(0);
-  const [oneTime, setOneTime] = useState(0);
+  const [extra, setExtra] = useState<number | string>("");
+  const [oneTime, setOneTime] = useState<number | string>("");
   const [strategy, setStrategy] = useState<Strategy>("snowball");
   const [result, setResult] = useState<ComputeResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,8 +78,8 @@ export function DebtCalculator() {
       const { data, error } = await supabase.functions.invoke('compute-debt-plan', {
         body: {
           debts: debts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
-          extraMonthly: extra,
-          oneTime,
+          extraMonthly: Number(extra) || 0,
+          oneTime: Number(oneTime) || 0,
           strategy
         }
       });
@@ -106,8 +106,8 @@ export function DebtCalculator() {
         },
         body: JSON.stringify({
           debts: debts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
-          extraMonthly: extra,
-          oneTime,
+          extraMonthly: Number(extra) || 0,
+          oneTime: Number(oneTime) || 0,
           strategy
         })
       });
@@ -142,8 +142,8 @@ export function DebtCalculator() {
         },
         body: JSON.stringify({
           debts: debts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
-          extraMonthly: extra,
-          oneTime,
+          extraMonthly: Number(extra) || 0,
+          oneTime: Number(oneTime) || 0,
           strategy
         })
       });
@@ -177,23 +177,35 @@ export function DebtCalculator() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="extra">Extra Monthly Payment</Label>
-              <Input
-                id="extra"
-                type="number"
-                step="0.01"
-                value={extra}
-                onChange={(e) => setExtra(parseFloat(e.target.value) || 0)}
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  id="extra"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  className="pl-7"
+                  value={extra}
+                  onChange={(e) => setExtra(e.target.value)}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="oneTime">One-time Payment</Label>
-              <Input
-                id="oneTime"
-                type="number"
-                step="0.01"
-                value={oneTime}
-                onChange={(e) => setOneTime(parseFloat(e.target.value) || 0)}
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  id="oneTime"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  className="pl-7"
+                  value={oneTime}
+                  onChange={(e) => setOneTime(e.target.value)}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="strategy">Method</Label>
@@ -241,28 +253,43 @@ export function DebtCalculator() {
                     </div>
                     <div className="space-y-2">
                       <Label>Balance</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={debt.balance}
-                        onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          className="pl-7"
+                          value={debt.balance || ''}
+                          onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label>Min Payment</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={debt.minPayment}
-                        onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          className="pl-7"
+                          value={debt.minPayment || ''}
+                          onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label>APR (%)</Label>
                       <Input
                         type="number"
                         step="0.01"
-                        value={debt.apr}
+                        min="0"
+                        max="100"
+                        placeholder="18.99"
+                        value={debt.apr || ''}
                         onChange={(e) => updateDebt(index, 'apr', parseFloat(e.target.value) || 0)}
                       />
                     </div>
