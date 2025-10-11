@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaidLink } from '@/components/PlaidLink';
+import { DebtCalculator } from '@/components/DebtCalculator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
@@ -119,6 +120,10 @@ const Dashboard = () => {
 
         <div className="mb-8">
           <PlaidLink onSuccess={fetchAccounts} />
+        </div>
+
+        <div className="mb-12">
+          <DebtCalculator />
         </div>
 
         <div className="space-y-6">
