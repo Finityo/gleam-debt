@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, Plus, Download } from "lucide-react";
@@ -275,10 +277,12 @@ export function DebtCalculator() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-screen-xl mx-auto p-4 space-y-4">
+      <h1 className="text-3xl font-bold">Debt Snowball Planner</h1>
+
       <Card>
         <CardHeader>
-          <CardTitle>Debt Snowball Calculator</CardTitle>
+          <CardTitle>Configure Your Debts</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -423,71 +427,193 @@ export function DebtCalculator() {
       </Card>
 
       {result && (
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Payoff Plan</CardTitle>
-              <div className="flex gap-2">
-                <Button onClick={exportCSV} variant="outline" size="sm" disabled={isLoading}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
-                </Button>
-                <Button onClick={exportXLSX} variant="outline" size="sm" disabled={isLoading}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Excel
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2">Debt</th>
-                    <th className="text-right p-2">Balance</th>
-                    <th className="text-right p-2">Min Payment</th>
-                    <th className="text-right p-2">APR</th>
-                    <th className="text-right p-2">Months</th>
-                    <th className="text-right p-2">Total Months</th>
-                  </tr>
-                </thead>
-                <tbody>
+        <Tabs defaultValue="snowball" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="snowball">Snowball Plan</TabsTrigger>
+            <TabsTrigger value="calendar">Payoff Calendar</TabsTrigger>
+            <TabsTrigger value="summary">Printable Summary</TabsTrigger>
+            <TabsTrigger value="mobile">Mobile View</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="snowball">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Snowball vs Avalanche Strategy</CardTitle>
+                  <div className="flex gap-2">
+                    <Button onClick={exportCSV} variant="outline" size="sm" disabled={isLoading}>
+                      <Download className="h-4 w-4 mr-2" />
+                      CSV
+                    </Button>
+                    <Button onClick={exportXLSX} variant="outline" size="sm" disabled={isLoading}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Excel
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Creditor</TableHead>
+                        <TableHead className="text-right">Balance</TableHead>
+                        <TableHead className="text-right">Min Payment</TableHead>
+                        <TableHead className="text-right">APR</TableHead>
+                        <TableHead className="text-right">Est. Months</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {result.rows.map((row) => (
+                        <TableRow key={row.index}>
+                          <TableCell className="font-medium">{row.label}</TableCell>
+                          <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
+                          <TableCell className="text-right">{row.monthsToPayoff}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="mt-4 p-4 bg-muted rounded-lg">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <div className="text-muted-foreground">Total Months</div>
+                      <div className="text-2xl font-bold">{result.totals.totalMonths}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Total Debts</div>
+                      <div className="text-2xl font-bold">{result.totals.numDebts}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Total Balance</div>
+                      <div className="text-2xl font-bold">${result.totals.sumBalance.toFixed(2)}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Min Payments</div>
+                      <div className="text-2xl font-bold">${result.totals.sumMinPayment.toFixed(2)}</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="calendar">
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">Monthly Payoff Calendar</h2>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Month</TableHead>
+                        <TableHead className="text-right">Monthly Payment</TableHead>
+                        <TableHead className="text-right">Cumulative Paid</TableHead>
+                        <TableHead className="text-right">Remaining Balance</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {result.rows.map((row, idx) => {
+                        const cumulativePaid = result.rows
+                          .slice(0, idx + 1)
+                          .reduce((sum, r) => sum + r.totalPayment, 0);
+                        const remaining = result.totals.sumBalance - cumulativePaid;
+                        
+                        return (
+                          <TableRow key={idx}>
+                            <TableCell>Month {row.cumulativeMonths}</TableCell>
+                            <TableCell className="text-right">${row.totalPayment.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">${cumulativePaid.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">${Math.max(0, remaining).toFixed(2)}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="summary">
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">Printable Summary</h2>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Creditor</TableHead>
+                        <TableHead>Last 4</TableHead>
+                        <TableHead className="text-right">Balance</TableHead>
+                        <TableHead className="text-right">Min Payment</TableHead>
+                        <TableHead className="text-right">APR</TableHead>
+                        <TableHead>Included</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {result.rows.map((row) => (
+                        <TableRow key={row.index}>
+                          <TableCell className="font-medium">{row.name}</TableCell>
+                          <TableCell>{row.last4 || 'N/A'}</TableCell>
+                          <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
+                          <TableCell>Yes</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="mt-6 print:mt-4">
+                  <h3 className="font-semibold mb-2">Summary</h3>
+                  <div className="text-sm space-y-1">
+                    <p>Strategy: <span className="font-medium">{result.totals.strategy}</span></p>
+                    <p>Extra Monthly: <span className="font-medium">${result.totals.extraMonthly.toFixed(2)}</span></p>
+                    <p>One-Time Payment: <span className="font-medium">${result.totals.oneTime.toFixed(2)}</span></p>
+                    <p>Total Payoff Time: <span className="font-medium">{result.totals.totalMonths} months</span></p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="mobile">
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">Mobile-Friendly Snowball</h2>
+                <div className="grid grid-cols-1 gap-4">
                   {result.rows.map((row) => (
-                    <tr key={row.index} className="border-b">
-                      <td className="p-2">{row.label}</td>
-                      <td className="text-right p-2">${row.balance.toFixed(2)}</td>
-                      <td className="text-right p-2">${row.minPayment.toFixed(2)}</td>
-                      <td className="text-right p-2">{(row.apr * 100).toFixed(2)}%</td>
-                      <td className="text-right p-2">{row.monthsToPayoff}</td>
-                      <td className="text-right p-2">{row.cumulativeMonths}</td>
-                    </tr>
+                    <div key={row.index} className="bg-accent/50 p-4 rounded-xl shadow-sm">
+                      <div className="text-lg font-bold mb-2">{row.label}</div>
+                      <div className="text-sm space-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Balance:</span>
+                          <span className="font-medium">${row.balance.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Min Payment:</span>
+                          <span className="font-medium">${row.minPayment.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">APR:</span>
+                          <span className="font-medium">{(row.apr * 100).toFixed(2)}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Payoff Months:</span>
+                          <span className="font-medium">{row.monthsToPayoff}</span>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4 p-4 bg-muted rounded-lg">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <div className="text-muted-foreground">Total Months</div>
-                  <div className="text-2xl font-bold">{result.totals.totalMonths}</div>
                 </div>
-                <div>
-                  <div className="text-muted-foreground">Total Debts</div>
-                  <div className="text-2xl font-bold">{result.totals.numDebts}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Total Balance</div>
-                  <div className="text-2xl font-bold">${result.totals.sumBalance.toFixed(2)}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Min Payments</div>
-                  <div className="text-2xl font-bold">${result.totals.sumMinPayment.toFixed(2)}</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
