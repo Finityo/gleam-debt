@@ -1,20 +1,33 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { FileDown } from "lucide-react";
 
 const PlaidSubmission = () => {
-  const handlePrint = () => {
+  const handleSavePDF = () => {
     window.print();
   };
 
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Print Button - Hidden in print view */}
-        <div className="print:hidden mb-8 flex justify-end">
-          <Button onClick={handlePrint} size="lg">
-            Print / Save as PDF
-          </Button>
+        {/* Save as PDF Button - Hidden in print view */}
+        <div className="print:hidden mb-8">
+          <div className="bg-accent/10 border border-accent/30 rounded-lg p-6 mb-6">
+            <div className="flex items-start gap-4">
+              <FileDown className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-2">Save This Document as PDF</h3>
+                <p className="text-muted-foreground mb-4">
+                  Click the button below to open the print dialog. Select "Save as PDF" as your printer destination to create a PDF file you can submit to Plaid.
+                </p>
+                <Button onClick={handleSavePDF} size="lg" className="gap-2">
+                  <FileDown className="w-4 h-4" />
+                  Save as PDF
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Cover Page */}
