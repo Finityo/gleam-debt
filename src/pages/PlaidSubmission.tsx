@@ -222,23 +222,18 @@ const PlaidSubmission = () => {
                 <p className="text-muted-foreground mb-4">
                   The landing page introduces users to the debt management system, showcasing key statistics and features. Users can begin their journey by clicking "Get Started Free" or sign in to existing accounts.
                 </p>
-                <div className="border rounded-lg overflow-hidden bg-muted">
-                  <img 
-                    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" 
-                    alt="Landing Page Screenshot" 
-                    className="w-full"
-                    style={{ minHeight: '400px', backgroundColor: '#f0f0f0' }}
-                  />
-                  <div className="p-4 bg-background">
-                    <p className="text-sm font-medium">Key Elements:</p>
-                    <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-                      <li>• Hero section with clear value proposition</li>
-                      <li>• Statistics dashboard showing debt tracking capabilities</li>
-                      <li>• Feature highlights (Auto-Connect, Snowball & Avalanche, Income Tracking)</li>
-                      <li>• Sample debt cards demonstrating the interface</li>
-                      <li>• Call-to-action buttons for registration</li>
-                    </ul>
-                  </div>
+                <p className="text-sm italic text-muted-foreground mb-4">
+                  Screenshot: Please capture the landing page at the root URL (/) showing the hero section, statistics cards, and feature highlights.
+                </p>
+                <div className="p-4 bg-background border rounded-lg">
+                  <p className="text-sm font-medium mb-2">Key Elements Visible:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Hero section with clear value proposition: "Crush Your Debt with the Snowball Method"</li>
+                    <li>• Statistics dashboard showing debt tracking capabilities (Total Debt, Monthly Budget, Debt-Free Date)</li>
+                    <li>• Feature highlights (Auto-Connect Accounts, Snowball & Avalanche, Income Tracking)</li>
+                    <li>• Sample debt cards demonstrating the interface</li>
+                    <li>• Call-to-action buttons for registration</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
@@ -252,23 +247,18 @@ const PlaidSubmission = () => {
                 <p className="text-muted-foreground mb-4">
                   Secure authentication interface supporting both email/password and phone number login methods. Users can create new accounts or sign in to existing ones.
                 </p>
-                <div className="border rounded-lg overflow-hidden bg-muted">
-                  <img 
-                    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" 
-                    alt="Login Page Screenshot" 
-                    className="w-full"
-                    style={{ minHeight: '400px', backgroundColor: '#f0f0f0' }}
-                  />
-                  <div className="p-4 bg-background">
-                    <p className="text-sm font-medium">Key Elements:</p>
-                    <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-                      <li>• Email/Password authentication option</li>
-                      <li>• Phone number authentication with OTP verification</li>
-                      <li>• Tabbed interface for Sign In / Sign Up</li>
-                      <li>• Input validation and error handling</li>
-                      <li>• Clean, user-friendly design</li>
-                    </ul>
-                  </div>
+                <p className="text-sm italic text-muted-foreground mb-4">
+                  Screenshot: Please capture the authentication page at /auth showing both email and phone authentication options.
+                </p>
+                <div className="p-4 bg-background border rounded-lg">
+                  <p className="text-sm font-medium mb-2">Key Elements Visible:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Toggle between Email and Phone authentication methods</li>
+                    <li>• Email/Password authentication with Sign In / Sign Up tabs</li>
+                    <li>• Phone number authentication with OTP verification</li>
+                    <li>• Input validation and error handling</li>
+                    <li>• Clean, user-friendly design with proper labels</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
@@ -282,23 +272,18 @@ const PlaidSubmission = () => {
                 <p className="text-muted-foreground mb-4">
                   The main dashboard provides a comprehensive debt management interface with tabbed views. The Snowball Plan tab allows users to compare snowball and avalanche strategies and view their prioritized debt list.
                 </p>
-                <div className="border rounded-lg overflow-hidden bg-muted">
-                  <img 
-                    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" 
-                    alt="Dashboard Snowball Tab Screenshot" 
-                    className="w-full"
-                    style={{ minHeight: '400px', backgroundColor: '#f0f0f0' }}
-                  />
-                  <div className="p-4 bg-background">
-                    <p className="text-sm font-medium">Key Elements:</p>
-                    <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-                      <li>• Strategy selector (Snowball vs Avalanche)</li>
-                      <li>• Debt table showing creditor, balance, min payment, APR</li>
-                      <li>• Estimated payoff timeline for each debt</li>
-                      <li>• Color-coded priority system</li>
-                      <li>• Plaid connection status and account data display</li>
-                    </ul>
-                  </div>
+                <p className="text-sm italic text-muted-foreground mb-4">
+                  Screenshot: Please capture the dashboard at /dashboard with the "Snowball Plan" tab active, showing the strategy selector and debt table.
+                </p>
+                <div className="p-4 bg-background border rounded-lg">
+                  <p className="text-sm font-medium mb-2">Key Elements Visible:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Four-tab layout: Snowball Plan, Payoff Calendar, Printable Summary, Mobile View</li>
+                    <li>• Strategy selector dropdown (Snowball vs Avalanche)</li>
+                    <li>• Debt table with columns: Creditor, Balance, Min Payment, APR, Est. Months</li>
+                    <li>• Color-coded priority system for debts</li>
+                    <li>• Plaid connection status and "Connect Accounts" button</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
@@ -312,23 +297,18 @@ const PlaidSubmission = () => {
                 <p className="text-muted-foreground mb-4">
                   The Payoff Calendar provides a month-by-month breakdown of the debt elimination journey, showing cumulative progress and remaining balances.
                 </p>
-                <div className="border rounded-lg overflow-hidden bg-muted">
-                  <img 
-                    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" 
-                    alt="Payoff Calendar Screenshot" 
-                    className="w-full"
-                    style={{ minHeight: '400px', backgroundColor: '#f0f0f0' }}
-                  />
-                  <div className="p-4 bg-background">
-                    <p className="text-sm font-medium">Key Elements:</p>
-                    <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-                      <li>• Month-by-month payment schedule</li>
-                      <li>• Debt paid each month</li>
-                      <li>• Cumulative payment tracking</li>
-                      <li>• Remaining balance projection</li>
-                      <li>• Visual progress indicators</li>
-                    </ul>
-                  </div>
+                <p className="text-sm italic text-muted-foreground mb-4">
+                  Screenshot: Please capture the dashboard with the "Payoff Calendar" tab active.
+                </p>
+                <div className="p-4 bg-background border rounded-lg">
+                  <p className="text-sm font-medium mb-2">Key Elements Visible:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Month-by-month payment schedule table</li>
+                    <li>• Debt paid each month</li>
+                    <li>• Cumulative payment tracking</li>
+                    <li>• Remaining balance projection</li>
+                    <li>• Visual progress indicators</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
@@ -342,23 +322,18 @@ const PlaidSubmission = () => {
                 <p className="text-muted-foreground mb-4">
                   The Printable Summary tab offers a clean, creditor-focused report suitable for printing or exporting. Perfect for record-keeping or sharing with financial advisors.
                 </p>
-                <div className="border rounded-lg overflow-hidden bg-muted">
-                  <img 
-                    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" 
-                    alt="Printable Summary Screenshot" 
-                    className="w-full"
-                    style={{ minHeight: '400px', backgroundColor: '#f0f0f0' }}
-                  />
-                  <div className="p-4 bg-background">
-                    <p className="text-sm font-medium">Key Elements:</p>
-                    <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-                      <li>• Creditor name and last 4 digits</li>
-                      <li>• Current balance and APR</li>
-                      <li>• Minimum payment requirements</li>
-                      <li>• Inclusion status in payoff plan</li>
-                      <li>• Print-optimized layout</li>
-                    </ul>
-                  </div>
+                <p className="text-sm italic text-muted-foreground mb-4">
+                  Screenshot: Please capture the dashboard with the "Printable Summary" tab active.
+                </p>
+                <div className="p-4 bg-background border rounded-lg">
+                  <p className="text-sm font-medium mb-2">Key Elements Visible:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Creditor name and last 4 digits of account</li>
+                    <li>• Current balance and APR</li>
+                    <li>• Minimum payment requirements</li>
+                    <li>• Inclusion status in payoff plan</li>
+                    <li>• Print-optimized layout</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
@@ -372,23 +347,18 @@ const PlaidSubmission = () => {
                 <p className="text-muted-foreground mb-4">
                   Touch-optimized mobile interface with larger fonts and spacing for on-the-go debt tracking. Responsive design ensures a seamless experience across all devices.
                 </p>
-                <div className="border rounded-lg overflow-hidden bg-muted">
-                  <img 
-                    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" 
-                    alt="Mobile View Screenshot" 
-                    className="w-full"
-                    style={{ minHeight: '400px', backgroundColor: '#f0f0f0' }}
-                  />
-                  <div className="p-4 bg-background">
-                    <p className="text-sm font-medium">Key Elements:</p>
-                    <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-                      <li>• Card-based layout optimized for mobile</li>
-                      <li>• Larger touch targets and fonts</li>
-                      <li>• Essential debt information at a glance</li>
-                      <li>• Swipe-friendly interface</li>
-                      <li>• Responsive design for all screen sizes</li>
-                    </ul>
-                  </div>
+                <p className="text-sm italic text-muted-foreground mb-4">
+                  Screenshot: Please capture the dashboard with the "Mobile View" tab active.
+                </p>
+                <div className="p-4 bg-background border rounded-lg">
+                  <p className="text-sm font-medium mb-2">Key Elements Visible:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Card-based layout optimized for mobile screens</li>
+                    <li>• Larger touch targets and fonts for readability</li>
+                    <li>• Essential debt information at a glance (Balance, Min Payment, APR)</li>
+                    <li>• Swipe-friendly interface</li>
+                    <li>• Responsive design for all screen sizes</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
