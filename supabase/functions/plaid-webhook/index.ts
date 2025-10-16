@@ -3,8 +3,56 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, plaid-verification',
 };
+
+// Verify Plaid webhook signature
+async function verifyPlaidSignature(
+  bodyString: string,
+  headers: Headers
+): Promise<boolean> {
+  const PLAID_WEBHOOK_VERIFICATION_KEY = Deno.env.get('PLAID_WEBHOOK_VERIFICATION_KEY');
+  
+  if (!PLAID_WEBHOOK_VERIFICATION_KEY) {
+    console.error('PLAID_WEBHOOK_VERIFICATION_KEY not configured');
+    return false;
+  }
+
+  const signature = headers.get('plaid-verification');
+  if (!signature) {
+    console.error('Missing plaid-verification header');
+    return false;
+  }
+
+  try {
+    const keyData = await crypto.subtle.importKey(
+      'jwk',
+      JSON.parse(PLAID_WEBHOOK_VERIFICATION_KEY),
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['verify']
+    );
+
+    const signatureBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
+    const bodyBytes = new TextEncoder().encode(bodyString);
+
+    const isValid = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: 'SHA-256' },
+      keyData,
+      signatureBytes,
+      bodyBytes
+    );
+
+    if (!isValid) {
+      console.error('Webhook signature verification failed');
+    }
+
+    return isValid;
+  } catch (error) {
+    console.error('Error verifying webhook signature:', error);
+    return false;
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,12 +60,25 @@ serve(async (req) => {
   }
 
   try {
+    // Read body as text first for signature verification
+    const bodyText = await req.text();
+    
+    // Verify Plaid webhook signature
+    const isValidSignature = await verifyPlaidSignature(bodyText, req.headers);
+    if (!isValidSignature) {
+      console.error('Webhook rejected: Invalid signature');
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    const payload = await req.json();
+    const payload = JSON.parse(bodyText);
     
     console.log('Received Plaid webhook:', {
       type: payload.webhook_type,
