@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, Plus, Download, Upload } from "lucide-react";
@@ -517,10 +518,28 @@ export function DebtCalculator() {
                   <Plus className="h-4 w-4 mr-2" />
                   Add Debt
                 </Button>
-                <Button onClick={deleteAllDebts} size="sm" variant="destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete All
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete All
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete All Debts?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete all {debts.filter(d => d.name.trim() !== '').length} debt(s) and clear your plan. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={deleteAllDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete All
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
 
