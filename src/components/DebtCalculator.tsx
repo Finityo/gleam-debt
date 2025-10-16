@@ -110,7 +110,7 @@ export function DebtCalculator() {
       if (!settingsError && settingsData) {
         setExtra(Number(settingsData.extra_monthly));
         setOneTime(Number(settingsData.one_time));
-        setStrategy(settingsData.strategy as Strategy);
+        // Always default to snowball strategy
       }
     } catch (error: any) {
       console.error('Error loading saved data:', error);
