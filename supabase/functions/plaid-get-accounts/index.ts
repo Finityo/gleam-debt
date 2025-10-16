@@ -34,6 +34,8 @@ serve(async (req) => {
       .select(`
         *,
         plaid_items (
+          id,
+          item_id,
           institution_name,
           institution_id
         )
