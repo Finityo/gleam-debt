@@ -67,37 +67,39 @@ serve(async (req) => {
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
     const PLAID_ENV = 'production';
 
-    // Call Plaid /item/remove endpoint
-    const plaidResponse = await fetch(`https://${PLAID_ENV}.plaid.com/item/remove`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'PLAID-CLIENT-ID': PLAID_CLIENT_ID!,
-        'PLAID-SECRET': PLAID_SECRET!,
-      },
-      body: JSON.stringify({
-        access_token: item.access_token,
-      }),
-    });
-
-    const plaidData = await plaidResponse.json();
-
-    if (!plaidResponse.ok) {
-      console.error('Plaid item removal failed:', {
-        user_id: user.id,
-        item_id: item_id,
-        error_code: plaidData.error_code,
-        error_message: plaidData.error_message,
-        request_id: plaidData.request_id
+    // Try to remove from Plaid, but don't fail if it errors (e.g., sandbox/production mismatch)
+    try {
+      const plaidResponse = await fetch(`https://${PLAID_ENV}.plaid.com/item/remove`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'PLAID-CLIENT-ID': PLAID_CLIENT_ID!,
+          'PLAID-SECRET': PLAID_SECRET!,
+        },
+        body: JSON.stringify({
+          access_token: item.access_token,
+        }),
       });
-      throw new Error(plaidData.error_message || 'Failed to remove item from Plaid');
-    }
 
-    console.log('Item removed from Plaid successfully:', {
-      user_id: user.id,
-      item_id: item_id,
-      removed_item_id: plaidData.removed_item_id
-    });
+      const plaidData = await plaidResponse.json();
+
+      if (plaidResponse.ok) {
+        console.log('Item removed from Plaid successfully:', {
+          user_id: user.id,
+          item_id: item_id,
+          removed_item_id: plaidData.removed_item_id
+        });
+      } else {
+        console.warn('Plaid item removal failed (non-critical):', {
+          user_id: user.id,
+          item_id: item_id,
+          error_code: plaidData.error_code,
+          error_message: plaidData.error_message
+        });
+      }
+    } catch (plaidError: any) {
+      console.warn('Plaid API call failed (continuing with DB cleanup):', plaidError.message);
+    }
 
     // Delete all associated accounts first (foreign key constraint)
     const { error: accountsDeleteError } = await supabaseClient
@@ -154,8 +156,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Item removed successfully',
-        removed_item_id: plaidData.removed_item_id 
+        message: 'Item removed successfully'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
