@@ -81,6 +81,9 @@ export function DebtCalculator() {
 
   const loadSavedData = async () => {
     try {
+      // Clear any previous results to start fresh
+      setResult(null);
+      
       // Load debts
       const { data: debtsData, error: debtsError } = await supabase
         .from('debts')
@@ -112,6 +115,9 @@ export function DebtCalculator() {
         setOneTime(Number(settingsData.one_time));
         // Always default to snowball strategy
       }
+      
+      // Ensure strategy is always snowball on load
+      setStrategy('snowball');
     } catch (error: any) {
       console.error('Error loading saved data:', error);
     }
