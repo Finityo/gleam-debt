@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, Plus, Download, Upload } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from 'exceljs';
 
 type Strategy = "snowball" | "avalanche";
@@ -100,6 +101,7 @@ export function DebtCalculator() {
   const [strategy, setStrategy] = useState<Strategy>("snowball");
   const [result, setResult] = useState<ComputeResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedDebtIndices, setSelectedDebtIndices] = useState<Set<number>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load saved data on mount
@@ -240,14 +242,96 @@ export function DebtCalculator() {
       // Reset to single empty debt
       setDebts([{ name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "" }]);
       
-      // Clear results
+      // Clear results and selections
       setResult(null);
+      setSelectedDebtIndices(new Set());
       
       toast({ title: "Success", description: "All debts deleted" });
     } catch (error: any) {
       console.error('Error deleting all debts:', error);
       toast({ title: "Error", description: "Failed to delete debts", variant: "destructive" });
     }
+  };
+
+  const deleteSelectedDebts = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get the debts to delete (those with IDs in database)
+      const debtsToDelete = Array.from(selectedDebtIndices)
+        .map(index => debts[index])
+        .filter(debt => debt.id);
+
+      // Delete from database if they have IDs
+      if (debtsToDelete.length > 0) {
+        const idsToDelete = debtsToDelete.map(d => d.id!);
+        await supabase.from('debts').delete().in('id', idsToDelete);
+      }
+
+      // Remove from local state
+      const remainingDebts = debts.filter((_, index) => !selectedDebtIndices.has(index));
+      
+      // If no debts left, add one empty debt
+      if (remainingDebts.length === 0) {
+        setDebts([{ name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "" }]);
+        setResult(null);
+      } else {
+        setDebts(remainingDebts);
+        // Recalculate with remaining debts
+        await recalculateWithDebts(remainingDebts);
+      }
+      
+      // Clear selections
+      setSelectedDebtIndices(new Set());
+      
+      toast({ 
+        title: "Success", 
+        description: `Deleted ${selectedDebtIndices.size} debt(s)` 
+      });
+    } catch (error: any) {
+      console.error('Error deleting selected debts:', error);
+      toast({ title: "Error", description: "Failed to delete debts", variant: "destructive" });
+    }
+  };
+
+  const recalculateWithDebts = async (debtsToUse: DebtInput[]) => {
+    // Only recalculate if we have valid debts and previous results
+    const validDebts = debtsToUse.filter(d => d.name.trim() !== '' && d.balance > 0);
+    if (validDebts.length === 0 || !result) {
+      setResult(null);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase.functions.invoke('compute-debt-plan', {
+        body: {
+          debts: validDebts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
+          extraMonthly: Number(extra) || 0,
+          oneTime: Number(oneTime) || 0,
+          strategy
+        }
+      });
+
+      if (error) throw error;
+      setResult(data);
+    } catch (error) {
+      console.error('Error recalculating plan:', error);
+      setResult(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleDebtSelection = (index: number) => {
+    const newSelected = new Set(selectedDebtIndices);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedDebtIndices(newSelected);
   };
 
   const compute = async (useStrategy?: Strategy) => {
@@ -518,6 +602,30 @@ export function DebtCalculator() {
                   <Plus className="h-4 w-4 mr-2" />
                   Add Debt
                 </Button>
+                {selectedDebtIndices.size > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Selected ({selectedDebtIndices.size})
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Selected Debts?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete {selectedDebtIndices.size} selected debt(s). The plan will be recalculated with the remaining debts. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteSelectedDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete Selected
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button size="sm" variant="destructive">
@@ -546,16 +654,23 @@ export function DebtCalculator() {
             {debts.map((debt, index) => (
               <Card key={index}>
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-                    <div className="space-y-2">
-                      <Label>Name</Label>
-                      <Input
-                        value={debt.name}
-                        onChange={(e) => updateDebt(index, 'name', e.target.value)}
-                        placeholder="Credit Card"
-                        className="placeholder:text-muted-foreground/50"
+                  <div className="flex gap-4">
+                    <div className="flex items-center pt-8">
+                      <Checkbox
+                        checked={selectedDebtIndices.has(index)}
+                        onCheckedChange={() => toggleDebtSelection(index)}
                       />
                     </div>
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-7 gap-4">
+                      <div className="space-y-2">
+                        <Label>Name</Label>
+                        <Input
+                          value={debt.name}
+                          onChange={(e) => updateDebt(index, 'name', e.target.value)}
+                          placeholder="Credit Card"
+                          className="placeholder:text-muted-foreground/50"
+                        />
+                      </div>
                     <div className="space-y-2">
                       <Label>Last 4</Label>
                       <Input
@@ -632,15 +747,16 @@ export function DebtCalculator() {
                         }}
                       />
                     </div>
-                    <div className="space-y-2 flex items-end">
-                      <Button
-                        onClick={() => removeDebt(index)}
-                        variant="destructive"
-                        size="icon"
-                        disabled={debts.length === 1}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="space-y-2 flex items-end">
+                        <Button
+                          onClick={() => removeDebt(index)}
+                          variant="destructive"
+                          size="icon"
+                          disabled={debts.length === 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
