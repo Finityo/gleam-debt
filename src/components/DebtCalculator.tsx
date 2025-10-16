@@ -380,7 +380,11 @@ export function DebtCalculator() {
         const balance = parseFloat(row.getCell(3).value?.toString() || '0');
         const minPayment = parseFloat(row.getCell(4).value?.toString() || '0');
         const apr = parseFloat(row.getCell(5).value?.toString() || '0');
-        const dueDate = row.getCell(6).value?.toString() || '';
+        const dueDateRaw = row.getCell(6).value?.toString() || '';
+        
+        // Extract just the day number from any format (e.g., "15", "15th", "Due by 15", etc.)
+        const dayMatch = dueDateRaw.match(/\d+/);
+        const dueDate = dayMatch ? dayMatch[0] : '';
 
         if (name && balance > 0) {
           importedDebts.push({
