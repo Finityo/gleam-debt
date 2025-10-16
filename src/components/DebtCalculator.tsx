@@ -599,14 +599,21 @@ export function DebtCalculator() {
                     <div className="space-y-2">
                       <Label>APR (%)</Label>
                       <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
+                        type="text"
+                        inputMode="decimal"
                         placeholder="18.99"
                         className="placeholder:text-muted-foreground/50"
                         value={debt.apr || ''}
-                        onChange={(e) => updateDebt(index, 'apr', parseFloat(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Allow numbers with up to 2 decimal places
+                          if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                            const numValue = value === '' ? 0 : parseFloat(value);
+                            if (numValue <= 100) {
+                              updateDebt(index, 'apr', numValue || 0);
+                            }
+                          }
+                        }}
                       />
                     </div>
                     <div className="space-y-2">
