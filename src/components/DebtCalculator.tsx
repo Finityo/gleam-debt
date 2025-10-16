@@ -428,7 +428,7 @@ export function DebtCalculator() {
 
       {result && (
         <Tabs defaultValue="snowball" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid grid-cols-3 h-auto">
             <TabsTrigger value="snowball">Snowball Plan</TabsTrigger>
             <TabsTrigger value="calendar">Payoff Calendar</TabsTrigger>
             <TabsTrigger value="summary">Printable Summary</TabsTrigger>
