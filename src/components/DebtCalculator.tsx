@@ -209,6 +209,8 @@ export function DebtCalculator() {
           extra_monthly: Number(extra) || 0,
           one_time: Number(oneTime) || 0,
           strategy
+        }, {
+          onConflict: 'user_id'
         });
 
       if (error) throw error;
