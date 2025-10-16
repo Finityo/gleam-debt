@@ -1,1 +1,4 @@
 project_id = "jsvduobkznoszmxedkss"
+
+[functions.plaid-webhook]
+verify_jwt = false
