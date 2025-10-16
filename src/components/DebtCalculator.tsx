@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Plus, Download } from "lucide-react";
+import { Trash2, Plus, Download, Upload } from "lucide-react";
+import * as XLSX from 'exceljs';
 
 type Strategy = "snowball" | "avalanche";
 
@@ -77,6 +78,7 @@ export function DebtCalculator() {
   const [strategy, setStrategy] = useState<Strategy>("snowball");
   const [result, setResult] = useState<ComputeResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load saved data on mount
   useEffect(() => {
@@ -326,6 +328,74 @@ export function DebtCalculator() {
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsLoading(true);
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = new XLSX.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
+      
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet) {
+        throw new Error('No worksheet found');
+      }
+
+      const importedDebts: DebtInput[] = [];
+      
+      // Expected columns: Name, Last4, Balance, MinPayment, APR, DueDate
+      worksheet.eachRow((row, rowNumber) => {
+        // Skip header row
+        if (rowNumber === 1) return;
+        
+        const name = row.getCell(1).value?.toString() || '';
+        const last4 = row.getCell(2).value?.toString() || '';
+        const balance = parseFloat(row.getCell(3).value?.toString() || '0');
+        const minPayment = parseFloat(row.getCell(4).value?.toString() || '0');
+        const apr = parseFloat(row.getCell(5).value?.toString() || '0');
+        const dueDate = row.getCell(6).value?.toString() || '';
+
+        if (name && balance > 0) {
+          importedDebts.push({
+            name,
+            last4,
+            balance,
+            minPayment,
+            apr,
+            dueDate
+          });
+        }
+      });
+
+      if (importedDebts.length === 0) {
+        throw new Error('No valid debts found in file');
+      }
+
+      setDebts(importedDebts);
+      toast({ 
+        title: "Success", 
+        description: `Imported ${importedDebts.length} debt(s) from Excel file` 
+      });
+    } catch (error) {
+      console.error('Error importing file:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to import Excel file. Please ensure it has columns: Name, Last4, Balance, MinPayment, APR, DueDate", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsLoading(false);
+      // Reset file input
+      if (event.target) event.target.value = '';
+    }
+  };
+
   return (
     <div className="max-w-screen-xl mx-auto p-4 space-y-4">
       <h1 className="text-3xl font-bold">Debt Snowball Planner</h1>
@@ -385,16 +455,29 @@ export function DebtCalculator() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Debts</h3>
-              <Button onClick={addDebt} size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Debt
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleImportClick} size="sm" variant="outline">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Excel
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileImport}
+                  style={{ display: 'none' }}
+                />
+                <Button onClick={addDebt} size="sm" variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Debt
+                </Button>
+              </div>
             </div>
 
             {debts.map((debt, index) => (
               <Card key={index}>
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
                     <div className="space-y-2">
                       <Label>Name</Label>
                       <Input
@@ -452,6 +535,15 @@ export function DebtCalculator() {
                         placeholder="18.99"
                         value={debt.apr || ''}
                         onChange={(e) => updateDebt(index, 'apr', parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Due Date</Label>
+                      <Input
+                        type="text"
+                        placeholder="15th"
+                        value={debt.dueDate || ''}
+                        onChange={(e) => updateDebt(index, 'dueDate', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2 flex items-end">
