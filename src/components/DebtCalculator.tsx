@@ -228,6 +228,27 @@ export function DebtCalculator() {
     setDebts(debts.filter((_, i) => i !== index));
   };
 
+  const deleteAllDebts = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Delete all debts from database
+      await supabase.from('debts').delete().eq('user_id', user.id);
+      
+      // Reset to single empty debt
+      setDebts([{ name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "" }]);
+      
+      // Clear results
+      setResult(null);
+      
+      toast({ title: "Success", description: "All debts deleted" });
+    } catch (error: any) {
+      console.error('Error deleting all debts:', error);
+      toast({ title: "Error", description: "Failed to delete debts", variant: "destructive" });
+    }
+  };
+
   const compute = async (useStrategy?: Strategy) => {
     try {
       // Check for duplicate "last 4" values
@@ -495,6 +516,10 @@ export function DebtCalculator() {
                 <Button onClick={addDebt} size="sm" variant="outline">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Debt
+                </Button>
+                <Button onClick={deleteAllDebts} size="sm" variant="destructive">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete All
                 </Button>
               </div>
             </div>
