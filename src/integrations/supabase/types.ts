@@ -142,6 +142,42 @@ export type Database = {
           },
         ]
       }
+      plaid_item_status: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          last_webhook_at: string | null
+          last_webhook_code: string | null
+          needs_update: boolean
+          update_reason: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          last_webhook_at?: string | null
+          last_webhook_code?: string | null
+          needs_update?: boolean
+          update_reason?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          last_webhook_at?: string | null
+          last_webhook_code?: string | null
+          needs_update?: boolean
+          update_reason?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       plaid_items: {
         Row: {
           access_token: string

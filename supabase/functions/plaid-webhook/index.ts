@@ -63,21 +63,108 @@ serve(async (req) => {
 async function handleItemWebhook(supabase: any, payload: any) {
   console.log('Processing ITEM webhook:', payload.webhook_code);
   
+  // Get item info for user_id
+  const { data: items } = await supabase
+    .from('plaid_items')
+    .select('user_id')
+    .eq('item_id', payload.item_id)
+    .single();
+
+  if (!items) {
+    console.error('Item not found:', payload.item_id);
+    return;
+  }
+
+  const userId = items.user_id;
+  
   switch (payload.webhook_code) {
     case 'NEW_ACCOUNTS_AVAILABLE':
       console.log('New accounts available for item:', payload.item_id);
-      // Trigger account refresh
-      const { data: items } = await supabase
-        .from('plaid_items')
-        .select('access_token, user_id')
-        .eq('item_id', payload.item_id);
-      
-      if (items && items.length > 0) {
-        console.log('Found item, could trigger account refresh for user:', items[0].user_id);
-      }
+      // Mark item as needing update for new account selection
+      await supabase
+        .from('plaid_item_status')
+        .upsert({
+          user_id: userId,
+          item_id: payload.item_id,
+          needs_update: true,
+          update_reason: 'new_accounts_available',
+          last_webhook_code: payload.webhook_code,
+          last_webhook_at: new Date().toISOString(),
+        });
+      break;
+    
+    case 'PENDING_EXPIRATION':
+      console.log('Item pending expiration:', payload.item_id);
+      await supabase
+        .from('plaid_item_status')
+        .upsert({
+          user_id: userId,
+          item_id: payload.item_id,
+          needs_update: true,
+          update_reason: 'pending_expiration',
+          last_webhook_code: payload.webhook_code,
+          last_webhook_at: new Date().toISOString(),
+        });
+      break;
+    
+    case 'PENDING_DISCONNECT':
+      console.log('Item pending disconnect:', payload.item_id);
+      await supabase
+        .from('plaid_item_status')
+        .upsert({
+          user_id: userId,
+          item_id: payload.item_id,
+          needs_update: true,
+          update_reason: 'pending_disconnect',
+          last_webhook_code: payload.webhook_code,
+          last_webhook_at: new Date().toISOString(),
+        });
+      break;
+    
+    case 'USER_PERMISSION_REVOKED':
+      console.log('User permission revoked:', payload.item_id);
+      await supabase
+        .from('plaid_item_status')
+        .upsert({
+          user_id: userId,
+          item_id: payload.item_id,
+          needs_update: true,
+          update_reason: 'permission_revoked',
+          last_webhook_code: payload.webhook_code,
+          last_webhook_at: new Date().toISOString(),
+        });
+      break;
+    
+    case 'LOGIN_REPAIRED':
+      console.log('Login repaired for item:', payload.item_id);
+      // Clear the update requirement
+      await supabase
+        .from('plaid_item_status')
+        .upsert({
+          user_id: userId,
+          item_id: payload.item_id,
+          needs_update: false,
+          update_reason: null,
+          last_webhook_code: payload.webhook_code,
+          last_webhook_at: new Date().toISOString(),
+        });
       break;
     case 'ERROR':
       console.error('Item error:', payload.error);
+      // Check if it's ITEM_LOGIN_REQUIRED
+      if (payload.error?.error_code === 'ITEM_LOGIN_REQUIRED') {
+        console.log('Item login required:', payload.item_id);
+        await supabase
+          .from('plaid_item_status')
+          .upsert({
+            user_id: userId,
+            item_id: payload.item_id,
+            needs_update: true,
+            update_reason: 'login_required',
+            last_webhook_code: payload.webhook_code,
+            last_webhook_at: new Date().toISOString(),
+          });
+      }
       break;
     default:
       console.log('Unhandled ITEM webhook code:', payload.webhook_code);
