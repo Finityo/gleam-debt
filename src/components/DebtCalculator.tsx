@@ -440,16 +440,10 @@ export function DebtCalculator() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Snowball vs Avalanche Strategy</CardTitle>
-                  <div className="flex gap-2">
-                    <Button onClick={exportCSV} variant="outline" size="sm" disabled={isLoading}>
-                      <Download className="h-4 w-4 mr-2" />
-                      CSV
-                    </Button>
-                    <Button onClick={exportXLSX} variant="outline" size="sm" disabled={isLoading}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Excel
-                    </Button>
-                  </div>
+                  <Button onClick={exportXLSX} variant="outline" size="sm" disabled={isLoading}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Excel
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
