@@ -72,7 +72,7 @@ serve(async (req) => {
 
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
-    const PLAID_ENV = 'sandbox';
+    const PLAID_ENV = 'production';
 
     // Exchange public token for access token
     const exchangeResponse = await fetch(`https://${PLAID_ENV}.plaid.com/item/public_token/exchange`, {
