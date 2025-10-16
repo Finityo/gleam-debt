@@ -528,28 +528,92 @@ export function DebtCalculator() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Month</TableHead>
-                        <TableHead className="text-right">Monthly Payment</TableHead>
-                        <TableHead className="text-right">Cumulative Paid</TableHead>
-                        <TableHead className="text-right">Remaining Balance</TableHead>
+                        <TableHead className="sticky left-0 bg-background z-10">Month</TableHead>
+                        {result.rows.map((debt) => (
+                          <TableHead key={debt.index} className="text-center min-w-[200px]">
+                            <div className="font-semibold">{debt.name}</div>
+                            {debt.last4 && <div className="text-xs text-muted-foreground">({debt.last4})</div>}
+                          </TableHead>
+                        ))}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {result.rows.map((row, idx) => {
-                        const cumulativePaid = result.rows
-                          .slice(0, idx + 1)
-                          .reduce((sum, r) => sum + r.totalPayment, 0);
-                        const remaining = result.totals.sumBalance - cumulativePaid;
+                      {(() => {
+                        const maxMonths = Math.max(...result.rows.map(r => r.cumulativeMonths));
+                        const monthRows = [];
                         
-                        return (
-                          <TableRow key={idx}>
-                            <TableCell>Month {row.cumulativeMonths}</TableCell>
-                            <TableCell className="text-right">${row.totalPayment.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">${cumulativePaid.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">${Math.max(0, remaining).toFixed(2)}</TableCell>
-                          </TableRow>
-                        );
-                      })}
+                        for (let month = 1; month <= maxMonths; month++) {
+                          monthRows.push(
+                            <TableRow key={month}>
+                              <TableCell className="sticky left-0 bg-background z-10 font-medium">
+                                Month {month}
+                              </TableCell>
+                              {result.rows.map((debt, debtIdx) => {
+                                // Calculate the start month for this debt (when previous debts are paid off)
+                                const startMonth = debtIdx === 0 ? 1 : result.rows[debtIdx - 1].cumulativeMonths + 1;
+                                const endMonth = debt.cumulativeMonths;
+                                
+                                // Check if this month is within this debt's payoff period
+                                if (month < startMonth || month > endMonth) {
+                                  return (
+                                    <TableCell key={debt.index} className="text-center bg-muted/30">
+                                      <div className="text-xs text-muted-foreground">-</div>
+                                    </TableCell>
+                                  );
+                                }
+                                
+                                // Calculate month within this debt's payoff period
+                                const debtMonth = month - startMonth + 1;
+                                const monthlyPayment = debt.totalPayment;
+                                const monthlyRate = debt.monthlyRate;
+                                
+                                // Calculate remaining balance at start of this month
+                                let remainingBalance = debt.balance;
+                                for (let m = 1; m < debtMonth; m++) {
+                                  const interest = remainingBalance * monthlyRate;
+                                  const principal = monthlyPayment - interest;
+                                  remainingBalance = Math.max(0, remainingBalance - principal);
+                                }
+                                
+                                // Calculate this month's payment breakdown
+                                const interest = remainingBalance * monthlyRate;
+                                const principal = Math.min(monthlyPayment - interest, remainingBalance);
+                                const actualPayment = principal + interest;
+                                
+                                // Calculate cumulative paid for this debt up to this month
+                                let cumulativePaid = 0;
+                                let tempBalance = debt.balance;
+                                for (let m = 1; m <= debtMonth; m++) {
+                                  const tempInterest = tempBalance * monthlyRate;
+                                  const tempPrincipal = Math.min(monthlyPayment - tempInterest, tempBalance);
+                                  cumulativePaid += tempPrincipal + tempInterest;
+                                  tempBalance = Math.max(0, tempBalance - tempPrincipal);
+                                }
+                                
+                                const newBalance = Math.max(0, remainingBalance - principal);
+                                
+                                return (
+                                  <TableCell key={debt.index} className="text-center p-2">
+                                    <div className="text-xs space-y-1">
+                                      <div className="font-medium text-primary">
+                                        ${actualPayment.toFixed(2)}
+                                      </div>
+                                      <div className="text-muted-foreground">
+                                        Paid: ${cumulativePaid.toFixed(2)}
+                                      </div>
+                                      <div className="text-muted-foreground">
+                                        Left: ${newBalance.toFixed(2)}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                );
+                              })}
+                            </TableRow>
+                          );
+                        }
+                        
+                        return monthRows;
+                      })()}
                     </TableBody>
                   </Table>
                 </div>
