@@ -37,6 +37,21 @@ interface DebtPlanRow {
   dueDate?: string | null;
 }
 
+interface MonthlySnapshot {
+  month: number;
+  debts: Array<{
+    name: string;
+    last4?: string;
+    payment: number;
+    interest: number;
+    principal: number;
+    endBalance: number;
+  }>;
+  snowballExtra: number;
+  totalPaidThisMonth: number;
+  totalRemaining: number;
+}
+
 interface ComputeResult {
   rows: DebtPlanRow[];
   totals: {
@@ -47,7 +62,10 @@ interface ComputeResult {
     extraMonthly: number;
     oneTime: number;
     totalMonths: number;
+    debtFreeMonth?: number;
   };
+  schedule?: MonthlySnapshot[];
+  payoffOrder?: string[];
 }
 
 export function DebtCalculator() {
@@ -547,139 +565,68 @@ export function DebtCalculator() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="sticky left-0 bg-background z-10">Month</TableHead>
+                        <TableHead className="text-center min-w-[120px]">Snowball Total</TableHead>
                         {result.rows.map((debt) => (
                           <TableHead key={debt.index} className="text-center min-w-[200px]">
                             <div className="font-semibold">{debt.name}</div>
                             {debt.last4 && <div className="text-xs text-muted-foreground">({debt.last4})</div>}
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Bal: ${debt.balance.toFixed(2)} | Min: ${debt.minPayment.toFixed(2)} | APR: {(debt.apr * 100).toFixed(1)}%
+                            </div>
                           </TableHead>
                         ))}
+                        <TableHead className="text-center min-w-[120px]">Remaining</TableHead>
                       </TableRow>
                     </TableHeader>
-                     <TableBody>
-                      {(() => {
-                        const maxMonths = Math.max(...result.rows.map(r => r.cumulativeMonths));
-                        const monthRows = [];
-                        const extraPayment = result.totals.extraMonthly;
-                        const oneTimePayment = result.totals.oneTime;
-                        
-                        // Initialize debt tracking - use actual entered debt data
-                        const debtsTracking = result.rows.map(d => {
-                          // Find the matching debt from the entered debts
-                          const enteredDebt = debts.find(ed => 
-                            ed.name === d.name && ed.balance === d.balance
-                          );
-                          
-                          return {
-                            name: enteredDebt?.name || d.name,
-                            last4: enteredDebt?.last4 || d.last4,
-                            balance: d.balance,
-                            minPayment: d.minPayment,
-                            apr: d.apr,
-                            monthlyRate: d.monthlyRate,
-                            snowballPayment: 0,
-                            totalInterest: 0,
-                            totalPaid: 0,
-                            originalBalance: d.balance
-                          };
-                        });
-                        
-                        // Apply one-time payment to first debt
-                        if (oneTimePayment > 0 && debtsTracking.length > 0) {
-                          debtsTracking[0].balance = Math.max(0, debtsTracking[0].balance - oneTimePayment);
-                        }
-                        
-                        // Generate monthly rows
-                        for (let month = 1; month <= maxMonths; month++) {
-                          const monthData = [];
-                          
-                          for (let i = 0; i < debtsTracking.length; i++) {
-                            const debt = debtsTracking[i];
-                            
-                            if (debt.balance > 0) {
-                              // Calculate interest for this month
-                              const interest = debt.balance * debt.monthlyRate;
-                              
-                              // Calculate payment (min + snowball, but not more than balance + interest)
-                              const payment = Math.min(
-                                debt.minPayment + debt.snowballPayment,
-                                debt.balance + interest
-                              );
-                              
-                              // Apply payment
-                              const principalPayment = payment - interest;
-                              debt.balance = Math.max(0, debt.balance - principalPayment);
-                              
-                              // Track totals
-                              debt.totalInterest += interest;
-                              debt.totalPaid += payment;
-                              
-                              // Calculate cumulative paid
-                              const cumulativePaid = debt.originalBalance - debt.balance;
-                              
-                              monthData.push({
-                                payment: payment,
-                                cumulativePaid: cumulativePaid,
-                                remainingBalance: debt.balance,
-                                isPaidOff: debt.balance === 0
-                              });
-                              
-                              // If debt is paid off this month, snowball to next unpaid debt
-                              if (debt.balance === 0) {
-                                const snowballAmount = debt.minPayment + debt.snowballPayment;
-                                
-                                // Find next unpaid debt
-                                for (let j = i + 1; j < debtsTracking.length; j++) {
-                                  if (debtsTracking[j].balance > 0) {
-                                    debtsTracking[j].snowballPayment += snowballAmount;
-                                    break;
-                                  }
-                                }
-                              }
-                            } else {
-                              // Already paid off
-                              monthData.push({
-                                payment: 0,
-                                cumulativePaid: debt.originalBalance,
-                                remainingBalance: 0,
-                                isPaidOff: true
-                              });
-                            }
-                          }
-                          
-                          // Render the month row
-                          monthRows.push(
-                            <TableRow key={month}>
-                              <TableCell className="sticky left-0 bg-background z-10 font-medium">
-                                Month {month}
-                              </TableCell>
-                              {monthData.map((data, idx) => (
-                                <TableCell key={idx} className={`text-center p-2 ${data.isPaidOff ? 'bg-muted/30' : ''}`}>
-                                  {data.isPaidOff && data.payment === 0 ? (
-                                    <div className="text-xs text-muted-foreground">Paid Off</div>
-                                  ) : (
-                                    <div className="text-xs space-y-1">
-                                      <div className="font-medium text-primary">
-                                        ${data.payment.toFixed(2)}
-                                      </div>
-                                      <div className="text-muted-foreground">
-                                        Paid: ${data.cumulativePaid.toFixed(2)}
-                                      </div>
-                                      <div className="text-muted-foreground">
-                                        Left: ${data.remainingBalance.toFixed(2)}
-                                      </div>
-                                    </div>
-                                  )}
-                                </TableCell>
-                              ))}
-                            </TableRow>
-                          );
-                        }
-                        
-                        return monthRows;
-                      })()}
+                    <TableBody>
+                      {result.schedule && result.schedule.map((snapshot) => (
+                        <TableRow key={snapshot.month}>
+                          <TableCell className="sticky left-0 bg-background z-10 font-medium">
+                            Month {snapshot.month}
+                          </TableCell>
+                          <TableCell className="text-center font-medium text-primary">
+                            ${snapshot.snowballExtra.toFixed(2)}
+                          </TableCell>
+                          {snapshot.debts.map((debtData, idx) => (
+                            <TableCell key={idx} className={`text-center p-2 ${debtData.endBalance === 0 ? 'bg-muted/30' : ''}`}>
+                              {debtData.endBalance === 0 && debtData.payment === 0 ? (
+                                <div className="text-xs text-muted-foreground">Paid Off</div>
+                              ) : (
+                                <div className="text-xs space-y-1">
+                                  <div className="font-medium text-primary">
+                                    ${debtData.payment.toFixed(2)}
+                                  </div>
+                                  <div className="text-muted-foreground">
+                                    Int: ${debtData.interest.toFixed(2)}
+                                  </div>
+                                  <div className="text-muted-foreground">
+                                    Left: ${debtData.endBalance.toFixed(2)}
+                                  </div>
+                                </div>
+                              )}
+                            </TableCell>
+                          ))}
+                          <TableCell className="text-center font-medium">
+                            ${snapshot.totalRemaining.toFixed(2)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </div>
+                {result.payoffOrder && result.payoffOrder.length > 0 && (
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <h3 className="font-semibold mb-2">Payoff Order</h3>
+                    <div className="text-sm">
+                      {result.payoffOrder.map((name, idx) => (
+                        <span key={idx}>
+                          {idx + 1}. {name}
+                          {idx < result.payoffOrder!.length - 1 ? ' → ' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

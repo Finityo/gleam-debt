@@ -71,9 +71,17 @@ function sortDebts(debts: DebtInput[], strategy: Strategy): DebtInput[] {
       return (b.minPayment || 0) - (a.minPayment || 0);
     });
   } else {
+    // Snowball: sort by balance ascending
+    // If within $5, break ties by higher APR first
     copy.sort((a, b) => {
-      if (a.balance !== b.balance) return a.balance - b.balance;
-      return (b.minPayment || 0) - (a.minPayment || 0);
+      const balanceDiff = Math.abs(a.balance - b.balance);
+      if (balanceDiff <= 5) {
+        // Within $5, prioritize higher APR
+        const aAPR = normalizeAPR(a.apr);
+        const bAPR = normalizeAPR(b.apr);
+        return bAPR - aAPR;
+      }
+      return a.balance - b.balance;
     });
   }
   return copy;
@@ -87,12 +95,28 @@ function monthsToPayoff(balance: number, payment: number, monthlyRate: number): 
   return Math.ceil(months);
 }
 
-function computePlan(req: ComputeRequest) {
-  const extra = Math.max(0, req.extraMonthly || 0);
-  const oneTime = Math.max(0, req.oneTime || 0);
+interface MonthlySnapshot {
+  month: number;
+  debts: Array<{
+    name: string;
+    last4?: string;
+    payment: number;
+    interest: number;
+    principal: number;
+    endBalance: number;
+  }>;
+  snowballExtra: number;
+  totalPaidThisMonth: number;
+  totalRemaining: number;
+}
 
+function computePlan(req: ComputeRequest) {
+  const userExtraBudget = Math.max(0, req.extraMonthly || 0);
+  const oneTimePayment = Math.max(0, req.oneTime || 0);
+
+  // Filter: only debts with balance > 0 and valid name
   const cleaned = req.debts
-    .filter(d => d.name?.trim())
+    .filter(d => d.name?.trim() && d.balance > 0)
     .map(d => ({
       ...d,
       apr: normalizeAPR(d.apr),
@@ -100,38 +124,134 @@ function computePlan(req: ComputeRequest) {
       balance: Math.max(0, d.balance || 0)
     }));
 
+  // Sort according to strategy
   const ordered = sortDebts(cleaned, req.strategy);
 
-  const rows: DebtPlanRow[] = [];
-  let cumMin = 0;
-  let cumMonths = 0;
+  // Initialize tracking for each debt
+  const debtsTracking = ordered.map(d => ({
+    ...d,
+    currentBalance: d.balance,
+    totalInterest: 0,
+    totalPaid: 0,
+    paidOffMonth: 0
+  }));
 
-  ordered.forEach((d, i) => {
-    cumMin += d.minPayment;
-    const monthlyRate = d.apr > 0 ? d.apr / 12 : 0;
-    const totalPayment = extra + cumMin;
+  // Apply one-time payment to first debt
+  if (oneTimePayment > 0 && debtsTracking.length > 0) {
+    debtsTracking[0].currentBalance = Math.max(0, debtsTracking[0].currentBalance - oneTimePayment);
+  }
 
-    const effectiveBalance = i === 0 ? Math.max(0, d.balance - oneTime) : d.balance;
+  let snowballExtra = userExtraBudget;
+  const schedule: MonthlySnapshot[] = [];
+  const payoffOrder: string[] = [];
+  let month = 1;
+  const maxMonths = 360; // safety limit
 
-    const m = monthsToPayoff(effectiveBalance, totalPayment, monthlyRate);
-    cumMonths += m;
+  // Monthly loop
+  while (month <= maxMonths) {
+    const monthSnapshot: MonthlySnapshot = {
+      month,
+      debts: [],
+      snowballExtra,
+      totalPaidThisMonth: 0,
+      totalRemaining: 0
+    };
 
+    let anyDebtRemaining = false;
+    let currentSmallestIndex = -1;
+
+    // Find the current smallest unpaid debt
+    for (let i = 0; i < debtsTracking.length; i++) {
+      if (debtsTracking[i].currentBalance > 0) {
+        currentSmallestIndex = i;
+        anyDebtRemaining = true;
+        break;
+      }
+    }
+
+    if (!anyDebtRemaining) break;
+
+    // Process each debt
+    for (let i = 0; i < debtsTracking.length; i++) {
+      const debt = debtsTracking[i];
+      
+      if (debt.currentBalance <= 0) {
+        monthSnapshot.debts.push({
+          name: debt.name,
+          last4: debt.last4,
+          payment: 0,
+          interest: 0,
+          principal: 0,
+          endBalance: 0
+        });
+        continue;
+      }
+
+      const monthlyRate = debt.apr / 12;
+      const interest = debt.currentBalance * monthlyRate;
+      
+      // Determine target payment
+      const targetPayment = i === currentSmallestIndex 
+        ? debt.minPayment + snowballExtra 
+        : debt.minPayment;
+
+      // Calculate actual payment (can't exceed balance + interest)
+      const actualPayment = Math.min(targetPayment, debt.currentBalance + interest);
+      const principal = actualPayment - interest;
+
+      // Update balance
+      const newBalance = Math.max(0, debt.currentBalance - principal);
+      
+      monthSnapshot.debts.push({
+        name: debt.name,
+        last4: debt.last4,
+        payment: actualPayment,
+        interest,
+        principal,
+        endBalance: newBalance
+      });
+
+      debt.currentBalance = newBalance;
+      debt.totalInterest += interest;
+      debt.totalPaid += actualPayment;
+      monthSnapshot.totalPaidThisMonth += actualPayment;
+
+      // Check if debt was paid off this month
+      if (debt.currentBalance === 0 && debt.paidOffMonth === 0) {
+        debt.paidOffMonth = month;
+        payoffOrder.push(debt.name);
+        // Roll this debt's payment into snowballExtra
+        snowballExtra += actualPayment;
+      }
+    }
+
+    // Calculate total remaining
+    monthSnapshot.totalRemaining = debtsTracking.reduce((sum, d) => sum + d.currentBalance, 0);
+    schedule.push(monthSnapshot);
+
+    if (monthSnapshot.totalRemaining === 0) break;
+    month++;
+  }
+
+  // Build output rows for compatibility
+  const rows: DebtPlanRow[] = ordered.map((d, i) => {
+    const tracked = debtsTracking[i];
     const label = d.last4 ? `${d.name} (${d.last4})` : d.name;
-
-    rows.push({
+    
+    return {
       index: i + 1,
       label,
       name: d.name,
       last4: d.last4,
-      balance: effectiveBalance,
+      balance: d.balance - (i === 0 ? oneTimePayment : 0),
       minPayment: d.minPayment,
       apr: d.apr,
-      monthlyRate,
-      totalPayment,
-      monthsToPayoff: m,
-      cumulativeMonths: cumMonths,
+      monthlyRate: d.apr / 12,
+      totalPayment: 0, // legacy field
+      monthsToPayoff: tracked.paidOffMonth,
+      cumulativeMonths: tracked.paidOffMonth,
       dueDate: d.dueDate ?? null
-    });
+    };
   });
 
   const totals = {
@@ -139,12 +259,13 @@ function computePlan(req: ComputeRequest) {
     sumBalance: rows.reduce((s, r) => s + r.balance, 0),
     sumMinPayment: rows.reduce((s, r) => s + r.minPayment, 0),
     strategy: req.strategy,
-    extraMonthly: extra,
-    oneTime,
-    totalMonths: rows.at(-1)?.cumulativeMonths ?? 0
+    extraMonthly: userExtraBudget,
+    oneTime: oneTimePayment,
+    totalMonths: schedule.length,
+    debtFreeMonth: schedule.length
   };
 
-  return { rows, totals };
+  return { rows, totals, schedule, payoffOrder };
 }
 
 serve(async (req) => {
