@@ -181,15 +181,16 @@ export function DebtCalculator() {
     setDebts(debts.filter((_, i) => i !== index));
   };
 
-  const compute = async () => {
+  const compute = async (useStrategy?: Strategy) => {
     try {
       setIsLoading(true);
+      const computeStrategy = useStrategy || strategy;
       const { data, error } = await supabase.functions.invoke('compute-debt-plan', {
         body: {
           debts: debts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
           extraMonthly: Number(extra) || 0,
           oneTime: Number(oneTime) || 0,
-          strategy
+          strategy: computeStrategy
         }
       });
 
@@ -201,6 +202,13 @@ export function DebtCalculator() {
       toast({ title: "Error", description: "Failed to compute debt plan", variant: "destructive" });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleStrategyChange = async (newStrategy: Strategy) => {
+    setStrategy(newStrategy);
+    if (result) {
+      await compute(newStrategy);
     }
   };
 
@@ -420,7 +428,7 @@ export function DebtCalculator() {
             ))}
           </div>
 
-          <Button onClick={compute} disabled={isLoading} className="w-full">
+          <Button onClick={() => compute()} disabled={isLoading} className="w-full">
             {isLoading ? 'Computing...' : 'Compute Plan'}
           </Button>
         </CardContent>
@@ -438,8 +446,19 @@ export function DebtCalculator() {
           <TabsContent value="snowball">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Snowball vs Avalanche Strategy</CardTitle>
+                <div className="flex justify-between items-center gap-4">
+                  <div className="flex items-center gap-4 flex-1">
+                    <CardTitle>Strategy</CardTitle>
+                    <Select value={strategy} onValueChange={(value: Strategy) => handleStrategyChange(value)}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="snowball">Snowball</SelectItem>
+                        <SelectItem value="avalanche">Avalanche</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button onClick={exportXLSX} variant="outline" size="sm" disabled={isLoading}>
                     <Download className="h-4 w-4 mr-2" />
                     Excel
