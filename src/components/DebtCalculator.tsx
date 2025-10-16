@@ -505,6 +505,7 @@ export function DebtCalculator() {
                         value={debt.name}
                         onChange={(e) => updateDebt(index, 'name', e.target.value)}
                         placeholder="Credit Card"
+                        className="placeholder:text-muted-foreground/50"
                       />
                     </div>
                     <div className="space-y-2">
@@ -514,6 +515,7 @@ export function DebtCalculator() {
                         onChange={(e) => updateDebt(index, 'last4', e.target.value)}
                         maxLength={4}
                         placeholder="1234"
+                        className="placeholder:text-muted-foreground/50"
                       />
                     </div>
                     <div className="space-y-2">
@@ -525,7 +527,7 @@ export function DebtCalculator() {
                           step="0.01"
                           min="0"
                           placeholder="0.00"
-                          className="pl-7"
+                          className="pl-7 placeholder:text-muted-foreground/50"
                           value={debt.balance || ''}
                           onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
                         />
@@ -540,7 +542,7 @@ export function DebtCalculator() {
                           step="0.01"
                           min="0"
                           placeholder="0.00"
-                          className="pl-7"
+                          className="pl-7 placeholder:text-muted-foreground/50"
                           value={debt.minPayment || ''}
                           onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
                         />
@@ -554,6 +556,7 @@ export function DebtCalculator() {
                         min="0"
                         max="100"
                         placeholder="18.99"
+                        className="placeholder:text-muted-foreground/50"
                         value={debt.apr || ''}
                         onChange={(e) => updateDebt(index, 'apr', parseFloat(e.target.value) || 0)}
                       />
@@ -562,9 +565,16 @@ export function DebtCalculator() {
                       <Label>Due Date</Label>
                       <Input
                         type="text"
-                        placeholder="15th"
+                        placeholder="Due by 15"
+                        className="placeholder:text-muted-foreground/50"
                         value={debt.dueDate || ''}
-                        onChange={(e) => updateDebt(index, 'dueDate', e.target.value)}
+                        onChange={(e) => {
+                          // Extract just the day number from any format
+                          const value = e.target.value.trim();
+                          const dayMatch = value.match(/\d+/);
+                          const day = dayMatch ? parseInt(dayMatch[0]) : '';
+                          updateDebt(index, 'dueDate', day.toString());
+                        }}
                       />
                     </div>
                     <div className="space-y-2 flex items-end">
