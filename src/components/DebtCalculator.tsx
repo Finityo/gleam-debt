@@ -541,6 +541,11 @@ export function DebtCalculator() {
                       {(() => {
                         const maxMonths = Math.max(...result.rows.map(r => r.cumulativeMonths));
                         const monthRows = [];
+                        const extraPayment = result.totals.extraMonthly;
+                        
+                        // Track running balances for each debt
+                        const debtBalances = result.rows.map(d => d.balance);
+                        const debtPaidOff = result.rows.map(() => false);
                         
                         for (let month = 1; month <= maxMonths; month++) {
                           monthRows.push(
@@ -549,48 +554,51 @@ export function DebtCalculator() {
                                 Month {month}
                               </TableCell>
                               {result.rows.map((debt, debtIdx) => {
-                                // Calculate the start month for this debt (when previous debts are paid off)
-                                const startMonth = debtIdx === 0 ? 1 : result.rows[debtIdx - 1].cumulativeMonths + 1;
-                                const endMonth = debt.cumulativeMonths;
-                                
-                                // Check if this month is within this debt's payoff period
-                                if (month < startMonth || month > endMonth) {
+                                // If this debt is already paid off, show empty cell
+                                if (debtPaidOff[debtIdx]) {
                                   return (
                                     <TableCell key={debt.index} className="text-center bg-muted/30">
-                                      <div className="text-xs text-muted-foreground">-</div>
+                                      <div className="text-xs text-muted-foreground">Paid Off</div>
                                     </TableCell>
                                   );
                                 }
                                 
-                                // Calculate month within this debt's payoff period
-                                const debtMonth = month - startMonth + 1;
-                                const monthlyPayment = debt.totalPayment;
+                                const currentBalance = debtBalances[debtIdx];
                                 const monthlyRate = debt.monthlyRate;
                                 
-                                // Calculate remaining balance at start of this month
-                                let remainingBalance = debt.balance;
-                                for (let m = 1; m < debtMonth; m++) {
-                                  const interest = remainingBalance * monthlyRate;
-                                  const principal = monthlyPayment - interest;
-                                  remainingBalance = Math.max(0, remainingBalance - principal);
+                                // Calculate how much extra payment is available (snowball)
+                                let snowballAmount = extraPayment;
+                                for (let i = 0; i < debtIdx; i++) {
+                                  if (debtPaidOff[i]) {
+                                    snowballAmount += result.rows[i].minPayment;
+                                  }
                                 }
                                 
-                                // Calculate this month's payment breakdown
-                                const interest = remainingBalance * monthlyRate;
-                                const principal = Math.min(monthlyPayment - interest, remainingBalance);
+                                // Determine payment for this debt this month
+                                let monthlyPayment = debt.minPayment;
+                                
+                                // Find the first unpaid debt to receive the snowball payment
+                                const firstUnpaidIdx = debtPaidOff.findIndex(paid => !paid);
+                                if (debtIdx === firstUnpaidIdx) {
+                                  monthlyPayment += snowballAmount;
+                                }
+                                
+                                // Calculate interest and principal
+                                const interest = currentBalance * monthlyRate;
+                                const principal = Math.min(monthlyPayment - interest, currentBalance);
                                 const actualPayment = principal + interest;
                                 
-                                // Calculate cumulative paid for this debt up to this month
-                                let cumulativePaid = 0;
-                                let tempBalance = debt.balance;
-                                for (let m = 1; m <= debtMonth; m++) {
-                                  const tempInterest = tempBalance * monthlyRate;
-                                  const tempPrincipal = Math.min(monthlyPayment - tempInterest, tempBalance);
-                                  cumulativePaid += tempPrincipal + tempInterest;
-                                  tempBalance = Math.max(0, tempBalance - tempPrincipal);
+                                // Update balance
+                                const newBalance = Math.max(0, currentBalance - principal);
+                                debtBalances[debtIdx] = newBalance;
+                                
+                                // Mark as paid off if balance reaches 0
+                                if (newBalance === 0) {
+                                  debtPaidOff[debtIdx] = true;
                                 }
                                 
-                                const newBalance = Math.max(0, remainingBalance - principal);
+                                // Calculate cumulative paid
+                                const cumulativePaid = debt.balance - newBalance;
                                 
                                 return (
                                   <TableCell key={debt.index} className="text-center p-2">
