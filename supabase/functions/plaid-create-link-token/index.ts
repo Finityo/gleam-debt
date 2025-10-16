@@ -44,7 +44,7 @@ serve(async (req) => {
           client_user_id: user.id,
         },
         client_name: 'Debt Management App',
-        products: ['auth', 'transactions'],
+        products: ['auth', 'liabilities'],
         country_codes: ['US'],
         language: 'en',
       }),
