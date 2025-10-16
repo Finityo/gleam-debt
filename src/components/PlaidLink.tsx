@@ -40,6 +40,16 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
 
       if (error) throw error;
       
+      // Check if it's a duplicate
+      if (data?.duplicate) {
+        toast({
+          title: 'Already Connected',
+          description: data.error || 'This bank is already connected to your account.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
       toast({
         title: 'Success!',
         description: 'Your bank account has been connected successfully.',
@@ -54,7 +64,7 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to connect bank account. Please try again.',
+        description: error.message || 'Failed to connect bank account. Please try again.',
         variant: 'destructive',
       });
     }

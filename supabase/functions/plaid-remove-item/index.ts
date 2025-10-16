@@ -25,10 +25,17 @@ serve(async (req) => {
     const { data: { user } } = await supabaseClient.auth.getUser();
     
     if (!user) {
+      console.error('Unauthorized item removal request - no user');
       throw new Error('Unauthorized');
     }
 
     const { item_id } = await req.json();
+
+    console.log('Item removal initiated:', {
+      user_id: user.id,
+      item_id: item_id,
+      timestamp: new Date().toISOString()
+    });
 
     if (!item_id) {
       throw new Error('item_id is required');
@@ -43,8 +50,18 @@ serve(async (req) => {
       .single();
 
     if (itemError || !item) {
+      console.error('Item not found for removal:', {
+        user_id: user.id,
+        item_id: item_id,
+        error: itemError?.message
+      });
       throw new Error('Item not found or access denied');
     }
+
+    console.log('Item found, removing from Plaid:', {
+      user_id: user.id,
+      item_id: item_id
+    });
 
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
@@ -66,11 +83,21 @@ serve(async (req) => {
     const plaidData = await plaidResponse.json();
 
     if (!plaidResponse.ok) {
-      console.error('Plaid item/remove error:', plaidData);
+      console.error('Plaid item removal failed:', {
+        user_id: user.id,
+        item_id: item_id,
+        error_code: plaidData.error_code,
+        error_message: plaidData.error_message,
+        request_id: plaidData.request_id
+      });
       throw new Error(plaidData.error_message || 'Failed to remove item from Plaid');
     }
 
-    console.log('Item removed from Plaid:', item_id);
+    console.log('Item removed from Plaid successfully:', {
+      user_id: user.id,
+      item_id: item_id,
+      removed_item_id: plaidData.removed_item_id
+    });
 
     // Delete all associated accounts first (foreign key constraint)
     const { error: accountsDeleteError } = await supabaseClient
@@ -79,11 +106,18 @@ serve(async (req) => {
       .eq('plaid_item_id', item.id);
 
     if (accountsDeleteError) {
-      console.error('Error deleting accounts:', accountsDeleteError);
+      console.error('Failed to delete accounts:', {
+        user_id: user.id,
+        item_id: item_id,
+        error: accountsDeleteError.message
+      });
       throw new Error('Failed to delete associated accounts');
     }
 
-    console.log('Deleted accounts for item:', item_id);
+    console.log('Accounts deleted:', {
+      user_id: user.id,
+      item_id: item_id
+    });
 
     // Delete item status tracking
     const { error: statusDeleteError } = await supabaseClient
@@ -103,11 +137,19 @@ serve(async (req) => {
       .eq('id', item.id);
 
     if (itemDeleteError) {
-      console.error('Error deleting item:', itemDeleteError);
+      console.error('Failed to delete item from database:', {
+        user_id: user.id,
+        item_id: item_id,
+        error: itemDeleteError.message
+      });
       throw new Error('Failed to delete item');
     }
 
-    console.log('Item and all associated data deleted for user:', user.id);
+    console.log('Item removal complete:', {
+      user_id: user.id,
+      item_id: item_id,
+      timestamp: new Date().toISOString()
+    });
 
     return new Response(
       JSON.stringify({ 
@@ -121,7 +163,12 @@ serve(async (req) => {
       }
     );
   } catch (error: any) {
-    console.error('Error in plaid-remove-item:', error);
+    console.error('Item removal error:', {
+      error_message: error.message,
+      error_stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

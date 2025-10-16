@@ -25,8 +25,14 @@ serve(async (req) => {
     const { data: { user } } = await supabaseClient.auth.getUser();
     
     if (!user) {
+      console.error('Unauthorized link token request - no user');
       throw new Error('Unauthorized');
     }
+
+    console.log('Creating link token:', {
+      user_id: user.id,
+      timestamp: new Date().toISOString()
+    });
 
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
@@ -54,17 +60,31 @@ serve(async (req) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Plaid API error:', data);
+      console.error('Plaid link token creation failed:', {
+        user_id: user.id,
+        error_code: data.error_code,
+        error_message: data.error_message,
+        request_id: data.request_id
+      });
       throw new Error(data.error_message || 'Failed to create link token');
     }
 
-    console.log('Link token created successfully for user:', user.id);
+    console.log('Link token created successfully:', {
+      user_id: user.id,
+      expiration: data.expiration,
+      timestamp: new Date().toISOString()
+    });
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
-    console.error('Error in plaid-create-link-token:', error);
+    console.error('Link token creation error:', {
+      error_message: error.message,
+      error_stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

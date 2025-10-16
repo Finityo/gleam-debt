@@ -30,8 +30,44 @@ serve(async (req) => {
 
     const { public_token, metadata } = await req.json();
 
+    console.log('Token exchange initiated:', {
+      user_id: user.id,
+      institution_id: metadata?.institution?.institution_id,
+      institution_name: metadata?.institution?.name,
+      account_count: metadata?.accounts?.length,
+      timestamp: new Date().toISOString()
+    });
+
     if (!public_token) {
       throw new Error('public_token is required');
+    }
+
+    // Check for duplicate items (same institution)
+    if (metadata?.institution?.institution_id) {
+      const { data: existingItems } = await supabaseClient
+        .from('plaid_items')
+        .select('institution_id, institution_name')
+        .eq('user_id', user.id)
+        .eq('institution_id', metadata.institution.institution_id);
+
+      if (existingItems && existingItems.length > 0) {
+        console.warn('Duplicate item detected:', {
+          user_id: user.id,
+          institution_id: metadata.institution.institution_id,
+          existing_count: existingItems.length
+        });
+        
+        return new Response(
+          JSON.stringify({ 
+            error: 'This bank account is already connected. Please select a different institution.',
+            duplicate: true
+          }),
+          {
+            status: 409,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
     }
 
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
@@ -86,9 +122,20 @@ serve(async (req) => {
     const accountsData = await accountsResponse.json();
 
     if (!accountsResponse.ok) {
-      console.error('Plaid accounts error:', accountsData);
+      console.error('Failed to fetch accounts from Plaid:', {
+        user_id: user.id,
+        item_id: exchangeData.item_id,
+        error_code: accountsData.error_code,
+        error_message: accountsData.error_message
+      });
       throw new Error(accountsData.error_message || 'Failed to fetch accounts');
     }
+
+    console.log('Accounts fetched from Plaid:', {
+      user_id: user.id,
+      item_id: exchangeData.item_id,
+      account_count: accountsData.accounts?.length
+    });
 
     // Get the plaid_item_id we just inserted
     const { data: plaidItems } = await supabaseClient
