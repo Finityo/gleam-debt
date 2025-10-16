@@ -542,80 +542,110 @@ export function DebtCalculator() {
                         const maxMonths = Math.max(...result.rows.map(r => r.cumulativeMonths));
                         const monthRows = [];
                         const extraPayment = result.totals.extraMonthly;
+                        const oneTimePayment = result.totals.oneTime;
                         
-                        // Track running balances for each debt
-                        const debtBalances = result.rows.map(d => d.balance);
-                        const debtPaidOff = result.rows.map(() => false);
+                        // Initialize debt tracking
+                        const debts = result.rows.map(d => ({
+                          name: d.name,
+                          last4: d.last4,
+                          balance: d.balance,
+                          minPayment: d.minPayment,
+                          apr: d.apr,
+                          monthlyRate: d.monthlyRate,
+                          snowballPayment: 0,
+                          totalInterest: 0,
+                          totalPaid: 0,
+                          originalBalance: d.balance
+                        }));
                         
+                        // Apply one-time payment to first debt
+                        if (oneTimePayment > 0 && debts.length > 0) {
+                          debts[0].balance = Math.max(0, debts[0].balance - oneTimePayment);
+                        }
+                        
+                        // Generate monthly rows
                         for (let month = 1; month <= maxMonths; month++) {
+                          const monthData = [];
+                          
+                          for (let i = 0; i < debts.length; i++) {
+                            const debt = debts[i];
+                            
+                            if (debt.balance > 0) {
+                              // Calculate interest for this month
+                              const interest = debt.balance * debt.monthlyRate;
+                              
+                              // Calculate payment (min + snowball, but not more than balance + interest)
+                              const payment = Math.min(
+                                debt.minPayment + debt.snowballPayment,
+                                debt.balance + interest
+                              );
+                              
+                              // Apply payment
+                              const principalPayment = payment - interest;
+                              debt.balance = Math.max(0, debt.balance - principalPayment);
+                              
+                              // Track totals
+                              debt.totalInterest += interest;
+                              debt.totalPaid += payment;
+                              
+                              // Calculate cumulative paid
+                              const cumulativePaid = debt.originalBalance - debt.balance;
+                              
+                              monthData.push({
+                                payment: payment,
+                                cumulativePaid: cumulativePaid,
+                                remainingBalance: debt.balance,
+                                isPaidOff: debt.balance === 0
+                              });
+                              
+                              // If debt is paid off this month, snowball to next unpaid debt
+                              if (debt.balance === 0) {
+                                const snowballAmount = debt.minPayment + debt.snowballPayment;
+                                
+                                // Find next unpaid debt
+                                for (let j = i + 1; j < debts.length; j++) {
+                                  if (debts[j].balance > 0) {
+                                    debts[j].snowballPayment += snowballAmount;
+                                    break;
+                                  }
+                                }
+                              }
+                            } else {
+                              // Already paid off
+                              monthData.push({
+                                payment: 0,
+                                cumulativePaid: debt.originalBalance,
+                                remainingBalance: 0,
+                                isPaidOff: true
+                              });
+                            }
+                          }
+                          
+                          // Render the month row
                           monthRows.push(
                             <TableRow key={month}>
                               <TableCell className="sticky left-0 bg-background z-10 font-medium">
                                 Month {month}
                               </TableCell>
-                              {result.rows.map((debt, debtIdx) => {
-                                // If this debt is already paid off, show empty cell
-                                if (debtPaidOff[debtIdx]) {
-                                  return (
-                                    <TableCell key={debt.index} className="text-center bg-muted/30">
-                                      <div className="text-xs text-muted-foreground">Paid Off</div>
-                                    </TableCell>
-                                  );
-                                }
-                                
-                                const currentBalance = debtBalances[debtIdx];
-                                const monthlyRate = debt.monthlyRate;
-                                
-                                // Calculate how much extra payment is available (snowball)
-                                let snowballAmount = extraPayment;
-                                for (let i = 0; i < debtIdx; i++) {
-                                  if (debtPaidOff[i]) {
-                                    snowballAmount += result.rows[i].minPayment;
-                                  }
-                                }
-                                
-                                // Determine payment for this debt this month
-                                let monthlyPayment = debt.minPayment;
-                                
-                                // Find the first unpaid debt to receive the snowball payment
-                                const firstUnpaidIdx = debtPaidOff.findIndex(paid => !paid);
-                                if (debtIdx === firstUnpaidIdx) {
-                                  monthlyPayment += snowballAmount;
-                                }
-                                
-                                // Calculate interest and principal
-                                const interest = currentBalance * monthlyRate;
-                                const principal = Math.min(monthlyPayment - interest, currentBalance);
-                                const actualPayment = principal + interest;
-                                
-                                // Update balance
-                                const newBalance = Math.max(0, currentBalance - principal);
-                                debtBalances[debtIdx] = newBalance;
-                                
-                                // Mark as paid off if balance reaches 0
-                                if (newBalance === 0) {
-                                  debtPaidOff[debtIdx] = true;
-                                }
-                                
-                                // Calculate cumulative paid
-                                const cumulativePaid = debt.balance - newBalance;
-                                
-                                return (
-                                  <TableCell key={debt.index} className="text-center p-2">
+                              {monthData.map((data, idx) => (
+                                <TableCell key={idx} className={`text-center p-2 ${data.isPaidOff ? 'bg-muted/30' : ''}`}>
+                                  {data.isPaidOff && data.payment === 0 ? (
+                                    <div className="text-xs text-muted-foreground">Paid Off</div>
+                                  ) : (
                                     <div className="text-xs space-y-1">
                                       <div className="font-medium text-primary">
-                                        ${actualPayment.toFixed(2)}
+                                        ${data.payment.toFixed(2)}
                                       </div>
                                       <div className="text-muted-foreground">
-                                        Paid: ${cumulativePaid.toFixed(2)}
+                                        Paid: ${data.cumulativePaid.toFixed(2)}
                                       </div>
                                       <div className="text-muted-foreground">
-                                        Left: ${newBalance.toFixed(2)}
+                                        Left: ${data.remainingBalance.toFixed(2)}
                                       </div>
                                     </div>
-                                  </TableCell>
-                                );
-                              })}
+                                  )}
+                                </TableCell>
+                              ))}
                             </TableRow>
                           );
                         }
