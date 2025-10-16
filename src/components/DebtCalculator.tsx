@@ -658,15 +658,36 @@ export function DebtCalculator() {
                       <TableRow>
                         <TableHead className="sticky left-0 bg-background z-10">Month</TableHead>
                         <TableHead className="text-center min-w-[120px]">Snowball Total</TableHead>
-                        {result.rows.map((debt) => (
-                          <TableHead key={debt.index} className="text-center min-w-[200px]">
-                            <div className="font-semibold">{debt.name}</div>
-                            {debt.last4 && <div className="text-xs text-muted-foreground">({debt.last4})</div>}
-                            <div className="text-xs text-muted-foreground mt-1">
-                              Bal: ${debt.balance.toFixed(2)} | Min: ${debt.minPayment.toFixed(2)} | APR: {(debt.apr * 100).toFixed(1)}%
-                            </div>
-                          </TableHead>
-                        ))}
+                        {result.rows.map((debt) => {
+                          const getDueDateDisplay = (dueDate?: string | null) => {
+                            if (!dueDate) return '';
+                            const day = parseInt(dueDate.trim());
+                            if (isNaN(day)) return dueDate;
+                            
+                            const suffix = (day: number) => {
+                              if (day >= 11 && day <= 13) return 'th';
+                              switch (day % 10) {
+                                case 1: return 'st';
+                                case 2: return 'nd';
+                                case 3: return 'rd';
+                                default: return 'th';
+                              }
+                            };
+                            
+                            return `Due ${day}${suffix(day)} of Every Month`;
+                          };
+                          
+                          return (
+                            <TableHead key={debt.index} className="text-center min-w-[200px]">
+                              <div className="font-semibold">{debt.name}</div>
+                              {debt.last4 && <div className="text-xs text-muted-foreground">({debt.last4})</div>}
+                              {debt.dueDate && <div className="text-xs text-muted-foreground mt-1">{getDueDateDisplay(debt.dueDate)}</div>}
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Bal: ${debt.balance.toFixed(2)} | Min: ${debt.minPayment.toFixed(2)} | APR: {(debt.apr * 100).toFixed(1)}%
+                              </div>
+                            </TableHead>
+                          );
+                        })}
                         <TableHead className="text-center min-w-[120px]">Remaining</TableHead>
                       </TableRow>
                     </TableHeader>
