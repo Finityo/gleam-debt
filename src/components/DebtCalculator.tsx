@@ -189,6 +189,24 @@ export function DebtCalculator() {
 
   const compute = async (useStrategy?: Strategy) => {
     try {
+      // Check for duplicate "last 4" values
+      const last4Values = debts
+        .filter(d => d.last4 && d.last4.trim() !== '')
+        .map(d => d.last4?.trim());
+      
+      const duplicates = last4Values.filter((value, index) => 
+        last4Values.indexOf(value) !== index
+      );
+      
+      if (duplicates.length > 0) {
+        toast({ 
+          title: "Duplicate Detected", 
+          description: `Duplicate "Last 4" found: ${[...new Set(duplicates)].join(', ')}. Please check your debts.`,
+          variant: "destructive" 
+        });
+        return;
+      }
+
       setIsLoading(true);
       const computeStrategy = useStrategy || strategy;
       const { data, error } = await supabase.functions.invoke('compute-debt-plan', {
@@ -537,38 +555,45 @@ export function DebtCalculator() {
                         ))}
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                     <TableBody>
                       {(() => {
                         const maxMonths = Math.max(...result.rows.map(r => r.cumulativeMonths));
                         const monthRows = [];
                         const extraPayment = result.totals.extraMonthly;
                         const oneTimePayment = result.totals.oneTime;
                         
-                        // Initialize debt tracking
-                        const debts = result.rows.map(d => ({
-                          name: d.name,
-                          last4: d.last4,
-                          balance: d.balance,
-                          minPayment: d.minPayment,
-                          apr: d.apr,
-                          monthlyRate: d.monthlyRate,
-                          snowballPayment: 0,
-                          totalInterest: 0,
-                          totalPaid: 0,
-                          originalBalance: d.balance
-                        }));
+                        // Initialize debt tracking - use actual entered debt data
+                        const debtsTracking = result.rows.map(d => {
+                          // Find the matching debt from the entered debts
+                          const enteredDebt = debts.find(ed => 
+                            ed.name === d.name && ed.balance === d.balance
+                          );
+                          
+                          return {
+                            name: enteredDebt?.name || d.name,
+                            last4: enteredDebt?.last4 || d.last4,
+                            balance: d.balance,
+                            minPayment: d.minPayment,
+                            apr: d.apr,
+                            monthlyRate: d.monthlyRate,
+                            snowballPayment: 0,
+                            totalInterest: 0,
+                            totalPaid: 0,
+                            originalBalance: d.balance
+                          };
+                        });
                         
                         // Apply one-time payment to first debt
-                        if (oneTimePayment > 0 && debts.length > 0) {
-                          debts[0].balance = Math.max(0, debts[0].balance - oneTimePayment);
+                        if (oneTimePayment > 0 && debtsTracking.length > 0) {
+                          debtsTracking[0].balance = Math.max(0, debtsTracking[0].balance - oneTimePayment);
                         }
                         
                         // Generate monthly rows
                         for (let month = 1; month <= maxMonths; month++) {
                           const monthData = [];
                           
-                          for (let i = 0; i < debts.length; i++) {
-                            const debt = debts[i];
+                          for (let i = 0; i < debtsTracking.length; i++) {
+                            const debt = debtsTracking[i];
                             
                             if (debt.balance > 0) {
                               // Calculate interest for this month
@@ -603,9 +628,9 @@ export function DebtCalculator() {
                                 const snowballAmount = debt.minPayment + debt.snowballPayment;
                                 
                                 // Find next unpaid debt
-                                for (let j = i + 1; j < debts.length; j++) {
-                                  if (debts[j].balance > 0) {
-                                    debts[j].snowballPayment += snowballAmount;
+                                for (let j = i + 1; j < debtsTracking.length; j++) {
+                                  if (debtsTracking[j].balance > 0) {
+                                    debtsTracking[j].snowballPayment += snowballAmount;
                                     break;
                                   }
                                 }
