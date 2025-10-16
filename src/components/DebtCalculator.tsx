@@ -736,20 +736,42 @@ export function DebtCalculator() {
                         <TableHead className="text-right">Balance</TableHead>
                         <TableHead className="text-right">Min Payment</TableHead>
                         <TableHead className="text-right">APR</TableHead>
+                        <TableHead>Due Date</TableHead>
                         <TableHead>Included</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {result.rows.map((row) => (
-                        <TableRow key={row.index}>
-                          <TableCell className="font-medium">{row.name}</TableCell>
-                          <TableCell>{row.last4 || 'N/A'}</TableCell>
-                          <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
-                          <TableCell>Yes</TableCell>
-                        </TableRow>
-                      ))}
+                      {result.rows.map((row) => {
+                        const getDueDateDisplay = (dueDate?: string | null) => {
+                          if (!dueDate) return 'N/A';
+                          const day = parseInt(dueDate.trim());
+                          if (isNaN(day)) return dueDate;
+                          
+                          const suffix = (day: number) => {
+                            if (day >= 11 && day <= 13) return 'th';
+                            switch (day % 10) {
+                              case 1: return 'st';
+                              case 2: return 'nd';
+                              case 3: return 'rd';
+                              default: return 'th';
+                            }
+                          };
+                          
+                          return `Due ${day}${suffix(day)} of Every Month`;
+                        };
+                        
+                        return (
+                          <TableRow key={row.index}>
+                            <TableCell className="font-medium">{row.name}</TableCell>
+                            <TableCell>{row.last4 || 'N/A'}</TableCell>
+                            <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
+                            <TableCell>{getDueDateDisplay(row.dueDate)}</TableCell>
+                            <TableCell>Yes</TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
