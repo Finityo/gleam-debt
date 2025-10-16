@@ -30,7 +30,7 @@ serve(async (req) => {
 
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
-    const PLAID_ENV = 'sandbox'; // Change to 'production' when ready
+    const PLAID_ENV = 'production'; // Now using production environment
 
     const response = await fetch(`https://${PLAID_ENV}.plaid.com/link/token/create`, {
       method: 'POST',
