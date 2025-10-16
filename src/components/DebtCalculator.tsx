@@ -69,6 +69,27 @@ interface ComputeResult {
   payoffOrder?: string[];
 }
 
+// Helper function to format due date display
+const formatDueDate = (dueDate?: string | null): string => {
+  if (!dueDate) return '';
+  
+  // Extract just the day number from the due date
+  const day = parseInt(dueDate.trim());
+  if (isNaN(day)) return '';
+  
+  const suffix = (d: number) => {
+    if (d >= 11 && d <= 13) return 'th';
+    switch (d % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  };
+  
+  return `Due ${day}${suffix(day)} of Every Month`;
+};
+
 export function DebtCalculator() {
   const [debts, setDebts] = useState<DebtInput[]>([
     { name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "" }
@@ -608,6 +629,7 @@ export function DebtCalculator() {
                         <TableHead className="text-right">Balance</TableHead>
                         <TableHead className="text-right">Min Payment</TableHead>
                         <TableHead className="text-right">APR</TableHead>
+                        <TableHead>Due Date</TableHead>
                         <TableHead className="text-right">Est. Months</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -618,6 +640,7 @@ export function DebtCalculator() {
                           <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
                           <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
                           <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
+                          <TableCell>{formatDueDate(row.dueDate) || 'N/A'}</TableCell>
                           <TableCell className="text-right">{row.monthsToPayoff}</TableCell>
                         </TableRow>
                       ))}
@@ -658,36 +681,16 @@ export function DebtCalculator() {
                       <TableRow>
                         <TableHead className="sticky left-0 bg-background z-10">Month</TableHead>
                         <TableHead className="text-center min-w-[120px]">Snowball Total</TableHead>
-                        {result.rows.map((debt) => {
-                          const getDueDateDisplay = (dueDate?: string | null) => {
-                            if (!dueDate) return '';
-                            const day = parseInt(dueDate.trim());
-                            if (isNaN(day)) return dueDate;
-                            
-                            const suffix = (day: number) => {
-                              if (day >= 11 && day <= 13) return 'th';
-                              switch (day % 10) {
-                                case 1: return 'st';
-                                case 2: return 'nd';
-                                case 3: return 'rd';
-                                default: return 'th';
-                              }
-                            };
-                            
-                            return `Due ${day}${suffix(day)} of Every Month`;
-                          };
-                          
-                          return (
-                            <TableHead key={debt.index} className="text-center min-w-[200px]">
-                              <div className="font-semibold">{debt.name}</div>
-                              {debt.last4 && <div className="text-xs text-muted-foreground">({debt.last4})</div>}
-                              {debt.dueDate && <div className="text-xs text-muted-foreground mt-1">{getDueDateDisplay(debt.dueDate)}</div>}
-                              <div className="text-xs text-muted-foreground mt-1">
-                                Bal: ${debt.balance.toFixed(2)} | Min: ${debt.minPayment.toFixed(2)} | APR: {(debt.apr * 100).toFixed(1)}%
-                              </div>
-                            </TableHead>
-                          );
-                        })}
+                        {result.rows.map((debt) => (
+                          <TableHead key={debt.index} className="text-center min-w-[200px]">
+                            <div className="font-semibold">{debt.name}</div>
+                            {debt.last4 && <div className="text-xs text-muted-foreground">({debt.last4})</div>}
+                            {debt.dueDate && <div className="text-xs text-muted-foreground mt-1">{formatDueDate(debt.dueDate)}</div>}
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Bal: ${debt.balance.toFixed(2)} | Min: ${debt.minPayment.toFixed(2)} | APR: {(debt.apr * 100).toFixed(1)}%
+                            </div>
+                          </TableHead>
+                        ))}
                         <TableHead className="text-center min-w-[120px]">Remaining</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -762,37 +765,17 @@ export function DebtCalculator() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {result.rows.map((row) => {
-                        const getDueDateDisplay = (dueDate?: string | null) => {
-                          if (!dueDate) return 'N/A';
-                          const day = parseInt(dueDate.trim());
-                          if (isNaN(day)) return dueDate;
-                          
-                          const suffix = (day: number) => {
-                            if (day >= 11 && day <= 13) return 'th';
-                            switch (day % 10) {
-                              case 1: return 'st';
-                              case 2: return 'nd';
-                              case 3: return 'rd';
-                              default: return 'th';
-                            }
-                          };
-                          
-                          return `Due ${day}${suffix(day)} of Every Month`;
-                        };
-                        
-                        return (
-                          <TableRow key={row.index}>
-                            <TableCell className="font-medium">{row.name}</TableCell>
-                            <TableCell>{row.last4 || 'N/A'}</TableCell>
-                            <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
-                            <TableCell>{getDueDateDisplay(row.dueDate)}</TableCell>
-                            <TableCell>Yes</TableCell>
-                          </TableRow>
-                        );
-                      })}
+                      {result.rows.map((row) => (
+                        <TableRow key={row.index}>
+                          <TableCell className="font-medium">{row.name}</TableCell>
+                          <TableCell>{row.last4 || 'N/A'}</TableCell>
+                          <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
+                          <TableCell>{formatDueDate(row.dueDate) || 'N/A'}</TableCell>
+                          <TableCell>Yes</TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </div>
@@ -830,6 +813,12 @@ export function DebtCalculator() {
                           <span className="text-muted-foreground">APR:</span>
                           <span className="font-medium">{(row.apr * 100).toFixed(2)}%</span>
                         </div>
+                        {row.dueDate && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Due Date:</span>
+                            <span className="font-medium">{formatDueDate(row.dueDate)}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Payoff Months:</span>
                           <span className="font-medium">{row.monthsToPayoff}</span>
