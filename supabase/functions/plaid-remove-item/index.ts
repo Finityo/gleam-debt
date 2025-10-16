@@ -1,0 +1,130 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    );
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    if (!user) {
+      throw new Error('Unauthorized');
+    }
+
+    const { item_id } = await req.json();
+
+    if (!item_id) {
+      throw new Error('item_id is required');
+    }
+
+    // Get the item to ensure user owns it and get access token
+    const { data: item, error: itemError } = await supabaseClient
+      .from('plaid_items')
+      .select('access_token, id')
+      .eq('item_id', item_id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (itemError || !item) {
+      throw new Error('Item not found or access denied');
+    }
+
+    const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
+    const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
+    const PLAID_ENV = 'production';
+
+    // Call Plaid /item/remove endpoint
+    const plaidResponse = await fetch(`https://${PLAID_ENV}.plaid.com/item/remove`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'PLAID-CLIENT-ID': PLAID_CLIENT_ID!,
+        'PLAID-SECRET': PLAID_SECRET!,
+      },
+      body: JSON.stringify({
+        access_token: item.access_token,
+      }),
+    });
+
+    const plaidData = await plaidResponse.json();
+
+    if (!plaidResponse.ok) {
+      console.error('Plaid item/remove error:', plaidData);
+      throw new Error(plaidData.error_message || 'Failed to remove item from Plaid');
+    }
+
+    console.log('Item removed from Plaid:', item_id);
+
+    // Delete all associated accounts first (foreign key constraint)
+    const { error: accountsDeleteError } = await supabaseClient
+      .from('plaid_accounts')
+      .delete()
+      .eq('plaid_item_id', item.id);
+
+    if (accountsDeleteError) {
+      console.error('Error deleting accounts:', accountsDeleteError);
+      throw new Error('Failed to delete associated accounts');
+    }
+
+    console.log('Deleted accounts for item:', item_id);
+
+    // Delete item status tracking
+    const { error: statusDeleteError } = await supabaseClient
+      .from('plaid_item_status')
+      .delete()
+      .eq('item_id', item_id);
+
+    if (statusDeleteError) {
+      console.error('Error deleting item status:', statusDeleteError);
+      // Don't throw, this is non-critical
+    }
+
+    // Delete the item itself
+    const { error: itemDeleteError } = await supabaseClient
+      .from('plaid_items')
+      .delete()
+      .eq('id', item.id);
+
+    if (itemDeleteError) {
+      console.error('Error deleting item:', itemDeleteError);
+      throw new Error('Failed to delete item');
+    }
+
+    console.log('Item and all associated data deleted for user:', user.id);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Item removed successfully',
+        removed_item_id: plaidData.removed_item_id 
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
+  } catch (error: any) {
+    console.error('Error in plaid-remove-item:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});

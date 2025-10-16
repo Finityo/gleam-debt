@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
+import { AccountsList } from '@/components/AccountsList';
 import { DebtCalculator } from '@/components/DebtCalculator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut } from 'lucide-react';
@@ -21,6 +22,8 @@ interface Account {
   available_balance: number | null;
   currency_code: string;
   plaid_items: {
+    id: string;
+    item_id: string;
     institution_name: string | null;
   };
 }
@@ -131,54 +134,7 @@ const Dashboard = () => {
 
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-foreground">Connected Accounts</h2>
-          
-          {accounts.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">
-                  No accounts connected yet. Click the button above to connect your bank account.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {accounts.map((account) => (
-                <Card key={account.id}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{account.name}</CardTitle>
-                    <CardDescription>
-                      {account.plaid_items.institution_name || 'Bank Account'}
-                      {account.mask && ` •••• ${account.mask}`}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Type</span>
-                        <span className="font-medium capitalize">
-                          {account.subtype || account.type}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Current Balance</span>
-                        <span className="font-medium">
-                          {formatCurrency(account.current_balance)}
-                        </span>
-                      </div>
-                      {account.available_balance !== null && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Available</span>
-                          <span className="font-medium">
-                            {formatCurrency(account.available_balance)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <AccountsList accounts={accounts} onAccountsChange={fetchAccounts} />
         </div>
       </div>
     </div>

@@ -166,6 +166,19 @@ async function handleItemWebhook(supabase: any, payload: any) {
           });
       }
       break;
+    
+    case 'USER_ACCOUNT_REVOKED':
+      console.log('User account revoked (Chase-only):', payload.item_id);
+      // Delete account numbers and data for this account
+      if (payload.account_id) {
+        await supabase
+          .from('plaid_accounts')
+          .delete()
+          .eq('account_id', payload.account_id);
+        console.log('Deleted revoked account:', payload.account_id);
+      }
+      break;
+    
     default:
       console.log('Unhandled ITEM webhook code:', payload.webhook_code);
   }
