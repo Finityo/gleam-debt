@@ -50,12 +50,12 @@ export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) 
     }).format(amount);
   };
 
-  const handleRemoveItem = async (itemId: string, institutionName: string | null) => {
+  const handleRemoveItem = async (plaidItemId: string, institutionName: string | null) => {
     try {
-      setRemovingItemId(itemId);
+      setRemovingItemId(plaidItemId);
 
       const { error } = await supabase.functions.invoke('plaid-remove-item', {
-        body: { item_id: itemId },
+        body: { item_id: plaidItemId },
       });
 
       if (error) throw error;
