@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,6 +21,7 @@ const Auth = () => {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
   const {
     toast
@@ -48,6 +50,16 @@ const Auth = () => {
   }, [navigate]);
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check terms agreement
+    if (!agreedToTerms) {
+      toast({
+        title: 'Agreement Required',
+        description: 'Please agree to the Terms of Service and Privacy Policy to continue.',
+        variant: 'destructive'
+      });
+      return;
+    }
 
     // Validate inputs
     try {
@@ -251,7 +263,28 @@ const Auth = () => {
                     <Label htmlFor="signup-password">Password</Label>
                     <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-start space-x-2">
+                      <Checkbox 
+                        id="terms" 
+                        checked={agreedToTerms}
+                        onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                      />
+                      <label
+                        htmlFor="terms"
+                        className="text-sm leading-tight text-muted-foreground cursor-pointer"
+                      >
+                        I agree to the{' '}
+                        <a href="/privacy" target="_blank" className="text-primary hover:underline">
+                          Privacy Policy
+                        </a>
+                        {' '}and consent to Debt Manager connecting to my financial accounts via Plaid to retrieve account data, balances, and transaction information for debt management purposes.
+                      </label>
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={loading || !agreedToTerms}>
                     {loading ? 'Creating account...' : 'Sign Up'}
                   </Button>
                 </form>
