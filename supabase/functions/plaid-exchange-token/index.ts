@@ -92,12 +92,35 @@ serve(async (req) => {
       throw new Error(exchangeData.error_message || 'Failed to exchange token');
     }
 
-    // Store item in database
+    // Store access token in Vault
+    const vault_secret_name = `plaid_token_${exchangeData.item_id}`;
+    
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { error: vaultError } = await supabaseAdmin
+      .from('vault.secrets')
+      .insert({
+        name: vault_secret_name,
+        secret: exchangeData.access_token,
+        description: `Plaid access token for item ${exchangeData.item_id}`
+      });
+
+    if (vaultError) {
+      console.error('Vault error storing token:', vaultError);
+      throw new Error('Failed to secure access token');
+    }
+
+    console.log('Token stored in Vault:', vault_secret_name);
+
+    // Store item in database with vault reference
     const { error: itemError } = await supabaseClient
       .from('plaid_items')
       .insert({
         user_id: user.id,
-        access_token: exchangeData.access_token,
+        vault_secret_id: vault_secret_name,
         item_id: exchangeData.item_id,
         institution_id: metadata?.institution?.institution_id,
         institution_name: metadata?.institution?.name,
@@ -107,6 +130,16 @@ serve(async (req) => {
       console.error('Database error storing item:', itemError);
       throw itemError;
     }
+
+    // Log token creation
+    await supabaseAdmin
+      .from('plaid_token_access_log')
+      .insert({
+        item_id: exchangeData.item_id,
+        accessed_by: user.id,
+        access_type: 'create',
+        function_name: 'plaid-exchange-token'
+      });
 
     // Get accounts
     const accountsResponse = await fetch(`https://${PLAID_ENV}.plaid.com/accounts/get`, {

@@ -44,7 +44,7 @@ serve(async (req) => {
     // Get all user's Plaid items
     const { data: items, error: itemsError } = await supabaseClient
       .from('plaid_items')
-      .select('access_token, item_id')
+      .select('item_id')
       .eq('user_id', user.id);
 
     if (itemsError) throw itemsError;
@@ -62,6 +62,18 @@ serve(async (req) => {
     for (const item of items) {
       console.log('Fetching liabilities for item:', item.item_id);
 
+      // Get access token from Vault
+      const { data: tokenData, error: tokenError } = await supabaseClient
+        .rpc('get_plaid_token_from_vault', {
+          p_item_id: item.item_id,
+          p_function_name: 'plaid-import-debts'
+        });
+
+      if (tokenError || !tokenData) {
+        console.error('Failed to get token from Vault for item:', item.item_id, tokenError);
+        continue;
+      }
+
       const liabilitiesResponse = await fetch(`${getPlaidUrl()}/liabilities/get`, {
         method: 'POST',
         headers: {
@@ -70,7 +82,7 @@ serve(async (req) => {
         body: JSON.stringify({
           client_id: PLAID_CLIENT_ID,
           secret: PLAID_SECRET,
-          access_token: item.access_token,
+          access_token: tokenData,
         }),
       });
 

@@ -188,6 +188,7 @@ export type Database = {
           item_id: string
           updated_at: string
           user_id: string
+          vault_secret_id: string | null
         }
         Insert: {
           access_token: string
@@ -198,6 +199,7 @@ export type Database = {
           item_id: string
           updated_at?: string
           user_id: string
+          vault_secret_id?: string | null
         }
         Update: {
           access_token?: string
@@ -208,6 +210,37 @@ export type Database = {
           item_id?: string
           updated_at?: string
           user_id?: string
+          vault_secret_id?: string | null
+        }
+        Relationships: []
+      }
+      plaid_token_access_log: {
+        Row: {
+          access_type: string
+          accessed_by: string | null
+          created_at: string | null
+          function_name: string
+          id: string
+          ip_address: string | null
+          item_id: string
+        }
+        Insert: {
+          access_type: string
+          accessed_by?: string | null
+          created_at?: string | null
+          function_name: string
+          id?: string
+          ip_address?: string | null
+          item_id: string
+        }
+        Update: {
+          access_type?: string
+          accessed_by?: string | null
+          created_at?: string | null
+          function_name?: string
+          id?: string
+          ip_address?: string | null
+          item_id?: string
         }
         Relationships: []
       }
@@ -216,7 +249,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_plaid_token_from_vault: {
+        Args: { p_function_name?: string; p_item_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

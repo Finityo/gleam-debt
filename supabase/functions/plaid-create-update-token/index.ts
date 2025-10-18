@@ -34,16 +34,16 @@ serve(async (req) => {
       throw new Error('item_id is required');
     }
 
-    // Get the access token for this item
-    const { data: item, error: itemError } = await supabaseClient
-      .from('plaid_items')
-      .select('access_token')
-      .eq('item_id', item_id)
-      .eq('user_id', user.id)
-      .single();
+    // Get access token from Vault
+    const { data: accessToken, error: tokenError } = await supabaseClient
+      .rpc('get_plaid_token_from_vault', {
+        p_item_id: item_id,
+        p_function_name: 'plaid-create-update-token'
+      });
 
-    if (itemError || !item) {
-      throw new Error('Item not found');
+    if (tokenError || !accessToken) {
+      console.error('Failed to get token from Vault:', tokenError);
+      throw new Error('Failed to retrieve access token');
     }
 
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
@@ -55,7 +55,7 @@ serve(async (req) => {
         client_user_id: user.id,
       },
       client_name: 'Debt Management App',
-      access_token: item.access_token,
+      access_token: accessToken,
       country_codes: ['US'],
       language: 'en',
     };

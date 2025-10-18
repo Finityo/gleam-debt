@@ -41,10 +41,10 @@ serve(async (req) => {
       throw new Error('item_id is required');
     }
 
-    // Get the item to ensure user owns it and get access token
+    // Get the item to ensure user owns it
     const { data: item, error: itemError } = await supabaseClient
       .from('plaid_items')
-      .select('access_token, id')
+      .select('id, vault_secret_id')
       .eq('item_id', item_id)
       .eq('user_id', user.id)
       .single();
@@ -56,6 +56,18 @@ serve(async (req) => {
         error: itemError?.message
       });
       throw new Error('Item not found or access denied');
+    }
+
+    // Get access token from Vault
+    const { data: accessToken, error: tokenError } = await supabaseClient
+      .rpc('get_plaid_token_from_vault', {
+        p_item_id: item_id,
+        p_function_name: 'plaid-remove-item'
+      });
+
+    if (tokenError || !accessToken) {
+      console.error('Failed to get token from Vault:', tokenError);
+      throw new Error('Failed to retrieve access token');
     }
 
     console.log('Item found, removing from Plaid:', {
@@ -77,7 +89,7 @@ serve(async (req) => {
           'PLAID-SECRET': PLAID_SECRET!,
         },
         body: JSON.stringify({
-          access_token: item.access_token,
+          access_token: accessToken,
         }),
       });
 
@@ -130,6 +142,21 @@ serve(async (req) => {
     if (statusDeleteError) {
       console.error('Error deleting item status:', statusDeleteError);
       // Don't throw, this is non-critical
+    }
+
+    // Delete vault secret
+    if (item.vault_secret_id) {
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      await supabaseAdmin
+        .from('vault.secrets')
+        .delete()
+        .eq('name', item.vault_secret_id);
+
+      console.log('Vault secret deleted:', item.vault_secret_id);
     }
 
     // Delete the item itself
