@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { DebtCalculator } from '@/components/DebtCalculator';
+import { DebtCleanup } from '@/components/DebtCleanup';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 
@@ -58,6 +59,10 @@ const Debts = () => {
           <p className="text-muted-foreground mt-2">
             Manage your debt payoff strategy
           </p>
+        </div>
+
+        <div className="mb-6">
+          <DebtCleanup />
         </div>
 
         <DebtCalculator />
