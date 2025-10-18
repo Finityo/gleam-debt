@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { DebtImporter } from '@/components/DebtImporter';
 import { DebtCalculator } from '@/components/DebtCalculator';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
@@ -57,14 +56,11 @@ const Debts = () => {
           </Button>
           <h1 className="text-4xl font-bold text-foreground">Debt Management</h1>
           <p className="text-muted-foreground mt-2">
-            Import debts from Plaid or manage your payoff strategy
+            Manage your debt payoff strategy
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          <DebtImporter />
-          <DebtCalculator />
-        </div>
+        <DebtCalculator />
       </div>
     </div>
   );
