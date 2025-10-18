@@ -37,6 +37,9 @@ serve(async (req) => {
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
     const PLAID_ENV = 'production'; // Now using production environment
+    const WEBHOOK_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/plaid-webhook`;
+
+    console.log('Using webhook URL:', WEBHOOK_URL);
 
     const response = await fetch(`https://${PLAID_ENV}.plaid.com/link/token/create`, {
       method: 'POST',
@@ -54,6 +57,7 @@ serve(async (req) => {
         additional_consented_products: ['liabilities', 'identity'],
         country_codes: ['US'],
         language: 'en',
+        webhook: WEBHOOK_URL,
       }),
     });
 
