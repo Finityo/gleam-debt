@@ -7,7 +7,6 @@ import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { AccountsList } from '@/components/AccountsList';
 import { DebtCalculator } from '@/components/DebtCalculator';
-import { WebhookTester } from '@/components/WebhookTester';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
@@ -129,9 +128,8 @@ const Dashboard = () => {
           <PlaidLink onSuccess={fetchAccounts} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+        <div className="mb-12">
           <DebtCalculator />
-          <WebhookTester />
         </div>
 
         <div className="space-y-6">
