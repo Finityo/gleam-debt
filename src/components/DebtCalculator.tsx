@@ -1,15 +1,14 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Plus, Download, Upload } from "lucide-react";
+import { Trash2, Plus, Upload } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from 'exceljs';
 
@@ -93,13 +92,13 @@ const formatDueDate = (dueDate?: string | null): string => {
 };
 
 export function DebtCalculator() {
+  const navigate = useNavigate();
   const [debts, setDebts] = useState<DebtInput[]>([
     { name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "" }
   ]);
   const [extra, setExtra] = useState<number | string>("");
   const [oneTime, setOneTime] = useState<number | string>("");
   const [strategy, setStrategy] = useState<Strategy>("snowball");
-  const [result, setResult] = useState<ComputeResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDebtIndices, setSelectedDebtIndices] = useState<Set<number>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -125,9 +124,6 @@ export function DebtCalculator() {
 
   const loadSavedData = async () => {
     try {
-      // Clear any previous results to start fresh
-      setResult(null);
-      
       // Load debts
       const { data: debtsData, error: debtsError } = await supabase
         .from('debts')
@@ -244,8 +240,7 @@ export function DebtCalculator() {
       // Reset to single empty debt
       setDebts([{ name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "" }]);
       
-      // Clear results and selections
-      setResult(null);
+      // Clear selections
       setSelectedDebtIndices(new Set());
       
       toast({ title: "Success", description: "All debts deleted" });
@@ -277,11 +272,8 @@ export function DebtCalculator() {
       // If no debts left, add one empty debt
       if (remainingDebts.length === 0) {
         setDebts([{ name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "" }]);
-        setResult(null);
       } else {
         setDebts(remainingDebts);
-        // Recalculate with remaining debts
-        await recalculateWithDebts(remainingDebts);
       }
       
       // Clear selections
@@ -297,34 +289,6 @@ export function DebtCalculator() {
     }
   };
 
-  const recalculateWithDebts = async (debtsToUse: DebtInput[]) => {
-    // Only recalculate if we have valid debts and previous results
-    const validDebts = debtsToUse.filter(d => d.name.trim() !== '' && d.balance > 0);
-    if (validDebts.length === 0 || !result) {
-      setResult(null);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase.functions.invoke('compute-debt-plan', {
-        body: {
-          debts: validDebts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
-          extraMonthly: Number(extra) || 0,
-          oneTime: Number(oneTime) || 0,
-          strategy
-        }
-      });
-
-      if (error) throw error;
-      setResult(data);
-    } catch (error) {
-      console.error('Error recalculating plan:', error);
-      setResult(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const toggleDebtSelection = (index: number) => {
     const newSelected = new Set(selectedDebtIndices);
@@ -368,8 +332,19 @@ export function DebtCalculator() {
       });
 
       if (error) throw error;
-      setResult(data);
+      
       toast({ title: "Success", description: "Debt plan calculated successfully" });
+      
+      // Navigate to the debt plan page with the results
+      navigate('/debt-plan', {
+        state: {
+          result: data,
+          strategy: computeStrategy,
+          debts: debts,
+          extra: Number(extra) || 0,
+          oneTime: Number(oneTime) || 0
+        }
+      });
     } catch (error) {
       console.error('Error computing plan:', error);
       toast({ title: "Error", description: "Failed to compute debt plan", variant: "destructive" });
@@ -378,84 +353,7 @@ export function DebtCalculator() {
     }
   };
 
-  const handleStrategyChange = async (newStrategy: Strategy) => {
-    setStrategy(newStrategy);
-    if (result) {
-      await compute(newStrategy);
-    }
-  };
 
-  const exportCSV = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-debt-csv`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
-        },
-        body: JSON.stringify({
-          debts: debts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
-          extraMonthly: Number(extra) || 0,
-          oneTime: Number(oneTime) || 0,
-          strategy
-        })
-      });
-
-      if (!response.ok) throw new Error('Export failed');
-      
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'debt_snowball.csv';
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      toast({ title: "Success", description: "CSV exported successfully" });
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
-      toast({ title: "Error", description: "Failed to export CSV", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const exportXLSX = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-debt-xlsx`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
-        },
-        body: JSON.stringify({
-          debts: debts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
-          extraMonthly: Number(extra) || 0,
-          oneTime: Number(oneTime) || 0,
-          strategy
-        })
-      });
-
-      if (!response.ok) throw new Error('Export failed');
-      
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'debt_snowball.xlsx';
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      toast({ title: "Success", description: "Excel file exported successfully" });
-    } catch (error) {
-      console.error('Error exporting XLSX:', error);
-      toast({ title: "Error", description: "Failed to export Excel file", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -772,249 +670,6 @@ export function DebtCalculator() {
         </CardContent>
       </Card>
 
-      {result && (
-        <Tabs defaultValue="snowball" className="w-full">
-          <TabsList className="grid grid-cols-3 h-auto gap-2">
-            <TabsTrigger value="snowball">Snowball Plan</TabsTrigger>
-            <TabsTrigger value="calendar">Payoff Calendar</TabsTrigger>
-            <TabsTrigger value="mobile">Mobile View</TabsTrigger>
-            <TabsTrigger value="summary" className="col-start-2">Printable Summary</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="snowball">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center gap-4">
-                  <div className="flex items-center gap-4 flex-1">
-                    <CardTitle>Strategy</CardTitle>
-                    <Select value={strategy} onValueChange={(value: Strategy) => handleStrategyChange(value)}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="snowball">Snowball</SelectItem>
-                        <SelectItem value="avalanche">Avalanche</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button onClick={exportXLSX} variant="outline" size="sm" disabled={isLoading}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Excel
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Creditor</TableHead>
-                        <TableHead className="text-right">Balance</TableHead>
-                        <TableHead className="text-right">Min Payment</TableHead>
-                        <TableHead className="text-right">APR</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead className="text-right">Est. Months</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {result.rows.map((row) => (
-                        <TableRow key={row.index}>
-                          <TableCell className="font-medium">{row.label}</TableCell>
-                          <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
-                          <TableCell>{formatDueDate(row.dueDate) || 'N/A'}</TableCell>
-                          <TableCell className="text-right">{row.monthsToPayoff}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                <div className="mt-4 p-4 bg-muted rounded-lg">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">Total Months</div>
-                      <div className="text-2xl font-bold">{result.totals.totalMonths}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Total Debts</div>
-                      <div className="text-2xl font-bold">{result.totals.numDebts}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Total Balance</div>
-                      <div className="text-2xl font-bold">${result.totals.sumBalance.toFixed(2)}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Min Payments</div>
-                      <div className="text-2xl font-bold">${result.totals.sumMinPayment.toFixed(2)}</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="calendar">
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-4">Monthly Payoff Calendar</h2>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="sticky left-0 bg-background z-10">Month</TableHead>
-                        <TableHead className="text-center min-w-[120px]">Snowball Total</TableHead>
-                        {result.rows.map((debt) => (
-                          <TableHead key={debt.index} className="text-center min-w-[200px]">
-                            <div className="font-semibold">{debt.name}</div>
-                            {debt.last4 && <div className="text-xs text-muted-foreground">({debt.last4})</div>}
-                            {debt.dueDate && <div className="text-xs text-muted-foreground mt-1">{formatDueDate(debt.dueDate)}</div>}
-                            <div className="text-xs text-muted-foreground mt-1">
-                              Bal: ${debt.balance.toFixed(2)} | Min: ${debt.minPayment.toFixed(2)} | APR: {(debt.apr * 100).toFixed(1)}%
-                            </div>
-                          </TableHead>
-                        ))}
-                        <TableHead className="text-center min-w-[120px]">Remaining</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {result.schedule && result.schedule.map((snapshot) => (
-                        <TableRow key={snapshot.month}>
-                          <TableCell className="sticky left-0 bg-background z-10 font-medium">
-                            Month {snapshot.month}
-                          </TableCell>
-                          <TableCell className="text-center font-medium text-primary">
-                            ${snapshot.snowballExtra.toFixed(2)}
-                          </TableCell>
-                          {snapshot.debts.map((debtData, idx) => (
-                            <TableCell key={idx} className={`text-center p-2 ${debtData.endBalance === 0 ? 'bg-muted/30' : ''}`}>
-                              {debtData.endBalance === 0 && debtData.payment === 0 ? (
-                                <div className="text-xs text-muted-foreground">Paid Off</div>
-                              ) : (
-                                <div className="text-xs space-y-1">
-                                  <div className="font-medium text-primary">
-                                    ${debtData.payment.toFixed(2)}
-                                  </div>
-                                  <div className="text-muted-foreground">
-                                    Int: ${debtData.interest.toFixed(2)}
-                                  </div>
-                                  <div className="text-muted-foreground">
-                                    Left: ${debtData.endBalance.toFixed(2)}
-                                  </div>
-                                </div>
-                              )}
-                            </TableCell>
-                          ))}
-                          <TableCell className="text-center font-medium">
-                            ${snapshot.totalRemaining.toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                {result.payoffOrder && result.payoffOrder.length > 0 && (
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <h3 className="font-semibold mb-2">Payoff Order</h3>
-                    <div className="text-sm">
-                      {result.payoffOrder.map((name, idx) => (
-                        <span key={idx}>
-                          {idx + 1}. {name}
-                          {idx < result.payoffOrder!.length - 1 ? ' → ' : ''}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="summary">
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-4">Printable Summary</h2>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Creditor</TableHead>
-                        <TableHead>Last 4</TableHead>
-                        <TableHead className="text-right">Balance</TableHead>
-                        <TableHead className="text-right">Min Payment</TableHead>
-                        <TableHead className="text-right">APR</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead>Included</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {result.rows.map((row) => (
-                        <TableRow key={row.index}>
-                          <TableCell className="font-medium">{row.name}</TableCell>
-                          <TableCell>{row.last4 || 'N/A'}</TableCell>
-                          <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
-                          <TableCell>{formatDueDate(row.dueDate) || 'N/A'}</TableCell>
-                          <TableCell>Yes</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                <div className="mt-6 print:mt-4">
-                  <h3 className="font-semibold mb-2">Summary</h3>
-                  <div className="text-sm space-y-1">
-                    <p>Strategy: <span className="font-medium">{result.totals.strategy}</span></p>
-                    <p>Extra Monthly: <span className="font-medium">${result.totals.extraMonthly.toFixed(2)}</span></p>
-                    <p>One-Time Payment: <span className="font-medium">${result.totals.oneTime.toFixed(2)}</span></p>
-                    <p>Total Payoff Time: <span className="font-medium">{result.totals.totalMonths} months</span></p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="mobile">
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-4">Mobile-Friendly Snowball</h2>
-                <div className="grid grid-cols-1 gap-4">
-                  {result.rows.map((row) => (
-                    <div key={row.index} className="bg-accent/50 p-4 rounded-xl shadow-sm">
-                      <div className="text-lg font-bold mb-2">{row.label}</div>
-                      <div className="text-sm space-y-1">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Balance:</span>
-                          <span className="font-medium">${row.balance.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Min Payment:</span>
-                          <span className="font-medium">${row.minPayment.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">APR:</span>
-                          <span className="font-medium">{(row.apr * 100).toFixed(2)}%</span>
-                        </div>
-                        {row.dueDate && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Due Date:</span>
-                            <span className="font-medium">{formatDueDate(row.dueDate)}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Payoff Months:</span>
-                          <span className="font-medium">{row.monthsToPayoff}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      )}
     </div>
   );
 }
