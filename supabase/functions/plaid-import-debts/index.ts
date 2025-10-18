@@ -80,11 +80,13 @@ serve(async (req) => {
       });
 
       if (!liabilitiesResponse.ok) {
-        console.error('Failed to fetch liabilities for item:', item.item_id);
+        const errorText = await liabilitiesResponse.text();
+        console.error('Failed to fetch liabilities for item:', item.item_id, 'Status:', liabilitiesResponse.status, 'Error:', errorText);
         continue;
       }
 
       const liabilitiesData = await liabilitiesResponse.json();
+      console.log('Liabilities response received:', JSON.stringify(liabilitiesData, null, 2));
       
       // Process credit card accounts
       if (liabilitiesData.liabilities?.credit) {
