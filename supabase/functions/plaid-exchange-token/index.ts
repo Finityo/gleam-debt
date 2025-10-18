@@ -192,9 +192,11 @@ serve(async (req) => {
 
     if (liabilitiesResponse.ok) {
       const liabilitiesData = await liabilitiesResponse.json();
+      console.log('Liabilities response:', JSON.stringify(liabilitiesData, null, 2));
       
       // Process credit card accounts
       if (liabilitiesData.liabilities?.credit) {
+        console.log('Processing', liabilitiesData.liabilities.credit.length, 'credit cards');
         for (const creditAccount of liabilitiesData.liabilities.credit) {
           const debtData = {
             user_id: user.id,
@@ -215,12 +217,15 @@ serve(async (req) => {
 
           if (!debtError) {
             importedDebtsCount++;
+          } else {
+            console.error('Error inserting credit debt:', debtError);
           }
         }
       }
 
       // Process student loans
       if (liabilitiesData.liabilities?.student) {
+        console.log('Processing', liabilitiesData.liabilities.student.length, 'student loans');
         for (const studentLoan of liabilitiesData.liabilities.student) {
           const debtData = {
             user_id: user.id,
@@ -241,12 +246,15 @@ serve(async (req) => {
 
           if (!debtError) {
             importedDebtsCount++;
+          } else {
+            console.error('Error inserting student loan:', debtError);
           }
         }
       }
 
       // Process mortgages
       if (liabilitiesData.liabilities?.mortgage) {
+        console.log('Processing', liabilitiesData.liabilities.mortgage.length, 'mortgages');
         for (const mortgage of liabilitiesData.liabilities.mortgage) {
           const debtData = {
             user_id: user.id,
@@ -267,12 +275,19 @@ serve(async (req) => {
 
           if (!debtError) {
             importedDebtsCount++;
+          } else {
+            console.error('Error inserting mortgage:', debtError);
           }
         }
       }
 
       console.log('Successfully imported', importedDebtsCount, 'debts for user:', user.id);
     } else {
+      const errorData = await liabilitiesResponse.json();
+      console.error('Failed to fetch liabilities:', {
+        status: liabilitiesResponse.status,
+        error: errorData
+      });
       console.warn('Failed to fetch liabilities, but continuing with account linking');
     }
 
