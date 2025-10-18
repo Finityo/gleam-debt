@@ -113,16 +113,15 @@ serve(async (req) => {
       if (liabilitiesData.liabilities?.credit) {
         console.log('Processing', liabilitiesData.liabilities.credit.length, 'credit cards');
         for (const creditAccount of liabilitiesData.liabilities.credit) {
-          // Find the account in the accounts array to get balance info
+          // Find the account in the accounts array to get balance AND mask info
           const matchingAccount = liabilitiesData.accounts.find(
             (acc: any) => acc.account_id === creditAccount.account_id
           );
 
-          // Try to get mask from our database, or generate from account_id
-          let last4 = accountMaskMap.get(creditAccount.account_id);
+          // First try to get mask from the Plaid liabilities response's accounts array
+          // If not there, try our database, then fall back to account_id last 4
+          let last4 = matchingAccount?.mask || accountMaskMap.get(creditAccount.account_id);
           
-          // If no mask available (credit cards don't have masks in Plaid), 
-          // use last 4 of account_id as identifier
           if (!last4 && creditAccount.account_id) {
             last4 = creditAccount.account_id.slice(-4);
             console.log(`No mask for account ${creditAccount.account_id}, using account_id last4: ${last4}`);
