@@ -13,6 +13,7 @@ import {
   BarChart3
 } from "lucide-react";
 import heroImage from "@/assets/hero-financial-freedom.jpg";
+import finityoLogo from "@/assets/finityo-logo.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -49,12 +50,21 @@ const Index = () => {
         
         <div className="relative container mx-auto px-4 py-20 lg:py-32">
           <div className="max-w-4xl mx-auto text-center space-y-8">
+            {/* Logo */}
+            <div className="flex justify-center mb-8">
+              <img 
+                src={finityoLogo} 
+                alt="Finityo" 
+                className="w-full max-w-md lg:max-w-lg h-auto animate-fade-in drop-shadow-glow"
+              />
+            </div>
+            
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white">
               <Zap className="w-4 h-4 text-accent" />
               <span className="text-sm font-medium">Accelerate Your Debt Freedom</span>
             </div>
             
-            <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
               Crush Your Debt with the
               <span className="block bg-gradient-to-r from-accent to-accent-glow bg-clip-text text-transparent">
                 Snowball Method
