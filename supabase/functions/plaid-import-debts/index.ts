@@ -74,6 +74,7 @@ serve(async (req) => {
           accountMaskMap.set(acc.account_id, acc.mask);
         }
       });
+      console.log('Account mask map created with', accountMaskMap.size, 'entries');
     }
 
     const importedDebts = [];
@@ -117,8 +118,15 @@ serve(async (req) => {
             (acc: any) => acc.account_id === creditAccount.account_id
           );
 
-          // Get mask from our database (Plaid liabilities doesn't return it for credit cards)
-          const last4 = accountMaskMap.get(creditAccount.account_id) || null;
+          // Try to get mask from our database, or generate from account_id
+          let last4 = accountMaskMap.get(creditAccount.account_id);
+          
+          // If no mask available (credit cards don't have masks in Plaid), 
+          // use last 4 of account_id as identifier
+          if (!last4 && creditAccount.account_id) {
+            last4 = creditAccount.account_id.slice(-4);
+            console.log(`No mask for account ${creditAccount.account_id}, using account_id last4: ${last4}`);
+          }
           
           const debtData = {
             user_id: user.id,
