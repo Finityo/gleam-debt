@@ -92,7 +92,7 @@ serve(async (req) => {
       throw new Error(exchangeData.error_message || 'Failed to exchange token');
     }
 
-    // Store access token in Vault using RPC call
+    // Store access token in Vault using wrapper function
     const vault_secret_name = `plaid_token_${exchangeData.item_id}`;
     
     const supabaseAdmin = createClient(
@@ -100,19 +100,20 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Use RPC to call the vault.create_secret function
-    const { error: vaultError } = await supabaseAdmin.rpc('create_secret', {
-      secret: exchangeData.access_token,
-      name: vault_secret_name,
-      description: `Plaid access token for item ${exchangeData.item_id}`
-    });
+    // Call the wrapper function to store in Vault
+    const { data: storedSecretName, error: vaultError } = await supabaseAdmin
+      .rpc('store_plaid_token_in_vault', {
+        p_token: exchangeData.access_token,
+        p_secret_name: vault_secret_name,
+        p_description: `Plaid access token for item ${exchangeData.item_id}`
+      });
 
     if (vaultError) {
       console.error('Vault error storing token:', vaultError);
       throw new Error('Failed to secure access token');
     }
 
-    console.log('Token stored in Vault:', vault_secret_name);
+    console.log('Token stored in Vault:', storedSecretName);
 
     // Store item in database with vault reference
     const { error: itemError } = await supabaseClient

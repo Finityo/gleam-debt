@@ -288,6 +288,10 @@ export type Database = {
         Args: { p_function_name?: string; p_item_id: string }
         Returns: string
       }
+      store_plaid_token_in_vault: {
+        Args: { p_description?: string; p_secret_name: string; p_token: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
