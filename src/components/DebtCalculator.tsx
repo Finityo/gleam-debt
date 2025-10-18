@@ -488,6 +488,46 @@ export function DebtCalculator() {
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Debts</h3>
               <div className="flex gap-2">
+                <Button 
+                  onClick={async () => {
+                    try {
+                      setIsLoading(true);
+                      const { data, error } = await supabase.functions.invoke('plaid-import-debts');
+                      
+                      if (error) throw error;
+                      
+                      if (data && data.debts && data.debts.length > 0) {
+                        toast({ 
+                          title: "Success", 
+                          description: `Imported ${data.debts.length} debt(s) from your connected accounts` 
+                        });
+                        // Reload the data
+                        await loadSavedData();
+                      } else {
+                        toast({ 
+                          title: "No Debts Found", 
+                          description: "No debts were found in your connected accounts", 
+                          variant: "default" 
+                        });
+                      }
+                    } catch (error: any) {
+                      logError('DebtCalculator - Import from Plaid', error);
+                      toast({ 
+                        title: "Error", 
+                        description: error.message || "Failed to import debts from bank accounts", 
+                        variant: "destructive" 
+                      });
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }} 
+                  size="sm" 
+                  variant="outline"
+                  disabled={isLoading}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import from Bank
+                </Button>
                 <Button onClick={handleImportClick} size="sm" variant="outline">
                   <Upload className="h-4 w-4 mr-2" />
                   Import Excel
