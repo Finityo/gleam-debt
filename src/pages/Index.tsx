@@ -55,7 +55,7 @@ const Index = () => {
               <img 
                 src={finityoLogo} 
                 alt="Finityo" 
-                className="w-full max-w-md lg:max-w-lg h-auto animate-fade-in mix-blend-screen opacity-95"
+                className="w-full max-w-md lg:max-w-lg h-auto animate-fade-in"
               />
             </div>
             
