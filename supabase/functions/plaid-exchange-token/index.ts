@@ -173,12 +173,116 @@ serve(async (req) => {
       throw accountsError;
     }
 
+    // Fetch and import liabilities (credit cards, loans, mortgages)
+    console.log('Fetching liabilities for item:', exchangeData.item_id);
+    
+    const liabilitiesResponse = await fetch(`https://${PLAID_ENV}.plaid.com/liabilities/get`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: PLAID_CLIENT_ID,
+        secret: PLAID_SECRET,
+        access_token: exchangeData.access_token,
+      }),
+    });
+
+    let importedDebtsCount = 0;
+
+    if (liabilitiesResponse.ok) {
+      const liabilitiesData = await liabilitiesResponse.json();
+      
+      // Process credit card accounts
+      if (liabilitiesData.liabilities?.credit) {
+        for (const creditAccount of liabilitiesData.liabilities.credit) {
+          const debtData = {
+            user_id: user.id,
+            name: creditAccount.name || 'Credit Card',
+            balance: creditAccount.balances?.current || 0,
+            apr: (creditAccount.aprs?.[0]?.apr_percentage || 0) / 100,
+            min_payment: creditAccount.last_payment_amount || creditAccount.balances?.current * 0.02,
+            last4: creditAccount.mask || null,
+            due_date: creditAccount.next_payment_due_date?.split('-')[2] || null,
+          };
+
+          const { error: debtError } = await supabaseClient
+            .from('debts')
+            .upsert(debtData, { 
+              onConflict: 'user_id,name,last4',
+              ignoreDuplicates: false 
+            });
+
+          if (!debtError) {
+            importedDebtsCount++;
+          }
+        }
+      }
+
+      // Process student loans
+      if (liabilitiesData.liabilities?.student) {
+        for (const studentLoan of liabilitiesData.liabilities.student) {
+          const debtData = {
+            user_id: user.id,
+            name: studentLoan.loan_name || 'Student Loan',
+            balance: studentLoan.balances?.current || 0,
+            apr: (studentLoan.interest_rate_percentage || 0) / 100,
+            min_payment: studentLoan.minimum_payment_amount || studentLoan.balances?.current * 0.01,
+            last4: studentLoan.account_number?.slice(-4) || null,
+            due_date: studentLoan.next_payment_due_date?.split('-')[2] || null,
+          };
+
+          const { error: debtError } = await supabaseClient
+            .from('debts')
+            .upsert(debtData, { 
+              onConflict: 'user_id,name,last4',
+              ignoreDuplicates: false 
+            });
+
+          if (!debtError) {
+            importedDebtsCount++;
+          }
+        }
+      }
+
+      // Process mortgages
+      if (liabilitiesData.liabilities?.mortgage) {
+        for (const mortgage of liabilitiesData.liabilities.mortgage) {
+          const debtData = {
+            user_id: user.id,
+            name: mortgage.property_address || 'Mortgage',
+            balance: mortgage.balances?.current || 0,
+            apr: (mortgage.interest_rate?.percentage || 0) / 100,
+            min_payment: mortgage.last_payment_amount || mortgage.balances?.current * 0.005,
+            last4: mortgage.account_number?.slice(-4) || null,
+            due_date: mortgage.next_payment_due_date?.split('-')[2] || null,
+          };
+
+          const { error: debtError } = await supabaseClient
+            .from('debts')
+            .upsert(debtData, { 
+              onConflict: 'user_id,name,last4',
+              ignoreDuplicates: false 
+            });
+
+          if (!debtError) {
+            importedDebtsCount++;
+          }
+        }
+      }
+
+      console.log('Successfully imported', importedDebtsCount, 'debts for user:', user.id);
+    } else {
+      console.warn('Failed to fetch liabilities, but continuing with account linking');
+    }
+
     console.log('Successfully linked accounts for user:', user.id);
 
     return new Response(JSON.stringify({ 
       success: true,
       item_id: exchangeData.item_id,
-      accounts: accountsData.accounts.length
+      accounts: accountsData.accounts.length,
+      debts_imported: importedDebtsCount
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
