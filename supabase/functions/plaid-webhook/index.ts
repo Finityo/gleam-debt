@@ -1,55 +1,118 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import * as jose from 'https://deno.land/x/jose@v5.2.0/index.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, plaid-verification',
 };
 
-// Verify Plaid webhook signature
-async function verifyPlaidSignature(
+const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
+const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
+const PLAID_ENV = Deno.env.get('PLAID_ENV') || 'sandbox';
+
+function getPlaidUrl(): string {
+  switch (PLAID_ENV) {
+    case 'production':
+      return 'https://production.plaid.com';
+    case 'development':
+      return 'https://development.plaid.com';
+    default:
+      return 'https://sandbox.plaid.com';
+  }
+}
+
+// Verify Plaid webhook using JWT signature
+async function verifyPlaidWebhook(
   bodyString: string,
   headers: Headers
 ): Promise<boolean> {
-  const PLAID_WEBHOOK_VERIFICATION_KEY = Deno.env.get('PLAID_WEBHOOK_VERIFICATION_KEY');
-  
-  if (!PLAID_WEBHOOK_VERIFICATION_KEY) {
-    console.error('PLAID_WEBHOOK_VERIFICATION_KEY not configured');
-    return false;
-  }
-
-  const signature = headers.get('plaid-verification');
-  if (!signature) {
-    console.error('Missing plaid-verification header');
-    return false;
-  }
-
   try {
-    const keyData = await crypto.subtle.importKey(
-      'jwk',
-      JSON.parse(PLAID_WEBHOOK_VERIFICATION_KEY),
-      { name: 'ECDSA', namedCurve: 'P-256' },
-      false,
-      ['verify']
-    );
-
-    const signatureBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
-    const bodyBytes = new TextEncoder().encode(bodyString);
-
-    const isValid = await crypto.subtle.verify(
-      { name: 'ECDSA', hash: 'SHA-256' },
-      keyData,
-      signatureBytes,
-      bodyBytes
-    );
-
-    if (!isValid) {
-      console.error('Webhook signature verification failed');
+    // Step 1: Extract JWT from Plaid-Verification header
+    const jwt = headers.get('plaid-verification');
+    if (!jwt) {
+      console.error('Missing Plaid-Verification header');
+      return false;
     }
 
-    return isValid;
+    // Step 2: Decode JWT header without verification to get kid
+    const decodedHeader = jose.decodeProtectedHeader(jwt);
+    
+    // Step 3: Verify algorithm is ES256
+    if (decodedHeader.alg !== 'ES256') {
+      console.error('Invalid JWT algorithm, expected ES256, got:', decodedHeader.alg);
+      return false;
+    }
+
+    const kid = decodedHeader.kid;
+    if (!kid) {
+      console.error('Missing kid in JWT header');
+      return false;
+    }
+
+    console.log('Fetching verification key for kid:', kid);
+
+    // Step 4: Get the JWK from Plaid
+    const verificationKeyResponse = await fetch(`${getPlaidUrl()}/webhook_verification_key/get`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: PLAID_CLIENT_ID,
+        secret: PLAID_SECRET,
+        key_id: kid,
+      }),
+    });
+
+    if (!verificationKeyResponse.ok) {
+      console.error('Failed to get verification key:', await verificationKeyResponse.text());
+      return false;
+    }
+
+    const verificationKeyData = await verificationKeyResponse.json();
+    const jwk = verificationKeyData.key;
+
+    console.log('Retrieved JWK, verifying JWT...');
+
+    // Step 5: Verify the JWT using the JWK
+    const publicKey = await jose.importJWK(jwk, 'ES256');
+    const { payload } = await jose.jwtVerify(jwt, publicKey, {
+      algorithms: ['ES256'],
+    });
+
+    console.log('JWT verified successfully');
+
+    // Step 6: Check timestamp - webhook should not be more than 5 minutes old
+    const currentTime = Math.floor(Date.now() / 1000);
+    const issuedAt = payload.iat as number;
+    const timeDiff = currentTime - issuedAt;
+
+    if (timeDiff > 300) { // 5 minutes in seconds
+      console.error('Webhook is too old:', timeDiff, 'seconds');
+      return false;
+    }
+
+    // Step 7: Verify SHA-256 hash of the body
+    const bodyHashBuffer = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(bodyString)
+    );
+    const bodyHash = Array.from(new Uint8Array(bodyHashBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    const expectedHash = payload.request_body_sha256 as string;
+
+    if (bodyHash !== expectedHash) {
+      console.error('Body hash mismatch. Expected:', expectedHash, 'Got:', bodyHash);
+      return false;
+    }
+
+    console.log('Webhook verification successful');
+    return true;
   } catch (error) {
-    console.error('Error verifying webhook signature:', error);
+    console.error('Error verifying webhook:', error);
     return false;
   }
 }
@@ -63,8 +126,8 @@ serve(async (req) => {
     // Read body as text first for signature verification
     const bodyText = await req.text();
     
-    // Verify Plaid webhook signature
-    const isValidSignature = await verifyPlaidSignature(bodyText, req.headers);
+    // Verify Plaid webhook signature using JWT
+    const isValidSignature = await verifyPlaidWebhook(bodyText, req.headers);
     if (!isValidSignature) {
       console.error('Webhook rejected: Invalid signature');
       return new Response(JSON.stringify({ error: 'Invalid signature' }), {
