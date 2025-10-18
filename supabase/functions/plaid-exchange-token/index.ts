@@ -194,18 +194,27 @@ serve(async (req) => {
       const liabilitiesData = await liabilitiesResponse.json();
       console.log('Liabilities response:', JSON.stringify(liabilitiesData, null, 2));
       
+      // Create a map of account_id to account info for quick lookup
+      const accountsMap = new Map();
+      for (const account of liabilitiesData.accounts) {
+        accountsMap.set(account.account_id, account);
+      }
+      
       // Process credit card accounts
       if (liabilitiesData.liabilities?.credit) {
         console.log('Processing', liabilitiesData.liabilities.credit.length, 'credit cards');
-        for (const creditAccount of liabilitiesData.liabilities.credit) {
+        for (const creditLiability of liabilitiesData.liabilities.credit) {
+          const account = accountsMap.get(creditLiability.account_id);
+          if (!account) continue;
+          
           const debtData = {
             user_id: user.id,
-            name: creditAccount.name || 'Credit Card',
-            balance: creditAccount.balances?.current || 0,
-            apr: (creditAccount.aprs?.[0]?.apr_percentage || 0) / 100,
-            min_payment: creditAccount.last_payment_amount || creditAccount.balances?.current * 0.02,
-            last4: creditAccount.mask || null,
-            due_date: creditAccount.next_payment_due_date?.split('-')[2] || null,
+            name: account.name || account.official_name || 'Credit Card',
+            balance: account.balances?.current || 0,
+            apr: (creditLiability.aprs?.[0]?.apr_percentage || 0) / 100,
+            min_payment: creditLiability.minimum_payment_amount || creditLiability.last_payment_amount || account.balances?.current * 0.02,
+            last4: account.mask || null,
+            due_date: creditLiability.next_payment_due_date?.split('-')[2] || null,
           };
 
           const { error: debtError } = await supabaseClient
@@ -223,15 +232,18 @@ serve(async (req) => {
       // Process student loans
       if (liabilitiesData.liabilities?.student) {
         console.log('Processing', liabilitiesData.liabilities.student.length, 'student loans');
-        for (const studentLoan of liabilitiesData.liabilities.student) {
+        for (const studentLiability of liabilitiesData.liabilities.student) {
+          const account = accountsMap.get(studentLiability.account_id);
+          if (!account) continue;
+          
           const debtData = {
             user_id: user.id,
-            name: studentLoan.loan_name || 'Student Loan',
-            balance: studentLoan.balances?.current || 0,
-            apr: (studentLoan.interest_rate_percentage || 0) / 100,
-            min_payment: studentLoan.minimum_payment_amount || studentLoan.balances?.current * 0.01,
-            last4: studentLoan.account_number?.slice(-4) || null,
-            due_date: studentLoan.next_payment_due_date?.split('-')[2] || null,
+            name: account.name || account.official_name || studentLiability.loan_name || 'Student Loan',
+            balance: account.balances?.current || 0,
+            apr: (studentLiability.interest_rate_percentage || 0) / 100,
+            min_payment: studentLiability.minimum_payment_amount || account.balances?.current * 0.01,
+            last4: account.mask || studentLiability.account_number?.slice(-4) || null,
+            due_date: studentLiability.next_payment_due_date?.split('-')[2] || null,
           };
 
           const { error: debtError } = await supabaseClient
@@ -249,15 +261,18 @@ serve(async (req) => {
       // Process mortgages
       if (liabilitiesData.liabilities?.mortgage) {
         console.log('Processing', liabilitiesData.liabilities.mortgage.length, 'mortgages');
-        for (const mortgage of liabilitiesData.liabilities.mortgage) {
+        for (const mortgageLiability of liabilitiesData.liabilities.mortgage) {
+          const account = accountsMap.get(mortgageLiability.account_id);
+          if (!account) continue;
+          
           const debtData = {
             user_id: user.id,
-            name: mortgage.property_address || 'Mortgage',
-            balance: mortgage.balances?.current || 0,
-            apr: (mortgage.interest_rate?.percentage || 0) / 100,
-            min_payment: mortgage.last_payment_amount || mortgage.balances?.current * 0.005,
-            last4: mortgage.account_number?.slice(-4) || null,
-            due_date: mortgage.next_payment_due_date?.split('-')[2] || null,
+            name: account.name || account.official_name || mortgageLiability.property_address || 'Mortgage',
+            balance: account.balances?.current || 0,
+            apr: (mortgageLiability.interest_rate?.percentage || 0) / 100,
+            min_payment: mortgageLiability.last_payment_amount || account.balances?.current * 0.005,
+            last4: account.mask || mortgageLiability.account_number?.slice(-4) || null,
+            due_date: mortgageLiability.next_payment_due_date?.split('-')[2] || null,
           };
 
           const { error: debtError } = await supabaseClient
