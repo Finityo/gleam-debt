@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Trash2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logError } from '@/utils/logger';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,7 +69,7 @@ export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) 
       // Refresh the accounts list
       onAccountsChange();
     } catch (error: any) {
-      console.error('Error removing item:', error);
+      logError('AccountsList - Remove Item', error);
       toast({
         title: 'Error',
         description: 'Failed to disconnect account. Please try again.',

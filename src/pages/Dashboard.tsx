@@ -9,6 +9,7 @@ import { AccountsList } from '@/components/AccountsList';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
+import { logError } from '@/utils/logger';
 
 interface Account {
   id: string;
@@ -77,7 +78,7 @@ const Dashboard = () => {
       
       setAccounts(data.accounts || []);
     } catch (error: any) {
-      console.error('Error fetching accounts:', error);
+      logError('Dashboard - Fetch Accounts', error);
       toast({
         title: 'Error',
         description: 'Failed to load accounts',

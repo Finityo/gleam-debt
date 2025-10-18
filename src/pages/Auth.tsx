@@ -151,14 +151,23 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const {
-        error
-      } = await supabase.auth.verifyOtp({
-        phone,
-        token: otp,
-        type: 'sms'
+      // Use server-side OTP verification with rate limiting
+      const { data, error } = await supabase.functions.invoke('verify-phone-otp', {
+        body: { phone, otp }
       });
+
       if (error) throw error;
+
+      if (data.error) {
+        // Handle rate limiting or verification errors
+        throw new Error(data.error);
+      }
+
+      // Set the session from the response
+      if (data.session) {
+        await supabase.auth.setSession(data.session);
+      }
+
       toast({
         title: 'Success!',
         description: 'Signed in successfully'

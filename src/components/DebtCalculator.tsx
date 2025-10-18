@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Trash2, Plus, Upload } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from 'exceljs';
+import { logError } from '@/utils/logger';
 
 type Strategy = "snowball" | "avalanche";
 
@@ -159,7 +160,7 @@ export function DebtCalculator() {
       // Ensure strategy is always snowball on load
       setStrategy('snowball');
     } catch (error: any) {
-      console.error('Error loading saved data:', error);
+      logError('DebtCalculator - Load Data', error);
     }
   };
 
@@ -189,7 +190,7 @@ export function DebtCalculator() {
         if (error) throw error;
       }
     } catch (error: any) {
-      console.error('Error saving debts:', error);
+      logError('DebtCalculator - Save Debts', error);
     }
   };
 
@@ -211,7 +212,7 @@ export function DebtCalculator() {
 
       if (error) throw error;
     } catch (error: any) {
-      console.error('Error saving settings:', error);
+      logError('DebtCalculator - Save Settings', error);
     }
   };
 
@@ -245,7 +246,7 @@ export function DebtCalculator() {
       
       toast({ title: "Success", description: "All debts deleted" });
     } catch (error: any) {
-      console.error('Error deleting all debts:', error);
+      logError('DebtCalculator - Delete All Debts', error);
       toast({ title: "Error", description: "Failed to delete debts", variant: "destructive" });
     }
   };
@@ -284,7 +285,7 @@ export function DebtCalculator() {
         description: `Deleted ${selectedDebtIndices.size} debt(s)` 
       });
     } catch (error: any) {
-      console.error('Error deleting selected debts:', error);
+      logError('DebtCalculator - Delete Selected Debts', error);
       toast({ title: "Error", description: "Failed to delete debts", variant: "destructive" });
     }
   };
@@ -346,7 +347,7 @@ export function DebtCalculator() {
         }
       });
     } catch (error) {
-      console.error('Error computing plan:', error);
+      logError('DebtCalculator - Compute Plan', error);
       toast({ title: "Error", description: "Failed to compute debt plan", variant: "destructive" });
     } finally {
       setIsLoading(false);
@@ -414,7 +415,7 @@ export function DebtCalculator() {
         description: `Imported ${importedDebts.length} debt(s) from Excel file` 
       });
     } catch (error) {
-      console.error('Error importing file:', error);
+      logError('DebtCalculator - Import File', error);
       toast({ 
         title: "Error", 
         description: "Failed to import Excel file. Please ensure it has columns: Name, Last4, Balance, MinPayment, APR, DueDate", 

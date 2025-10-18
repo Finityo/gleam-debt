@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Download } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/utils/logger';
 
 type Strategy = "snowball" | "avalanche";
 
@@ -117,7 +118,7 @@ const DebtPlan = () => {
       if (error) throw error;
       setResult(data);
     } catch (error) {
-      console.error('Error computing plan:', error);
+      logError('DebtPlan - Compute Plan', error);
       toast({ title: "Error", description: "Failed to compute debt plan", variant: "destructive" });
     } finally {
       setIsLoading(false);
@@ -153,7 +154,7 @@ const DebtPlan = () => {
       
       toast({ title: "Success", description: "Excel file exported successfully" });
     } catch (error) {
-      console.error('Error exporting XLSX:', error);
+      logError('DebtPlan - Export XLSX', error);
       toast({ title: "Error", description: "Failed to export Excel file", variant: "destructive" });
     } finally {
       setIsLoading(false);

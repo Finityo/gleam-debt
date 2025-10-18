@@ -83,6 +83,33 @@ export type Database = {
         }
         Relationships: []
       }
+      otp_verification_attempts: {
+        Row: {
+          attempted_at: string | null
+          failure_reason: string | null
+          id: string
+          ip_address: string | null
+          phone: string
+          success: boolean
+        }
+        Insert: {
+          attempted_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          ip_address?: string | null
+          phone: string
+          success: boolean
+        }
+        Update: {
+          attempted_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          ip_address?: string | null
+          phone?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
       plaid_accounts: {
         Row: {
           account_id: string
@@ -249,6 +276,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_otp_rate_limit: {
+        Args: { p_ip_address?: string; p_phone: string }
+        Returns: {
+          allowed: boolean
+          attempts_count: number
+          wait_seconds: number
+        }[]
+      }
       get_plaid_token_from_vault: {
         Args: { p_function_name?: string; p_item_id: string }
         Returns: string

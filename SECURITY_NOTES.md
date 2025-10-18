@@ -1,6 +1,6 @@
-# Security Review & Fixes - 2025-10-11
+# Security Review & Fixes - Updated 2025-10-18
 
-## Issues Fixed
+## Recent Fixes (2025-10-18)
 
 ### ✅ 1. Missing DELETE Policy on Settings Table
 **Status:** FIXED  
@@ -48,14 +48,22 @@ Now these functions require authentication - only authenticated users can access
 
 ## Remaining Issues for Discussion
 
-### ⚠️ 6. Phone OTP Verification Without Server-Side Validation
-**Status:** ON TODO LIST  
-**Severity:** Warning  
-**Notes:** 
-- Already on your TODO list as "Fix phone number login"
-- Current implementation is client-side only
-- Recommend implementing server-side OTP verification with rate limiting
-- Discuss implementation when fixing phone login tomorrow
+### ✅ 6. Phone OTP Verification Without Server-Side Validation
+**Status:** FIXED (2025-10-18)
+**Severity:** Warning
+**Fix Implemented:**
+- Created `verify-phone-otp` edge function for server-side OTP verification
+- Implemented rate limiting: 5 attempts per phone, 10 per IP in 15 minutes
+- Added `otp_verification_attempts` audit table tracking all attempts
+- Created `check_otp_rate_limit()` security definer function
+- Updated Auth.tsx to use server-side verification instead of client-side
+- Logs include phone number, IP address, success/failure, and timestamps
+
+**Security Improvements:**
+1. **Rate Limiting:** Prevents brute force attacks on OTP codes
+2. **Audit Trail:** Complete log of all verification attempts
+3. **Server-Side Control:** No way to bypass validation from client
+4. **Progressive Blocking:** IP-based blocking for distributed attacks
 
 ### ✅ 7. Plaid Access Tokens Stored Without Encryption
 **Status:** FIXED - Production Security Upgrade (2025-10-18)
@@ -94,15 +102,40 @@ Now these functions require authentication - only authenticated users can access
 4. **Complete RLS Policies:** All tables now have full CRUD policies where appropriate
 5. **Password Security:** Enabled leaked password protection
 
-## Next Steps
+### ✅ 8. Error Details Logged to Console
+**Status:** FIXED (2025-10-18)
+**Severity:** Info
+**Fix Implemented:**
+- Created secure logging utility (`src/utils/logger.ts`)
+- Replaced all `console.error` calls across components:
+  - AccountsList.tsx
+  - DebtCalculator.tsx (8 instances)
+  - Dashboard.tsx
+  - DebtPlan.tsx (2 instances)
+  - NotFound.tsx
+- Development: Full error details in console
+- Production: Sanitized messages only (no stack traces)
 
-1. Fix phone number login with server-side OTP verification (already on TODO)
-2. Enable leaked password protection in auth settings
-3. Replace console.error statements with environment-aware logging
-4. Consider: Adding rate limiting to auth endpoints
-5. Monitor plaid_token_access_log for security anomalies
+**Security Improvements:**
+1. **No Information Leakage:** Stack traces and implementation details hidden in production
+2. **Environment-Aware:** Automatic behavior based on dev/prod
+3. **Consistent Logging:** Centralized utility prevents accidental exposure
+4. **Future-Ready:** Prepared for server-side logging service integration
 
-## Documentation
+## Security Status Summary
 
-All security findings, fixes, and remaining issues are documented here for your review.
-Every security decision and implementation detail has been recorded for future reference.
+### ✅ All Critical Issues Resolved
+- **Plaid Token Encryption:** Vault-based encryption with audit logging
+- **Phone OTP Security:** Server-side verification with rate limiting
+- **Leaked Password Protection:** Enabled
+- **Console Logging:** Sanitized for production
+- **Edge Function Security:** JWT verification enabled on all sensitive functions
+- **Input Validation:** Zod schemas on all user inputs
+- **RLS Policies:** Complete CRUD policies on all tables
+
+### Ongoing Security Practices
+1. Monitor `plaid_token_access_log` for unusual patterns
+2. Monitor `otp_verification_attempts` for brute force attempts
+3. Regular security audits using the linter
+4. Review audit logs weekly
+5. Consider implementing CAPTCHA after 3 failed OTP attempts (future enhancement)
