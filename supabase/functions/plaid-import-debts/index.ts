@@ -56,6 +56,26 @@ serve(async (req) => {
       );
     }
 
+    // Get all plaid_accounts for the user to map account_id to mask
+    const { data: plaidAccounts, error: accountsError } = await supabaseClient
+      .from('plaid_accounts')
+      .select('account_id, mask')
+      .eq('user_id', user.id);
+
+    if (accountsError) {
+      console.error('Error fetching plaid accounts:', accountsError);
+    }
+
+    // Create a map of account_id to mask for quick lookup
+    const accountMaskMap = new Map();
+    if (plaidAccounts) {
+      plaidAccounts.forEach(acc => {
+        if (acc.mask) {
+          accountMaskMap.set(acc.account_id, acc.mask);
+        }
+      });
+    }
+
     const importedDebts = [];
 
     // Fetch liabilities for each item
@@ -92,18 +112,21 @@ serve(async (req) => {
       if (liabilitiesData.liabilities?.credit) {
         console.log('Processing', liabilitiesData.liabilities.credit.length, 'credit cards');
         for (const creditAccount of liabilitiesData.liabilities.credit) {
-          // Find the account in the accounts array to get the mask
+          // Find the account in the accounts array to get balance info
           const matchingAccount = liabilitiesData.accounts.find(
             (acc: any) => acc.account_id === creditAccount.account_id
           );
+
+          // Get mask from our database (Plaid liabilities doesn't return it for credit cards)
+          const last4 = accountMaskMap.get(creditAccount.account_id) || null;
           
           const debtData = {
             user_id: user.id,
-            name: creditAccount.name || matchingAccount?.name || 'Credit Card',
+            name: matchingAccount?.name || creditAccount.name || 'Credit Card',
             balance: matchingAccount?.balances?.current || 0,
             apr: (creditAccount.aprs?.[0]?.apr_percentage || 0) / 100,
             min_payment: creditAccount.minimum_payment_amount || creditAccount.last_payment_amount || matchingAccount?.balances?.current * 0.02,
-            last4: matchingAccount?.mask || null,
+            last4: last4,
             due_date: creditAccount.next_payment_due_date ? new Date(creditAccount.next_payment_due_date).getDate().toString() : null,
           };
 
