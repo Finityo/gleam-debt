@@ -210,10 +210,7 @@ serve(async (req) => {
 
           const { error: debtError } = await supabaseClient
             .from('debts')
-            .upsert(debtData, { 
-              onConflict: 'user_id,name,last4',
-              ignoreDuplicates: false 
-            });
+            .insert(debtData);
 
           if (!debtError) {
             importedDebtsCount++;
@@ -239,10 +236,7 @@ serve(async (req) => {
 
           const { error: debtError } = await supabaseClient
             .from('debts')
-            .upsert(debtData, { 
-              onConflict: 'user_id,name,last4',
-              ignoreDuplicates: false 
-            });
+            .insert(debtData);
 
           if (!debtError) {
             importedDebtsCount++;
@@ -268,10 +262,7 @@ serve(async (req) => {
 
           const { error: debtError } = await supabaseClient
             .from('debts')
-            .upsert(debtData, { 
-              onConflict: 'user_id,name,last4',
-              ignoreDuplicates: false 
-            });
+            .insert(debtData);
 
           if (!debtError) {
             importedDebtsCount++;
