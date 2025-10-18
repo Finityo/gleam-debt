@@ -6,8 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { AccountsList } from '@/components/AccountsList';
-import { DebtCalculator } from '@/components/DebtCalculator';
-import { DebtImporter } from '@/components/DebtImporter';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
@@ -125,13 +123,17 @@ const Dashboard = () => {
 
         <PlaidUpdateBanner />
 
-        <div className="mb-8">
+        <div className="grid gap-6 mb-8">
           <PlaidLink onSuccess={fetchAccounts} />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          <DebtImporter onImportComplete={fetchAccounts} />
-          <DebtCalculator />
+          
+          <Button
+            onClick={() => navigate('/debts')}
+            size="lg"
+            variant="outline"
+            className="w-full"
+          >
+            Manage Debts & Payoff Strategy
+          </Button>
         </div>
 
         <div className="space-y-6">

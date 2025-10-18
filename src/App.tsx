@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Debts from "./pages/Debts";
 import Privacy from "./pages/Privacy";
 import PlaidSubmission from "./pages/PlaidSubmission";
 import NotFound from "./pages/NotFound";
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/debts" element={<Debts />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/plaid-submission" element={<PlaidSubmission />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
