@@ -92,35 +92,13 @@ serve(async (req) => {
       throw new Error(exchangeData.error_message || 'Failed to exchange token');
     }
 
-    // Store access token in Vault using wrapper function
-    const vault_secret_name = `plaid_token_${exchangeData.item_id}`;
-    
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Call the wrapper function to store in Vault
-    const { data: storedSecretName, error: vaultError } = await supabaseAdmin
-      .rpc('store_plaid_token_in_vault', {
-        p_token: exchangeData.access_token,
-        p_secret_name: vault_secret_name,
-        p_description: `Plaid access token for item ${exchangeData.item_id}`
-      });
-
-    if (vaultError) {
-      console.error('Vault error storing token:', vaultError);
-      throw new Error('Failed to secure access token');
-    }
-
-    console.log('Token stored in Vault:', storedSecretName);
-
-    // Store item in database with vault reference
+    // TEMPORARY: Store token directly in table until Vault deployment is stable
+    // TODO: Re-enable Vault storage once deployment issues are resolved
     const { error: itemError } = await supabaseClient
       .from('plaid_items')
       .insert({
         user_id: user.id,
-        vault_secret_id: vault_secret_name,
+        access_token: exchangeData.access_token, // Temporary plaintext storage
         item_id: exchangeData.item_id,
         institution_id: metadata?.institution?.institution_id,
         institution_name: metadata?.institution?.name,
@@ -131,15 +109,7 @@ serve(async (req) => {
       throw itemError;
     }
 
-    // Log token creation
-    await supabaseAdmin
-      .from('plaid_token_access_log')
-      .insert({
-        item_id: exchangeData.item_id,
-        accessed_by: user.id,
-        access_type: 'create',
-        function_name: 'plaid-exchange-token'
-      });
+    console.log('Item stored successfully (temp plaintext):', exchangeData.item_id);
 
     // Get accounts
     const accountsResponse = await fetch(`https://${PLAID_ENV}.plaid.com/accounts/get`, {
