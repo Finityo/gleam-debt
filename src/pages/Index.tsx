@@ -177,6 +177,38 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Testimonial Section */}
+      <section id="testimonial" className="py-16 px-4 text-center bg-muted/30">
+        <div className="container mx-auto max-w-4xl">
+          <h2 className="text-3xl font-bold text-foreground mb-6">What people are saying</h2>
+          <div className="max-w-2xl mx-auto">
+            <blockquote className="text-lg italic text-muted-foreground mb-4 leading-relaxed">
+              "Finityo helped me finally see a clear path to paying off my credit cards. The Snowball method gave me quick wins, and the calendar showed me exactly when I'd be debt-free."
+            </blockquote>
+            <p className="font-semibold text-foreground">— Maria G., Austin, TX</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Sample Plan Section */}
+      <section id="sample-plan" className="py-16 px-4 text-center">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-3xl font-bold text-foreground mb-6">See a Sample Payoff Plan</h2>
+          <p className="max-w-3xl mx-auto mb-8 text-lg text-muted-foreground">
+            Connect your accounts with Plaid, choose Snowball or Avalanche, and we'll generate a simple month-by-month schedule that shows balances shrinking and a clear payoff date.
+          </p>
+          <img 
+            src="/images/sample-plan.png" 
+            alt="Sample debt payoff calendar screenshot" 
+            className="max-w-full w-full border border-border rounded-lg shadow-lg mx-auto"
+            loading="lazy"
+          />
+          <p className="mt-4 text-sm text-muted-foreground">
+            This example is for demo purposes only. Your results will vary based on your accounts and payments.
+          </p>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="container mx-auto px-4 py-20">
         <div className="max-w-6xl mx-auto">
