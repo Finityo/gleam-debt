@@ -18,6 +18,7 @@ import Disclosures from "./pages/Disclosures";
 import PlaidSubmission from "./pages/PlaidSubmission";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import DownloadPlaidProposal from "./pages/DownloadPlaidProposal";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/disclosures" element={<Disclosures />} />
             <Route path="/plaid-submission" element={<PlaidSubmission />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/plaid-proposal" element={<DownloadPlaidProposal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
