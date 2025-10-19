@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { DebtCard } from "@/components/DebtCard";
 import { SEOHead } from "@/components/SEOHead";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { 
   Wallet, 
   TrendingDown, 
@@ -26,6 +27,7 @@ import plaidBadge from "@/assets/plaid-badge.png";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { trackEvent } = useAnalytics();
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -618,6 +620,14 @@ const Index = () => {
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
                       Sign In / Sign Up
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => navigate('/admin')}
+                      className="text-muted-foreground hover:text-primary transition-colors font-medium"
+                    >
+                      Business Login
                     </button>
                   </li>
                 </ul>

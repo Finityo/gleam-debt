@@ -22,6 +22,12 @@ const Auth = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  
+  // Additional signup fields
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [address, setAddress] = useState('');
+  const [zipCode, setZipCode] = useState('');
   const navigate = useNavigate();
   const {
     toast
@@ -81,7 +87,14 @@ const Auth = () => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            address,
+            zip_code: zipCode,
+            phone
+          }
         }
       });
       if (error) {
@@ -101,6 +114,11 @@ const Auth = () => {
         });
         setEmail('');
         setPassword('');
+        setFirstName('');
+        setLastName('');
+        setAddress('');
+        setZipCode('');
+        setPhone('');
       }
     } catch (error: any) {
       toast({
@@ -264,10 +282,37 @@ const Auth = () => {
               
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="first-name">First Name</Label>
+                      <Input id="first-name" type="text" placeholder="John" value={firstName} onChange={e => setFirstName(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last-name">Last Name</Label>
+                      <Input id="last-name" type="text" placeholder="Doe" value={lastName} onChange={e => setLastName(e.target.value)} required />
+                    </div>
+                  </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input id="signup-email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-phone">Phone Number</Label>
+                    <Input id="signup-phone" type="tel" placeholder="+1234567890" value={phone} onChange={e => setPhone(e.target.value)} />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input id="address" type="text" placeholder="123 Main St" value={address} onChange={e => setAddress(e.target.value)} />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="zip-code">Zip Code</Label>
+                    <Input id="zip-code" type="text" placeholder="12345" value={zipCode} onChange={e => setZipCode(e.target.value)} maxLength={10} />
+                  </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
                     <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
