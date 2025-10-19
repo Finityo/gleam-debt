@@ -238,23 +238,42 @@ const DebtPlan = () => {
                     </TableBody>
                   </Table>
                 </div>
-                <div className="mt-4 p-4 bg-muted rounded-lg">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">Total Months</div>
-                      <div className="text-2xl font-bold">{result.totals.totalMonths}</div>
+                <div className="mt-4 space-y-4">
+                  {/* Debt Free Date Banner */}
+                  <div className="p-6 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg border-2 border-green-500/50">
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Forecasted Debt Free Date</div>
+                      <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                        {new Date(new Date().setMonth(new Date().getMonth() + result.totals.totalMonths)).toLocaleDateString('en-US', { 
+                          month: 'long', 
+                          year: 'numeric' 
+                        })}
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        {result.totals.totalMonths} months from now
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-muted-foreground">Total Debts</div>
-                      <div className="text-2xl font-bold">{result.totals.numDebts}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Total Balance</div>
-                      <div className="text-2xl font-bold">${result.totals.sumBalance.toFixed(2)}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Min Payments</div>
-                      <div className="text-2xl font-bold">${result.totals.sumMinPayment.toFixed(2)}</div>
+                  </div>
+
+                  {/* Stats Grid */}
+                  <div className="p-4 bg-muted rounded-lg">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <div className="text-muted-foreground">Total Months</div>
+                        <div className="text-2xl font-bold">{result.totals.totalMonths}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground">Total Debts</div>
+                        <div className="text-2xl font-bold">{result.totals.numDebts}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground">Total Balance</div>
+                        <div className="text-2xl font-bold">${result.totals.sumBalance.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground">Min Payments</div>
+                        <div className="text-2xl font-bold">${result.totals.sumMinPayment.toFixed(2)}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
