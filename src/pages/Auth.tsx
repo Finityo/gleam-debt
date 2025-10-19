@@ -288,8 +288,8 @@ const Auth = () => {
   return <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">Debt Manager</CardTitle>
-          <CardDescription>Connect your accounts and start crushing debt</CardDescription>
+          <CardTitle className="text-3xl font-bold">Team Access</CardTitle>
+          <CardDescription>Sign in to access the admin dashboard</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-6">
