@@ -22,6 +22,8 @@ const Auth = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   
   // Additional signup fields
   const [firstName, setFirstName] = useState('');
@@ -200,6 +202,45 @@ const Auth = () => {
       setLoading(false);
     }
   };
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      emailSchema.parse(resetEmail);
+    } catch (error: any) {
+      toast({
+        title: 'Validation Error',
+        description: error.errors?.[0]?.message || 'Invalid email',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Email Sent',
+        description: 'Check your email for the password reset link'
+      });
+      setShowForgotPassword(false);
+      setResetEmail('');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to send reset email',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -258,27 +299,63 @@ const Auth = () => {
             </div>
           </div>
 
-          {authMethod === 'email' ? <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
+          {authMethod === 'email' ? (
+            showForgotPassword ? (
+              <div className="space-y-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setShowForgotPassword(false)}
+                  className="mb-2"
+                >
+                  ← Back to Sign In
+                </Button>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input id="signin-email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <Input id="signin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                    <Label htmlFor="reset-email">Email</Label>
+                    <Input 
+                      id="reset-email" 
+                      type="email" 
+                      placeholder="you@example.com" 
+                      value={resetEmail} 
+                      onChange={e => setResetEmail(e.target.value)} 
+                      required 
+                    />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Signing in...' : 'Sign In'}
+                    {loading ? 'Sending...' : 'Send Reset Link'}
                   </Button>
                 </form>
-              </TabsContent>
+              </div>
+            ) : (
+              <Tabs defaultValue="signin" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="signin">
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email">Email</Label>
+                      <Input id="signin-email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-password">Password</Label>
+                      <Input id="signin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="link" 
+                      className="px-0 text-sm" 
+                      onClick={() => setShowForgotPassword(true)}
+                    >
+                      Forgot password?
+                    </Button>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? 'Signing in...' : 'Sign In'}
+                    </Button>
+                  </form>
+                </TabsContent>
               
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
@@ -343,7 +420,9 @@ const Auth = () => {
                   </Button>
                 </form>
               </TabsContent>
-            </Tabs> : <div className="space-y-4">
+            </Tabs>
+            )
+          ) : <div className="space-y-4">
               {!otpSent ? <form onSubmit={handleSendOTP} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
