@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plaid Payment Integration Request - Finityo</title>
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+        }
+        .header {
+            border-bottom: 3px solid #6366f1;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #6366f1;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+        h2 {
+            color: #333;
+            border-left: 4px solid #6366f1;
+            padding-left: 15px;
+            margin-top: 30px;
+            font-size: 20px;
+        }
+        h3 {
+            color: #444;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .highlight-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .requirement-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            font-size: 14px;
+            color: #666;
+        }
+        .button-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .print-btn {
+            background: #6366f1;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .print-btn:hover {
+            background: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container no-print">
+        <button class="print-btn" onclick="window.print()">📄 Print to PDF or Copy as Email</button>
+    </div>
+
+    <div class="header">
+        <h1>Plaid Payment Initiation Integration Request</h1>
+        <p class="subtitle">Automated Debt Payment System - Finityo</p>
+        <p class="subtitle">Date: <span id="current-date"></span></p>
+    </div>
+
+    <div class="section">
+        <h2>Executive Summary</h2>
+        <p>
+            We are developing an automated debt payment solution that helps users become debt-free by following 
+            the proven debt snowball methodology. To deliver this feature, we require access to Plaid's Payment 
+            Initiation API to enable scheduled ACH payments to creditors on behalf of our users.
+        </p>
+    </div>
+
+    <div class="highlight-box">
+        <strong>Business Objective:</strong> Automate monthly debt payments following an optimized payoff strategy, 
+        eliminating manual payment management and ensuring users stay on track to become debt-free.
+    </div>
+
+    <div class="section">
+        <h2>Feature Overview</h2>
+        <p>Our automated payment system will:</p>
+        <ul>
+            <li><strong>Follow Debt Snowball Methodology:</strong> Prioritize debts by balance while maintaining minimum payments on all accounts</li>
+            <li><strong>Schedule Strategic Payments:</strong> Automatically pay each debt on its due date with the calculated optimal amount</li>
+            <li><strong>Roll Forward Freed Payments:</strong> When a debt is paid off, automatically redirect that payment amount to the next priority debt</li>
+            <li><strong>Provide Forecasting:</strong> Show users their exact debt-free date based on their payment plan</li>
+            <li><strong>Track Progress:</strong> Monitor payment success/failure and update balances in real-time</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Technical Requirements from Plaid</h2>
+        
+        <h3>1. Payment Initiation API Access</h3>
+        <ul>
+            <li>Production environment credentials for Payment Initiation</li>
+            <li>Sandbox access for development and testing</li>
+            <li>API documentation specific to ACH payment initiation</li>
+            <li>Rate limits and usage guidelines</li>
+        </ul>
+
+        <h3>2. Required API Capabilities</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Capability</th>
+                    <th>Purpose</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ACH Payment Initiation</td>
+                    <td>Transfer funds from user's bank to creditors</td>
+                    <td>Critical</td>
+                </tr>
+                <tr>
+                    <td>Scheduled Payments</td>
+                    <td>Set up recurring payments on specific due dates</td>
+                    <td>Critical</td>
+                </tr>
+                <tr>
+                    <td>Payment Status Webhooks</td>
+                    <td>Receive real-time updates on payment processing</td>
+                    <td>Critical</td>
+                </tr>
+                <tr>
+                    <td>Balance Verification</td>
+                    <td>Confirm sufficient funds before initiating payment</td>
+                    <td>High</td>
+                </tr>
+                <tr>
+                    <td>Payment Modification/Cancellation</td>
+                    <td>Allow users to pause or adjust scheduled payments</td>
+                    <td>High</td>
+                </tr>
+                <tr>
+                    <td>Multi-creditor Support</td>
+                    <td>Enable payments to multiple creditors simultaneously</td>
+                    <td>Critical</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>3. Authentication & Security</h3>
+        <ul>
+            <li>Production API keys (Client ID, Secret)</li>
+            <li>OAuth credentials for secure user authorization</li>
+            <li>Webhook signature verification keys</li>
+            <li>Documentation on security best practices for payment handling</li>
+        </ul>
+
+        <h3>4. Integration Support</h3>
+        <ul>
+            <li>Technical documentation for payment initiation workflows</li>
+            <li>Sample code/SDKs for Deno/TypeScript environments</li>
+            <li>Webhook event specifications and examples</li>
+            <li>Error handling guidelines and retry logic best practices</li>
+            <li>Testing procedures and certification requirements</li>
+        </ul>
+    </div>
+
+    <div class="requirement-box">
+        <h3>⚠️ Critical Requirements</h3>
+        <ul style="margin: 10px 0;">
+            <li>Ability to schedule payments up to 12+ months in advance</li>
+            <li>Support for variable payment amounts per schedule (snowball methodology requires dynamic amounts)</li>
+            <li>Real-time payment status updates via webhooks</li>
+            <li>Compliance with ACH regulations and user consent requirements</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Implementation Architecture</h2>
+        
+        <h3>Payment Flow</h3>
+        <ol>
+            <li><strong>User Authorization:</strong> User connects bank account via Plaid Link and authorizes payment initiation</li>
+            <li><strong>Debt Analysis:</strong> System calculates optimal payment schedule using debt snowball methodology</li>
+            <li><strong>Payment Scheduling:</strong> Edge functions create scheduled payments for each debt on due dates</li>
+            <li><strong>Pre-Payment Verification:</strong> Check account balance before each scheduled payment</li>
+            <li><strong>Payment Execution:</strong> Initiate ACH transfer via Plaid Payment API</li>
+            <li><strong>Status Monitoring:</strong> Webhook receives payment status (pending, processed, failed)</li>
+            <li><strong>Balance Updates:</strong> Update debt balances and recalculate snowball schedule</li>
+            <li><strong>User Notifications:</strong> Notify users of payment success/failure via email</li>
+        </ol>
+
+        <h3>Technical Stack</h3>
+        <ul>
+            <li><strong>Frontend:</strong> React with TypeScript</li>
+            <li><strong>Backend:</strong> Supabase Edge Functions (Deno runtime)</li>
+            <li><strong>Database:</strong> PostgreSQL (Supabase)</li>
+            <li><strong>Authentication:</strong> Supabase Auth</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Compliance & User Experience</h2>
+        
+        <h3>User Consent & Control</h3>
+        <ul>
+            <li>Users must explicitly opt-in to automated payments</li>
+            <li>Clear disclosure of payment amounts and schedules</li>
+            <li>Ability to pause, modify, or cancel automated payments at any time</li>
+            <li>Confirmation notifications before each payment is processed</li>
+        </ul>
+
+        <h3>Error Handling</h3>
+        <ul>
+            <li>Insufficient funds: Notify user and pause automated payments</li>
+            <li>Payment failure: Retry logic with user notification</li>
+            <li>Account disconnection: Alert user to reconnect bank account</li>
+            <li>Creditor rejection: Log and notify user for manual intervention</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Expected Timeline</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Phase</th>
+                    <th>Duration</th>
+                    <th>Deliverables</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>API Access & Setup</td>
+                    <td>1 week</td>
+                    <td>Credentials, documentation review, sandbox testing</td>
+                </tr>
+                <tr>
+                    <td>Core Development</td>
+                    <td>2-3 weeks</td>
+                    <td>Payment scheduling, edge functions, database schema</td>
+                </tr>
+                <tr>
+                    <td>Testing & Refinement</td>
+                    <td>1-2 weeks</td>
+                    <td>Sandbox testing, error handling, user flow optimization</td>
+                </tr>
+                <tr>
+                    <td>Production Launch</td>
+                    <td>1 week</td>
+                    <td>Certification, production credentials, limited rollout</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Success Metrics</h2>
+        <ul>
+            <li><strong>Payment Success Rate:</strong> > 95% of scheduled payments processed successfully</li>
+            <li><strong>User Adoption:</strong> 60%+ of active users enable automated payments</li>
+            <li><strong>Time to Debt-Free:</strong> Users reduce payoff timeline by 20%+ vs manual payments</li>
+            <li><strong>User Satisfaction:</strong> NPS score of 8+ for automated payment feature</li>
+        </ul>
+    </div>
+
+    <div class="highlight-box">
+        <h3>🎯 Key Benefit to Users</h3>
+        <p style="margin: 5px 0;">
+            Users will achieve financial freedom faster by eliminating manual payment management, ensuring optimal 
+            debt payoff strategy execution, and never missing a payment or forgetting to roll forward freed-up funds 
+            to the next priority debt.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Questions for Plaid Team</h2>
+        <ol>
+            <li>What is the typical approval timeline for Payment Initiation API access?</li>
+            <li>Are there specific compliance or certification requirements we need to complete?</li>
+            <li>What are the transaction fees for ACH payments via your Payment Initiation API?</li>
+            <li>Do you support variable recurring payments (amount changes each month based on snowball logic)?</li>
+            <li>What is the maximum number of scheduled payments we can set up per user?</li>
+            <li>How far in advance can payments be scheduled?</li>
+            <li>What is your recommended approach for handling payment failures and retries?</li>
+            <li>Are there any institutions that don't support payment initiation that we should be aware of?</li>
+        </ol>
+    </div>
+
+    <div class="footer">
+        <p><strong>Contact Information:</strong></p>
+        <p>Project: Finityo - Automated Debt Freedom Platform</p>
+        <p>Current Plaid Integration: Active (Liabilities & Accounts data access)</p>
+        <p>Account Manager: [Your Plaid Account Manager Name]</p>
+        <p>Status: Ready to begin implementation upon API access approval</p>
+    </div>
+
+    <script>
+        // Set current date
+        const date = new Date();
+        const formatted = date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        document.getElementById('current-date').textContent = formatted;
+    </script>
+</body>
+</html>
