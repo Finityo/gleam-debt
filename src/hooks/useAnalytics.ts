@@ -14,7 +14,10 @@ export const useAnalytics = () => {
         user_agent: navigator.userAgent,
       });
     } catch (error) {
-      console.error('Analytics tracking error:', error);
+      // Silently fail analytics - don't disrupt user experience
+      if (import.meta.env.DEV) {
+        console.error('Analytics tracking error:', error);
+      }
     }
   };
 

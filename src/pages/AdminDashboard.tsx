@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart, Users, Activity, TrendingUp, LogOut } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { logError } from '@/utils/logger';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -53,7 +54,7 @@ const AdminDashboard = () => {
       setIsAdmin(true);
       await fetchAnalytics();
     } catch (error) {
-      console.error('Admin access check error:', error);
+      logError('Admin Dashboard - Access Check', error);
       navigate('/auth');
     } finally {
       setLoading(false);
@@ -93,7 +94,7 @@ const AdminDashboard = () => {
         recentEvents: recentEvents || [],
       });
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      logError('Admin Dashboard - Fetch Analytics', error);
       toast({
         title: 'Error',
         description: 'Failed to load analytics data',
