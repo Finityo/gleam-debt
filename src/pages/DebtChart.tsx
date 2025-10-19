@@ -51,23 +51,45 @@ const DebtChart = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      // Fetch debts
+      const { data: debtData, error: debtError } = await supabase
         .from('debts')
         .select('*')
         .eq('user_id', session.user.id)
         .order('balance', { ascending: false });
 
-      if (error) throw error;
+      if (debtError) throw debtError;
 
-      const debtData = data || [];
-      setDebts(debtData);
+      // Fetch Plaid accounts to get actual credit limits
+      const { data: accounts, error: accountsError } = await supabase
+        .from('plaid_accounts')
+        .select('current_balance, available_balance, subtype')
+        .eq('user_id', session.user.id)
+        .in('subtype', ['credit card', 'credit']);
+
+      if (accountsError) throw accountsError;
+
+      const debts = debtData || [];
+      setDebts(debts);
       
-      const total = debtData.reduce((sum, debt) => sum + debt.balance, 0);
-      setTotalDebt(total);
+      // Calculate total debt from debts table
+      const totalDebtAmount = debts.reduce((sum, debt) => sum + debt.balance, 0);
+      setTotalDebt(totalDebtAmount);
       
-      // Estimate total limit as 2x total debt (rough approximation for credit cards)
-      // In real scenario, you'd fetch actual credit limits from Plaid
-      setTotalLimit(total * 2);
+      // Calculate total credit limit from Plaid accounts
+      // Credit limit = current balance + available balance
+      let creditLimit = 0;
+      if (accounts && accounts.length > 0) {
+        creditLimit = accounts.reduce((sum, account) => {
+          const balance = account.current_balance || 0;
+          const available = account.available_balance || 0;
+          // Credit limit is the sum of what's owed (balance) and what's available
+          return sum + Math.abs(balance) + available;
+        }, 0);
+      }
+      
+      // If no accounts found, use debt as minimum credit limit
+      setTotalLimit(creditLimit > 0 ? creditLimit : totalDebtAmount);
     } catch (error: any) {
       toast({
         title: 'Error',
