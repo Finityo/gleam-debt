@@ -627,7 +627,7 @@ const Index = () => {
                       onClick={() => navigate('/admin')}
                       className="text-muted-foreground hover:text-primary transition-colors font-medium"
                     >
-                      Business Login
+                      Team Access
                     </button>
                   </li>
                 </ul>
