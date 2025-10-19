@@ -54,8 +54,8 @@ const Index = () => {
             <div className="flex justify-center mb-8">
               <img 
                 src={finityoLogo} 
-                alt="Finityo" 
-                className="w-full max-w-md lg:max-w-lg h-auto animate-fade-in"
+                alt="Finityo Logo - Debt Management App" 
+                className="w-full max-w-[280px] sm:max-w-md lg:max-w-lg h-auto animate-fade-in px-4"
               />
             </div>
             
@@ -193,8 +193,70 @@ const Index = () => {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="bg-muted/30 py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-foreground mb-4">
+                How Finityo Works
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Get debt-free in just three simple steps
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground text-2xl font-bold mb-6">
+                  1
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Connect Your Accounts</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Securely link your credit cards and loans through Plaid. We'll automatically import your balances, 
+                  APRs, and payment details—no manual entry needed.
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent text-accent-foreground text-2xl font-bold mb-6">
+                  2
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Get Your Custom Plan</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Our calculator analyzes your debts and creates a personalized payoff strategy. Choose between 
+                  snowball (psychological wins) or avalanche (lowest interest first).
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success text-success-foreground text-2xl font-bold mb-6">
+                  3
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Track Your Progress</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Watch your debt shrink with visual charts and milestones. See your debt-free date get closer 
+                  every month as you crush each balance.
+                </p>
+              </div>
+            </div>
+
+            <div className="text-center mt-12">
+              <Button 
+                size="lg"
+                onClick={() => navigate('/auth')}
+                className="bg-gradient-primary hover:shadow-glow transition-all text-lg px-8"
+              >
+                Start Your Free Plan
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Active Debts Preview */}
-      <section className="container mx-auto px-4 pb-20">
+      <section className="container mx-auto px-4 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -240,6 +302,86 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-card border-t border-border">
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              <div>
+                <img src={finityoLogo} alt="Finityo" className="h-10 mb-4" />
+                <p className="text-muted-foreground text-sm">
+                  Empowering people to achieve financial freedom through proven debt payoff strategies.
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold mb-4">Company</h3>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <button 
+                      onClick={() => navigate('/about')}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      About Us
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => navigate('/privacy')}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      Privacy Policy
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => navigate('/privacy')}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      Terms of Service
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-4">Resources</h3>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <button 
+                      onClick={() => navigate('/debt-chart')}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      Debt Visualizer
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => navigate('/debt-plan')}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      Payoff Calculator
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => navigate('/auth')}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      Sign In / Sign Up
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
+              <p>© {new Date().getFullYear()} Finityo. All rights reserved. Your financial data is protected with bank-level security.</p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -7,7 +7,7 @@ import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { AccountsList } from '@/components/AccountsList';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
 
@@ -127,14 +127,27 @@ const Dashboard = () => {
         <div className="grid gap-6 mb-8">
           <PlaidLink onSuccess={fetchAccounts} />
           
-          <Button
-            onClick={() => navigate('/debts')}
-            size="lg"
-            variant="outline"
-            className="w-full"
-          >
-            Manage Debts & Payoff Strategy
-          </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Button
+              onClick={() => navigate('/debts')}
+              size="lg"
+              variant="outline"
+              className="w-full"
+            >
+              <Calculator className="w-4 h-4 mr-2" />
+              Manage Debts & Payoff Strategy
+            </Button>
+            
+            <Button
+              onClick={() => navigate('/debt-chart')}
+              size="lg"
+              variant="outline"
+              className="w-full"
+            >
+              <PieChart className="w-4 h-4 mr-2" />
+              View Debt Visualization
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-6">

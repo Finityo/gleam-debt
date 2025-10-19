@@ -9,6 +9,8 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Debts from "./pages/Debts";
 import DebtPlan from "./pages/DebtPlan";
+import DebtChart from "./pages/DebtChart";
+import About from "./pages/About";
 import Privacy from "./pages/Privacy";
 import PlaidSubmission from "./pages/PlaidSubmission";
 import NotFound from "./pages/NotFound";
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/debts" element={<Debts />} />
             <Route path="/debt-plan" element={<DebtPlan />} />
+            <Route path="/debt-chart" element={<DebtChart />} />
+            <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/plaid-submission" element={<PlaidSubmission />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
