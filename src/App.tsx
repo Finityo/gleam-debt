@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import TeamAccess from "./pages/TeamAccess";
 import Dashboard from "./pages/Dashboard";
 import Debts from "./pages/Debts";
 import DebtPlan from "./pages/DebtPlan";
@@ -30,6 +31,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/team-access" element={<TeamAccess />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/debts" element={<Debts />} />
             <Route path="/debt-plan" element={<DebtPlan />} />
