@@ -24,6 +24,8 @@ const Auth = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
   
   // Additional signup fields
   const [firstName, setFirstName] = useState('');
@@ -35,13 +37,21 @@ const Auth = () => {
     toast
   } = useToast();
   useEffect(() => {
+    // Check if user is coming from password reset link
+    const params = new URLSearchParams(window.location.search);
+    const isPasswordReset = params.get('reset') === 'true';
+    
+    if (isPasswordReset) {
+      setShowResetPassword(true);
+    }
+
     // Redirect if already logged in
     supabase.auth.getSession().then(({
       data: {
         session
       }
     }) => {
-      if (session) {
+      if (session && !isPasswordReset) {
         navigate('/dashboard');
       }
     });
@@ -50,12 +60,14 @@ const Auth = () => {
         subscription
       }
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowResetPassword(true);
+      } else if (session && !showResetPassword) {
         navigate('/dashboard');
       }
     });
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, showResetPassword]);
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -241,6 +253,47 @@ const Auth = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      passwordSchema.parse(newPassword);
+    } catch (error: any) {
+      toast({
+        title: 'Validation Error',
+        description: error.errors?.[0]?.message || 'Invalid password',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success!',
+        description: 'Your password has been reset. You can now sign in.'
+      });
+      
+      setShowResetPassword(false);
+      setNewPassword('');
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to reset password',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -300,7 +353,34 @@ const Auth = () => {
           </div>
 
           {authMethod === 'email' ? (
-            showForgotPassword ? (
+            showResetPassword ? (
+              <div className="space-y-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-semibold">Reset Your Password</h3>
+                  <p className="text-sm text-muted-foreground">Enter your new password below</p>
+                </div>
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input 
+                      id="new-password" 
+                      type="password" 
+                      placeholder="Enter new password" 
+                      value={newPassword} 
+                      onChange={e => setNewPassword(e.target.value)} 
+                      required 
+                      minLength={6}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Must be at least 6 characters
+                    </p>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? 'Resetting...' : 'Reset Password'}
+                  </Button>
+                </form>
+              </div>
+            ) : showForgotPassword ? (
               <div className="space-y-4">
                 <Button 
                   variant="ghost" 
