@@ -61,6 +61,23 @@ const DebtChart = () => {
 
       if (debtError) throw debtError;
 
+      // Deduplicate debts by creating a unique key from name, balance, and apr
+      const uniqueDebtsMap = new Map<string, Debt>();
+      (debtData || []).forEach(debt => {
+        const key = `${debt.name}-${debt.balance}-${debt.apr}`;
+        // Keep the first occurrence of each unique debt
+        if (!uniqueDebtsMap.has(key)) {
+          uniqueDebtsMap.set(key, debt);
+        }
+      });
+      const uniqueDebts = Array.from(uniqueDebtsMap.values());
+      
+      setDebts(uniqueDebts);
+      
+      // Calculate total debt from unique debts
+      const totalDebtAmount = uniqueDebts.reduce((sum, debt) => sum + debt.balance, 0);
+      setTotalDebt(totalDebtAmount);
+      
       // Fetch Plaid accounts to get actual credit limits
       const { data: accounts, error: accountsError } = await supabase
         .from('plaid_accounts')
@@ -69,28 +86,21 @@ const DebtChart = () => {
         .in('subtype', ['credit card', 'credit']);
 
       if (accountsError) throw accountsError;
-
-      const debts = debtData || [];
-      setDebts(debts);
-      
-      // Calculate total debt from debts table
-      const totalDebtAmount = debts.reduce((sum, debt) => sum + debt.balance, 0);
-      setTotalDebt(totalDebtAmount);
       
       // Calculate total credit limit from Plaid accounts
       // Credit limit = current balance + available balance
       let creditLimit = 0;
       if (accounts && accounts.length > 0) {
         creditLimit = accounts.reduce((sum, account) => {
-          const balance = account.current_balance || 0;
-          const available = account.available_balance || 0;
+          const balance = Math.abs(account.current_balance || 0);
+          const available = Math.max(0, account.available_balance || 0); // Don't allow negative available
           // Credit limit is the sum of what's owed (balance) and what's available
-          return sum + Math.abs(balance) + available;
+          return sum + balance + available;
         }, 0);
       }
       
-      // If no accounts found, use debt as minimum credit limit
-      setTotalLimit(creditLimit > 0 ? creditLimit : totalDebtAmount);
+      // If no accounts found, estimate credit limit as 1.5x debt
+      setTotalLimit(creditLimit > 0 ? creditLimit : totalDebtAmount * 1.5);
     } catch (error: any) {
       toast({
         title: 'Error',
