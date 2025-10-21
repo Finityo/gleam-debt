@@ -60,12 +60,27 @@ serve(async (req) => {
 
     const { access_token, item_id } = exchangeData;
 
-    // Store the item in the database
+    // Store access token securely in Vault
+    const vaultSecretId = `plaid_token_${item_id}_${Date.now()}`;
+    const { data: storedSecretId, error: vaultError } = await supabaseClient
+      .rpc('store_plaid_token_in_vault', {
+        p_token: access_token,
+        p_secret_name: vaultSecretId,
+        p_description: `Plaid access token for item ${item_id} (user: ${user.id})`
+      });
+
+    if (vaultError || !storedSecretId) {
+      console.error('Failed to store token in Vault:', vaultError);
+      throw new Error('Failed to securely store access token');
+    }
+
+    // Store the item in the database with vault reference
     const { data: plaidItem, error: insertError } = await supabaseClient
       .from('plaid_items')
       .insert({
         user_id: user.id,
-        access_token,
+        vault_secret_id: storedSecretId,
+        access_token: '', // Empty for backwards compatibility
         item_id,
         institution_id: metadata?.institution?.institution_id,
         institution_name: metadata?.institution?.name,

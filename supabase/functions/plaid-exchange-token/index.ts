@@ -92,14 +92,32 @@ serve(async (req) => {
       throw new Error(exchangeData.error_message || 'Failed to exchange token');
     }
 
-    // TEMPORARY: Store token directly in table until Vault deployment is stable
-    // TODO: Re-enable Vault storage once deployment issues are resolved
+    const { access_token, item_id } = exchangeData;
+
+    // Store access token securely in Vault
+    const vaultSecretId = `plaid_token_${item_id}_${Date.now()}`;
+    const { data: storedSecretId, error: vaultError } = await supabaseClient
+      .rpc('store_plaid_token_in_vault', {
+        p_token: access_token,
+        p_secret_name: vaultSecretId,
+        p_description: `Plaid access token for item ${item_id} (user: ${user.id})`
+      });
+
+    if (vaultError || !storedSecretId) {
+      console.error('Failed to store token in Vault:', vaultError);
+      throw new Error('Failed to securely store access token');
+    }
+
+    console.log('Token stored in Vault:', { vault_secret_id: storedSecretId, item_id });
+
+    // Store item with vault reference only (no plaintext token)
     const { error: itemError } = await supabaseClient
       .from('plaid_items')
       .insert({
         user_id: user.id,
-        access_token: exchangeData.access_token, // Temporary plaintext storage
-        item_id: exchangeData.item_id,
+        vault_secret_id: storedSecretId,
+        access_token: '', // Empty string for backwards compatibility
+        item_id: item_id,
         institution_id: metadata?.institution?.institution_id,
         institution_name: metadata?.institution?.name,
       });
@@ -109,7 +127,7 @@ serve(async (req) => {
       throw itemError;
     }
 
-    console.log('Item stored successfully (temp plaintext):', exchangeData.item_id);
+    console.log('Item stored successfully with Vault encryption:', item_id);
 
     // Get accounts
     const accountsResponse = await fetch(`https://${PLAID_ENV}.plaid.com/accounts/get`, {
@@ -119,7 +137,7 @@ serve(async (req) => {
         'PLAID-CLIENT-ID': PLAID_CLIENT_ID!,
         'PLAID-SECRET': PLAID_SECRET!,
       },
-      body: JSON.stringify({ access_token: exchangeData.access_token }),
+      body: JSON.stringify({ access_token }),
     });
 
     const accountsData = await accountsResponse.json();
@@ -127,7 +145,7 @@ serve(async (req) => {
     if (!accountsResponse.ok) {
       console.error('Failed to fetch accounts from Plaid:', {
         user_id: user.id,
-        item_id: exchangeData.item_id,
+        item_id: item_id,
         error_code: accountsData.error_code,
         error_message: accountsData.error_message
       });
@@ -136,7 +154,7 @@ serve(async (req) => {
 
     console.log('Accounts fetched from Plaid:', {
       user_id: user.id,
-      item_id: exchangeData.item_id,
+      item_id: item_id,
       account_count: accountsData.accounts?.length
     });
 
@@ -144,7 +162,7 @@ serve(async (req) => {
     const { data: plaidItems } = await supabaseClient
       .from('plaid_items')
       .select('id')
-      .eq('item_id', exchangeData.item_id)
+      .eq('item_id', item_id)
       .eq('user_id', user.id)
       .single();
 
@@ -177,7 +195,7 @@ serve(async (req) => {
     }
 
     // Fetch and import liabilities (credit cards, loans, mortgages)
-    console.log('Fetching liabilities for item:', exchangeData.item_id);
+    console.log('Fetching liabilities for item:', item_id);
     
     const liabilitiesResponse = await fetch(`https://${PLAID_ENV}.plaid.com/liabilities/get`, {
       method: 'POST',
@@ -187,7 +205,7 @@ serve(async (req) => {
       body: JSON.stringify({
         client_id: PLAID_CLIENT_ID,
         secret: PLAID_SECRET,
-        access_token: exchangeData.access_token,
+        access_token,
       }),
     });
 
@@ -304,7 +322,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true,
-      item_id: exchangeData.item_id,
+      item_id: item_id,
       accounts: accountsData.accounts.length,
       debts_imported: importedDebtsCount
     }), {
