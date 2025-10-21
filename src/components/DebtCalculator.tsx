@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, Plus, Upload } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import * as XLSX from 'exceljs';
 import { logError } from '@/utils/logger';
 
@@ -303,8 +304,22 @@ export function DebtCalculator() {
 
   const compute = async (useStrategy?: Strategy) => {
     try {
-      // Check for duplicate "last 4" values
-      const last4Values = debts
+      // Validate that we have at least one valid debt
+      const validDebts = debts.filter(d => 
+        d.name.trim() !== '' && d.balance > 0 && d.minPayment > 0
+      );
+      
+      if (validDebts.length === 0) {
+        toast({ 
+          title: "No Valid Debts", 
+          description: "Please add at least one debt with name, balance, and minimum payment.",
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      // Check for duplicate "last 4" values (only among valid debts with last4)
+      const last4Values = validDebts
         .filter(d => d.last4 && d.last4.trim() !== '')
         .map(d => d.last4?.trim());
       
@@ -323,9 +338,16 @@ export function DebtCalculator() {
 
       setIsLoading(true);
       const computeStrategy = useStrategy || strategy;
+      
+      // Only send valid debts to the compute function
+      const debtsToCompute = validDebts.map(d => ({ 
+        ...d, 
+        apr: d.apr > 1 ? d.apr / 100 : d.apr 
+      }));
+      
       const { data, error } = await supabase.functions.invoke('compute-debt-plan', {
         body: {
-          debts: debts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
+          debts: debtsToCompute,
           extraMonthly: Number(extra) || 0,
           oneTime: Number(oneTime) || 0,
           strategy: computeStrategy
@@ -341,7 +363,7 @@ export function DebtCalculator() {
         state: {
           result: data,
           strategy: computeStrategy,
-          debts: debts,
+          debts: validDebts,
           extra: Number(extra) || 0,
           oneTime: Number(oneTime) || 0
         }
@@ -592,117 +614,133 @@ export function DebtCalculator() {
               </div>
             </div>
 
-            {debts.map((debt, index) => (
-              <Card key={index}>
-                <CardContent className="pt-6">
-                  <div className="flex gap-4">
-                    <div className="flex items-center pt-8">
-                      <Checkbox
-                        checked={selectedDebtIndices.has(index)}
-                        onCheckedChange={() => toggleDebtSelection(index)}
-                      />
-                    </div>
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-7 gap-4">
-                      <div className="space-y-2">
-                        <Label>Name</Label>
-                        <Input
-                          value={debt.name}
-                          onChange={(e) => updateDebt(index, 'name', e.target.value)}
-                          placeholder="Credit Card"
-                          className="placeholder:text-muted-foreground/50"
-                        />
-                      </div>
-                    <div className="space-y-2">
-                      <Label>Last 4</Label>
-                      <Input
-                        value={debt.last4 || ''}
-                        onChange={(e) => updateDebt(index, 'last4', e.target.value)}
-                        maxLength={4}
-                        placeholder="1234"
-                        className="placeholder:text-muted-foreground/50"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Balance</Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                          className="pl-7 placeholder:text-muted-foreground/50"
-                          value={debt.balance || ''}
-                          onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Min Payment</Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                          className="pl-7 placeholder:text-muted-foreground/50"
-                          value={debt.minPayment || ''}
-                          onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>APR (%)</Label>
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="18.99"
-                        className="placeholder:text-muted-foreground/50"
-                        value={debt.apr || ''}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          // Allow numbers with up to 2 decimal places
-                          if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-                            const numValue = value === '' ? 0 : parseFloat(value);
-                            if (numValue <= 100) {
-                              updateDebt(index, 'apr', numValue || 0);
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Due Date</Label>
-                      <Input
-                        type="text"
-                        placeholder="Due by 15"
-                        className="placeholder:text-muted-foreground/50"
-                        value={debt.dueDate || ''}
-                        onChange={(e) => {
-                          // Extract just the day number from any format
-                          const value = e.target.value.trim();
-                          const dayMatch = value.match(/\d+/);
-                          const day = dayMatch ? parseInt(dayMatch[0]) : '';
-                          updateDebt(index, 'dueDate', day.toString());
-                        }}
-                      />
-                    </div>
-                      <div className="space-y-2 flex items-end">
-                        <Button
-                          onClick={() => removeDebt(index)}
-                          variant="destructive"
-                          size="icon"
-                          disabled={debts.length === 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <Carousel
+              opts={{
+                align: "start",
+                loop: false,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {debts.map((debt, index) => (
+                  <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                    <Card className="h-full">
+                      <CardContent className="pt-6">
+                        <div className="flex gap-4">
+                          <div className="flex items-center pt-8">
+                            <Checkbox
+                              checked={selectedDebtIndices.has(index)}
+                              onCheckedChange={() => toggleDebtSelection(index)}
+                            />
+                          </div>
+                          <div className="flex-1 space-y-4">
+                            <div className="space-y-2">
+                              <Label>Name</Label>
+                              <Input
+                                value={debt.name}
+                                onChange={(e) => updateDebt(index, 'name', e.target.value)}
+                                placeholder="Credit Card"
+                                className="placeholder:text-muted-foreground/50"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Last 4</Label>
+                              <Input
+                                value={debt.last4 || ''}
+                                onChange={(e) => updateDebt(index, 'last4', e.target.value)}
+                                maxLength={4}
+                                placeholder="1234"
+                                className="placeholder:text-muted-foreground/50"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Balance</Label>
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder="0.00"
+                                  className="pl-7 placeholder:text-muted-foreground/50"
+                                  value={debt.balance || ''}
+                                  onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Min Payment</Label>
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder="0.00"
+                                  className="pl-7 placeholder:text-muted-foreground/50"
+                                  value={debt.minPayment || ''}
+                                  onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>APR (%)</Label>
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                placeholder="18.99"
+                                className="placeholder:text-muted-foreground/50"
+                                value={debt.apr || ''}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                                    const numValue = value === '' ? 0 : parseFloat(value);
+                                    if (numValue <= 100) {
+                                      updateDebt(index, 'apr', numValue || 0);
+                                    }
+                                  }
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Due Date</Label>
+                              <Input
+                                type="text"
+                                placeholder="Due by 15"
+                                className="placeholder:text-muted-foreground/50"
+                                value={debt.dueDate || ''}
+                                onChange={(e) => {
+                                  const value = e.target.value.trim();
+                                  const dayMatch = value.match(/\d+/);
+                                  const day = dayMatch ? parseInt(dayMatch[0]) : '';
+                                  updateDebt(index, 'dueDate', day.toString());
+                                }}
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => removeDebt(index)}
+                                variant="destructive"
+                                size="sm"
+                                disabled={debts.length === 1}
+                                className="w-full"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="flex justify-center gap-4 mt-4">
+                <CarouselPrevious />
+                <CarouselNext />
+              </div>
+            </Carousel>
           </div>
 
           <Button onClick={() => compute()} disabled={isLoading} className="w-full">
