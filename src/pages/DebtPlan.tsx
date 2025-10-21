@@ -207,7 +207,7 @@ const DebtPlan = () => {
                   </div>
                   <Button onClick={exportXLSX} variant="outline" size="sm" disabled={isLoading}>
                     <Download className="h-4 w-4 mr-2" />
-                    Excel
+                    Export to Excel
                   </Button>
                 </div>
               </CardHeader>
