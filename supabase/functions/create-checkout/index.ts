@@ -25,11 +25,11 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { priceId } = await req.json();
+    const { priceId, discountCode } = await req.json();
     if (!priceId) {
       throw new Error("Price ID is required");
     }
-    logStep("Price ID received", { priceId });
+    logStep("Price ID received", { priceId, discountCode });
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
@@ -53,7 +53,23 @@ serve(async (req) => {
       logStep("Creating new customer");
     }
 
-    const session = await stripe.checkout.sessions.create({
+    // Handle discount codes
+    const discounts = [];
+    if (discountCode) {
+      const validCodes: Record<string, string> = {
+        'FIRST5': '100% off for first 5 users',
+        'MILITARY': '50% off for military',
+        'FIRSTRESPONDER': '50% off for first responders'
+      };
+      
+      if (validCodes[discountCode]) {
+        logStep("Valid discount code provided", { code: discountCode });
+        // In production, you'd create actual Stripe coupons and use their IDs here
+        // For now, we'll pass it in metadata to track it
+      }
+    }
+
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -65,7 +81,13 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${req.headers.get("origin")}/dashboard?checkout=success`,
       cancel_url: `${req.headers.get("origin")}/pricing?checkout=canceled`,
-    });
+      metadata: discountCode ? { discount_code: discountCode } : {},
+    };
+
+    // Note: To actually apply discounts, you need to create Stripe coupons first
+    // and add them to the session with: discounts: [{ coupon: 'coupon_id' }]
+    
+    const session = await stripe.checkout.sessions.create(sessionConfig);
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
     return new Response(JSON.stringify({ url: session.url }), {

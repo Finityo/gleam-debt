@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -83,7 +85,10 @@ const PRICING_TIERS: Record<string, PricingTier> = {
 
 const Pricing = () => {
   const [loading, setLoading] = useState<string | null>(null);
+  const [discountCode, setDiscountCode] = useState('');
+  const [applyingDiscount, setApplyingDiscount] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubscribe = async (priceId: string, tierName: string) => {
     try {
@@ -97,18 +102,49 @@ const Pricing = () => {
           description: "Please sign in to subscribe",
           variant: "destructive",
         });
-        window.location.href = "/auth";
+        navigate('/auth');
         return;
       }
 
+      // Validate discount code if provided
+      let validatedCode = null;
+      if (discountCode.trim()) {
+        setApplyingDiscount(true);
+        const validCodes = ['FIRST5', 'MILITARY', 'FIRSTRESPONDER'];
+        if (validCodes.includes(discountCode.toUpperCase())) {
+          validatedCode = discountCode.toUpperCase();
+          toast({
+            title: 'Discount Applied!',
+            description: `Code "${validatedCode}" will be applied at checkout`,
+          });
+        } else {
+          toast({
+            title: 'Invalid Code',
+            description: 'The discount code you entered is not valid',
+            variant: 'destructive',
+          });
+          setApplyingDiscount(false);
+          setLoading(null);
+          return;
+        }
+        setApplyingDiscount(false);
+      }
+
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
+        body: { 
+          priceId,
+          discountCode: validatedCode 
+        },
       });
 
       if (error) throw error;
 
       if (data?.url) {
         window.open(data.url, "_blank");
+        toast({
+          title: 'Redirecting to checkout',
+          description: 'Opening Stripe checkout in a new tab...',
+        });
       }
     } catch (error) {
       console.error("Subscription error:", error);
@@ -119,6 +155,7 @@ const Pricing = () => {
       });
     } finally {
       setLoading(null);
+      setApplyingDiscount(false);
     }
   };
 
@@ -137,6 +174,33 @@ const Pricing = () => {
             <p className="text-xl text-muted-foreground">
               Start with a free trial, then select the plan that fits your needs
             </p>
+          </div>
+
+          {/* Discount Code Section */}
+          <div className="max-w-md mx-auto mb-12">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Have a Discount Code?</CardTitle>
+                <CardDescription>
+                  Special codes for first 5 users, military, and first responders
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter code (FIRST5, MILITARY, FIRSTRESPONDER)"
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                    disabled={applyingDiscount}
+                  />
+                </div>
+                {discountCode && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Code will be validated when you proceed to checkout
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">

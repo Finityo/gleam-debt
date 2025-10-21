@@ -7,7 +7,7 @@ import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { AccountsList } from '@/components/AccountsList';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, PieChart, Calculator } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator, User as UserIcon } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
 
@@ -116,10 +116,16 @@ const Dashboard = () => {
             <h1 className="text-4xl font-bold text-foreground">Dashboard</h1>
             <p className="text-muted-foreground mt-2">{user?.email}</p>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/profile')}>
+              <UserIcon className="w-4 h-4 mr-2" />
+              Profile
+            </Button>
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         <PlaidUpdateBanner />
