@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, TrendingDown, CreditCard, DollarSign } from 'lucide-react';
+import { StatCard } from '@/components/ui/stat-card';
+import { ArrowLeft, TrendingDown, CreditCard, DollarSign, PieChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 
@@ -138,53 +139,28 @@ const DebtChart = () => {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <CreditCard className="w-4 h-4" />
-                Total Debt
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-destructive">
-                ${totalDebt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                Available Credit
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-success">
-                ${availableCredit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <TrendingDown className="w-4 h-4" />
-                Credit Utilization
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold" style={{ 
-                color: parseFloat(utilizationPercentage) > 30 ? 'hsl(0 85% 60%)' : 'hsl(145 75% 50%)'
-              }}>
-                {utilizationPercentage}%
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {parseFloat(utilizationPercentage) > 30 ? 'Above recommended 30%' : 'Good standing'}
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <StatCard
+            title="Total Debt"
+            value={`$${totalDebt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            icon={CreditCard}
+            className="border-destructive/20"
+          />
+          
+          <StatCard
+            title="Available Credit"
+            value={`$${availableCredit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            icon={DollarSign}
+            className="border-success/20"
+          />
+          
+          <StatCard
+            title="Credit Utilization"
+            value={`${utilizationPercentage}%`}
+            subtitle={parseFloat(utilizationPercentage) > 30 ? 'Above recommended 30%' : 'Good standing'}
+            icon={TrendingDown}
+            className={parseFloat(utilizationPercentage) > 30 ? 'border-destructive/20' : 'border-success/20'}
+          />
         </div>
 
         {loading ? (
@@ -205,9 +181,12 @@ const DebtChart = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Debt Distribution Chart */}
-            <Card>
+            <Card className="border-border/50 bg-gradient-card hover:shadow-vibrant transition-all duration-300">
               <CardHeader>
-                <CardTitle>Debt Distribution by Creditor</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChartIcon className="w-5 h-5 text-primary" />
+                  Debt Distribution
+                </CardTitle>
                 <CardDescription>
                   Visual breakdown of your {debts.length} active {debts.length === 1 ? 'debt' : 'debts'}
                 </CardDescription>
@@ -241,9 +220,12 @@ const DebtChart = () => {
             </Card>
 
             {/* Credit Utilization Chart */}
-            <Card>
+            <Card className="border-border/50 bg-gradient-card hover:shadow-vibrant transition-all duration-300">
               <CardHeader>
-                <CardTitle>Credit Utilization Overview</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingDown className="w-5 h-5 text-accent" />
+                  Credit Utilization
+                </CardTitle>
                 <CardDescription>
                   Your debt vs. available credit
                 </CardDescription>
@@ -273,9 +255,9 @@ const DebtChart = () => {
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="mt-4 p-4 bg-muted rounded-lg">
+                <div className="mt-4 p-4 bg-primary/5 border border-primary/10 rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Tip:</strong> Credit bureaus recommend keeping utilization below 30% for optimal credit scores. 
+                    <strong className="text-foreground">Tip:</strong> Credit bureaus recommend keeping utilization below 30% for optimal credit scores. 
                     As you pay down debts, watch the green "Available Credit" section grow!
                   </p>
                 </div>
@@ -283,9 +265,12 @@ const DebtChart = () => {
             </Card>
 
             {/* Debt List */}
-            <Card className="lg:col-span-2">
+            <Card className="lg:col-span-2 border-border/50 bg-gradient-card">
               <CardHeader>
-                <CardTitle>Debt Details</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  Debt Details
+                </CardTitle>
                 <CardDescription>All active debts sorted by balance</CardDescription>
               </CardHeader>
               <CardContent>
@@ -293,11 +278,11 @@ const DebtChart = () => {
                   {debts.map((debt, index) => (
                     <div 
                       key={debt.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:bg-primary/5 hover:border-primary/20 transition-all duration-300 hover:shadow-sm"
                     >
                       <div className="flex items-center gap-3">
                         <div 
-                          className="w-4 h-4 rounded-full" 
+                          className="w-4 h-4 rounded-full shadow-sm" 
                           style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
                         />
                         <div>
