@@ -122,6 +122,15 @@ const Index = () => {
                   size="lg" 
                   variant="ghost"
                   className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6"
+                  onClick={() => navigate('/pricing')}
+                >
+                  <Star className="mr-2 w-5 h-5" />
+                  View Pricing
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="ghost"
+                  className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6"
                   onClick={() => navigate('/debt-plan')}
                 >
                   <BarChart3 className="mr-2 w-5 h-5" />

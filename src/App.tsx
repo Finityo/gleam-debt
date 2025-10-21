@@ -27,6 +27,7 @@ const Disclosures = lazy(() => import("./pages/Disclosures"));
 const PlaidSubmission = lazy(() => import("./pages/PlaidSubmission"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const DownloadPlaidProposal = lazy(() => import("./pages/DownloadPlaidProposal"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // ✅ Simple branded loading screen
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="/plaid-submission" element={<PlaidSubmission />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/plaid-proposal" element={<DownloadPlaidProposal />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
