@@ -181,6 +181,10 @@ const AdminDashboard = () => {
                 <Headphones className="mr-2 h-4 w-4" />
                 Support
               </Button>
+              <Button variant="outline" onClick={() => navigate('/admin/documents')}>
+                <Activity className="mr-2 h-4 w-4" />
+                Documents
+              </Button>
               <Button variant="outline" onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out

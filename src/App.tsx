@@ -36,6 +36,7 @@ const UserRoleManagement = lazy(() => import("./pages/UserRoleManagement"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const MyData = lazy(() => import("./pages/MyData"));
+const DocumentExport = lazy(() => import("./pages/DocumentExport"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // ✅ Simple branded loading screen
@@ -99,6 +100,7 @@ const App = () => (
               <Route path="/support-dashboard" element={<SupportDashboard />} />
               <Route path="/security-audit" element={<SecurityAudit />} />
               <Route path="/admin/roles" element={<UserRoleManagement />} />
+              <Route path="/admin/documents" element={<DocumentExport />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/my-data" element={<MyData />} />
