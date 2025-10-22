@@ -220,8 +220,8 @@ function computePlan(req: ComputeRequest) {
       if (debt.currentBalance === 0 && debt.paidOffMonth === 0) {
         debt.paidOffMonth = month;
         payoffOrder.push(debt.name);
-        // Roll this debt's payment into snowballExtra
-        snowballExtra += actualPayment;
+        // Roll this debt's minimum payment into snowballExtra
+        snowballExtra += debt.minPayment;
       }
     }
 
