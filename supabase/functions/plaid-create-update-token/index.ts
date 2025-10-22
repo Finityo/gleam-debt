@@ -34,17 +34,20 @@ serve(async (req) => {
       throw new Error('item_id is required');
     }
 
-    // Get access token from Vault
-    const { data: accessToken, error: tokenError } = await supabaseClient
-      .rpc('get_plaid_token_from_vault', {
-        p_item_id: item_id,
-        p_function_name: 'plaid-create-update-token'
-      });
+    // Get access token from database
+    const { data: plaidItem, error: itemError } = await supabaseClient
+      .from('plaid_items')
+      .select('access_token')
+      .eq('item_id', item_id)
+      .eq('user_id', user.id)
+      .single();
 
-    if (tokenError || !accessToken) {
-      console.error('Failed to get token from Vault:', tokenError);
+    if (itemError || !plaidItem?.access_token) {
+      console.error('Failed to get token for item:', item_id, itemError);
       throw new Error('Failed to retrieve access token');
     }
+
+    const accessToken = plaidItem.access_token;
 
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
