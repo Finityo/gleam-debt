@@ -54,6 +54,13 @@ export default function DocumentExport() {
     setLoadingDoc(documentType);
     
     try {
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Not authenticated. Please log in again.');
+      }
+
       const { data, error } = await supabase.functions.invoke('export-document-pdf', {
         body: { documentType }
       });
