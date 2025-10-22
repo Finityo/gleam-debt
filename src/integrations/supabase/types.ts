@@ -211,6 +211,42 @@ export type Database = {
           },
         ]
       }
+      plaid_consent_log: {
+        Row: {
+          accepted_privacy: boolean
+          accepted_terms: boolean
+          consented_at: string
+          finityo_terms_version: string | null
+          id: string
+          ip_address: string | null
+          plaid_privacy_version: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_privacy?: boolean
+          accepted_terms?: boolean
+          consented_at?: string
+          finityo_terms_version?: string | null
+          id?: string
+          ip_address?: string | null
+          plaid_privacy_version?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_privacy?: boolean
+          accepted_terms?: boolean
+          consented_at?: string
+          finityo_terms_version?: string | null
+          id?: string
+          ip_address?: string | null
+          plaid_privacy_version?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       plaid_item_status: {
         Row: {
           created_at: string
@@ -280,6 +316,33 @@ export type Database = {
           updated_at?: string
           user_id?: string
           vault_secret_id?: string | null
+        }
+        Relationships: []
+      }
+      plaid_rate_limits: {
+        Row: {
+          action_type: string
+          attempted_at: string
+          id: string
+          ip_address: string | null
+          success: boolean
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          attempted_at?: string
+          id?: string
+          ip_address?: string | null
+          success: boolean
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          attempted_at?: string
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          user_id?: string
         }
         Relationships: []
       }
