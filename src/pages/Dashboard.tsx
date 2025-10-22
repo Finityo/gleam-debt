@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
+import { PlaidTokenMigration } from '@/components/PlaidTokenMigration';
 import { AccountsList } from '@/components/AccountsList';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot } from 'lucide-react';
@@ -32,6 +33,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [unmigratedItemIds, setUnmigratedItemIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -77,6 +79,19 @@ const Dashboard = () => {
       if (error) throw error;
       
       setAccounts(data.accounts || []);
+      
+      // Check for unmigrated tokens
+      const { data: items, error: itemsError } = await supabase
+        .from('plaid_items')
+        .select('item_id, vault_secret_id, access_token')
+        .eq('user_id', user?.id || '');
+      
+      if (!itemsError && items) {
+        const unmigrated = items
+          .filter(item => !item.vault_secret_id && item.access_token)
+          .map(item => item.item_id);
+        setUnmigratedItemIds(unmigrated);
+      }
     } catch (error: any) {
       logError('Dashboard - Fetch Accounts', error);
       toast({
@@ -129,6 +144,11 @@ const Dashboard = () => {
         </div>
 
         <PlaidUpdateBanner />
+        
+        <PlaidTokenMigration 
+          unmigrated_item_ids={unmigratedItemIds}
+          onMigrationComplete={fetchAccounts}
+        />
 
         <div className="grid gap-6 mb-8">
           <PlaidLink onSuccess={fetchAccounts} />
