@@ -14,7 +14,12 @@ const emailSchema = z.string().email('Invalid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const phoneSchema = z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format (use international format, e.g., +1234567890)');
 const Auth = () => {
+  // Check URL parameter for default mode
+  const params = new URLSearchParams(window.location.search);
+  const urlMode = params.get('mode');
+  
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
+  const [currentTab, setCurrentTab] = useState(urlMode === 'signin' ? 'signin' : 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
@@ -407,7 +412,7 @@ const Auth = () => {
                 </form>
               </div>
             ) : (
-              <Tabs defaultValue="signin" className="w-full">
+              <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="signin">Sign In</TabsTrigger>
                   <TabsTrigger value="signup">Sign Up</TabsTrigger>

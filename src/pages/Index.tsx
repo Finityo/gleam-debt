@@ -79,7 +79,7 @@ const Index = () => {
             </p>
 
             <div className="flex flex-col gap-4 items-center pt-4">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6" onClick={() => navigate('/auth')}>
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6" onClick={() => navigate('/auth?mode=signup')}>
                 Create your free plan
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
@@ -95,7 +95,7 @@ const Index = () => {
                 size="lg" 
                 variant="outline" 
                 className="bg-white/5 border-2 border-white/40 text-white hover:bg-white hover:text-primary backdrop-blur-sm text-lg px-8 py-6 font-semibold"
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/auth?mode=signin')}
               >
                 Member Login
               </Button>
