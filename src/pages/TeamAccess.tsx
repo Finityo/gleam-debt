@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const emailSchema = z.string().email('Invalid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -16,20 +18,48 @@ const TeamAccess = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetMode, setResetMode] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberPassword, setNewMemberPassword] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState<'admin' | 'user'>('user');
+  const [registerLoading, setRegisterLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Redirect if already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check if already logged in and if admin
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        navigate('/admin');
+        // Check if user is admin
+        const { data: hasRole } = await supabase.rpc('has_role', {
+          _user_id: session.user.id,
+          _role: 'admin'
+        });
+        
+        if (hasRole) {
+          setIsAdmin(true);
+        } else {
+          navigate('/admin');
+        }
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        navigate('/admin');
+        // Check if user is admin
+        const { data: hasRole } = await supabase.rpc('has_role', {
+          _user_id: session.user.id,
+          _role: 'admin'
+        });
+        
+        if (hasRole) {
+          setIsAdmin(true);
+        } else {
+          navigate('/admin');
+        }
+      } else {
+        setIsAdmin(false);
       }
     });
 
@@ -120,17 +150,146 @@ const TeamAccess = () => {
     }
   };
 
+  const handleRegisterMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate inputs
+    try {
+      emailSchema.parse(newMemberEmail);
+      passwordSchema.parse(newMemberPassword);
+    } catch (error: any) {
+      toast({
+        title: 'Validation Error',
+        description: error.errors?.[0]?.message || 'Invalid input',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setRegisterLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await supabase.functions.invoke('register-team-member', {
+        body: {
+          email: newMemberEmail,
+          password: newMemberPassword,
+          role: newMemberRole,
+        },
+      });
+
+      if (response.error) throw response.error;
+
+      toast({
+        title: 'Success',
+        description: `Team member ${newMemberEmail} registered successfully`,
+      });
+
+      // Reset form
+      setNewMemberEmail('');
+      setNewMemberPassword('');
+      setNewMemberRole('user');
+      setShowRegisterDialog(false);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to register team member',
+        variant: 'destructive'
+      });
+    } finally {
+      setRegisterLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Team Access Portal</CardTitle>
           <CardDescription>
-            {resetMode ? 'Reset your password' : 'Sign in to access the admin dashboard'}
+            {isAdmin 
+              ? 'Admin Panel' 
+              : resetMode 
+                ? 'Reset your password' 
+                : 'Sign in to access the admin dashboard'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {resetMode ? (
+          {isAdmin ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground text-center">
+                You are logged in as an administrator
+              </p>
+              <Dialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" size="lg">
+                    Register Team Member
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Register New Team Member</DialogTitle>
+                    <DialogDescription>
+                      Create a new team member account with admin or user privileges
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleRegisterMember} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newEmail">Email</Label>
+                      <Input
+                        id="newEmail"
+                        type="email"
+                        placeholder="teammember@example.com"
+                        value={newMemberEmail}
+                        onChange={(e) => setNewMemberEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword">Password</Label>
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        placeholder="Minimum 6 characters"
+                        value={newMemberPassword}
+                        onChange={(e) => setNewMemberPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="role">Role</Label>
+                      <Select
+                        value={newMemberRole}
+                        onValueChange={(value: 'admin' | 'user') => setNewMemberRole(value)}
+                      >
+                        <SelectTrigger id="role">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="user">User</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={registerLoading}>
+                      {registerLoading ? 'Creating Account...' : 'Create Account'}
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate('/admin')}
+              >
+                Go to Admin Dashboard
+              </Button>
+            </div>
+          ) : resetMode ? (
             <form onSubmit={handlePasswordReset} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
