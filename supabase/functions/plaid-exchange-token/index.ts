@@ -94,28 +94,38 @@ serve(async (req) => {
 
     const { access_token, item_id } = exchangeData;
 
-    // Store access token securely in Vault
-    const vaultSecretId = `plaid_token_${item_id}_${Date.now()}`;
-    const { data: storedSecretId, error: vaultError } = await supabaseClient
-      .rpc('store_plaid_token_in_vault', {
-        p_token: access_token,
-        p_secret_name: vaultSecretId,
-        p_description: `Plaid access token for item ${item_id} (user: ${user.id})`
-      });
+    // Create admin client for vault operations (requires service role)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    if (vaultError || !storedSecretId) {
+    // Store access token securely in Vault using admin client
+    const vaultSecretId = `plaid_token_${item_id}_${Date.now()}`;
+    
+    const { data: vaultData, error: vaultError } = await supabaseAdmin
+      .from('vault.secrets')
+      .insert({
+        name: vaultSecretId,
+        secret: access_token,
+        description: `Plaid access token for item ${item_id} (user: ${user.id})`
+      })
+      .select('id')
+      .single();
+
+    if (vaultError) {
       console.error('Failed to store token in Vault:', vaultError);
       throw new Error('Failed to securely store access token');
     }
 
-    console.log('Token stored in Vault:', { vault_secret_id: storedSecretId, item_id });
+    console.log('Token stored in Vault:', { vault_secret_id: vaultSecretId, item_id });
 
     // Store item with vault reference only (no plaintext token)
     const { error: itemError } = await supabaseClient
       .from('plaid_items')
       .insert({
         user_id: user.id,
-        vault_secret_id: storedSecretId,
+        vault_secret_id: vaultSecretId,
         access_token: '', // Empty string for backwards compatibility
         item_id: item_id,
         institution_id: metadata?.institution?.institution_id,
