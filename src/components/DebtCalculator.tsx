@@ -528,74 +528,13 @@ export function DebtCalculator() {
           </div>
 
           <div className="space-y-4">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Debts</h3>
-                <div className="flex gap-2 justify-center flex-wrap">
-                  <Button onClick={handleImportClick} size="sm" variant="outline">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Import Excel
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={handleFileImport}
-                    style={{ display: 'none' }}
-                  />
-                  <Button onClick={addDebt} size="sm" variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Debt
-                  </Button>
-                  {selectedDebtIndices.size > 0 && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="destructive">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Selected ({selectedDebtIndices.size})
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Selected Debts?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete {selectedDebtIndices.size} selected debt(s). The plan will be recalculated with the remaining debts. This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={deleteSelectedDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            Delete Selected
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="destructive">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete All
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete All Debts?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete all {debts.filter(d => d.name.trim() !== '').length} debt(s) and clear your plan. This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={deleteAllDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                          Delete All
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
               </div>
-              <div>
+              
+              {/* Import & Add Actions */}
+              <div className="flex flex-wrap gap-2">
                 <Button 
                   onClick={async () => {
                     try {
@@ -609,7 +548,6 @@ export function DebtCalculator() {
                           title: "Success", 
                           description: `Imported ${data.debts.length} debt(s) from your connected accounts` 
                         });
-                        // Reload the data
                         await loadSavedData();
                       } else {
                         toast({ 
@@ -636,6 +574,73 @@ export function DebtCalculator() {
                   <Upload className="h-4 w-4 mr-2" />
                   Import from Bank
                 </Button>
+                
+                <Button onClick={handleImportClick} size="sm" variant="outline">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Excel
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileImport}
+                  style={{ display: 'none' }}
+                />
+                
+                <Button onClick={addDebt} size="sm" variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Debt
+                </Button>
+                
+                <div className="ml-auto flex gap-2">
+                  {selectedDebtIndices.size > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Selected ({selectedDebtIndices.size})
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Selected Debts?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete {selectedDebtIndices.size} selected debt(s). The plan will be recalculated with the remaining debts. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={deleteSelectedDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete Selected
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete All
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete All Debts?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete all {debts.filter(d => d.name.trim() !== '').length} debt(s) and clear your plan. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteAllDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete All
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </div>
 
