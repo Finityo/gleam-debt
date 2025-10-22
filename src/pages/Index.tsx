@@ -416,7 +416,7 @@ const Index = () => {
 
             {/* Screenshot of sample plan */}
             <div className="rounded-2xl border border-border overflow-hidden shadow-lg mb-12">
-              <img src="/images/sample-plan.png" alt="Finityo Debt Payoff Plan Screenshot" className="w-full" loading="lazy" />
+              <img src="/images/debt-plan-screenshot.png" alt="Finityo Debt Payoff Plan Screenshot" className="w-full" loading="lazy" />
             </div>
 
             <div className="text-center">
