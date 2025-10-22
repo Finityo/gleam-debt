@@ -463,10 +463,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      migrate_single_plaid_token: {
-        Args: { p_item_id: string }
-        Returns: Json
-      }
+      migrate_single_plaid_token: { Args: { p_item_id: string }; Returns: Json }
       store_plaid_token_in_vault: {
         Args: { p_description?: string; p_secret_name: string; p_token: string }
         Returns: string
