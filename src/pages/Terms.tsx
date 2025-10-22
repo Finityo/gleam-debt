@@ -41,6 +41,70 @@ const Terms = () => {
             <p className="leading-relaxed">
               Finityo lets you connect accounts through Plaid, choose Snowball or Avalanche, and see estimated payoff timelines.
             </p>
+            
+            <h3 className="text-xl font-semibold mt-6 mb-3">2.5 Third-Party Financial Data Services (Plaid)</h3>
+            <p className="leading-relaxed mb-4">
+              When you use Finityo to link your financial accounts, you grant Finityo and Plaid Technologies, Inc. ("Plaid") 
+              the right, power, and authority to act on your behalf to access and transmit your personal and financial information 
+              from the relevant financial institution according to Plaid's terms and this agreement.
+            </p>
+            <p className="leading-relaxed mb-4">
+              By connecting your financial accounts through Finityo, you explicitly authorize:
+            </p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>Finityo to access your financial institution data via Plaid's services</li>
+              <li>Plaid to retrieve your financial data (account details, balances, transactions, and liabilities) from your financial institution on Finityo's behalf</li>
+              <li>Your financial institution to share your data with Plaid as requested by Finityo</li>
+              <li>Read-only access limited to the specific purposes described in our Privacy Policy and Disclosures</li>
+            </ul>
+            <p className="leading-relaxed mb-4">
+              This authorization is limited to:
+            </p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>Retrieving account holder information (name, contact details)</li>
+              <li>Account details (account numbers, types, routing numbers)</li>
+              <li>Balance information (current and available balances)</li>
+              <li>Transaction history</li>
+              <li>Liability information (credit card balances, APRs, payment due dates, student loans, mortgages)</li>
+            </ul>
+            <p className="leading-relaxed mb-4">
+              <strong>No Payment Capability:</strong> Neither Finityo nor Plaid can move money, make payments, or initiate 
+              transactions from your accounts. Access is strictly read-only.
+            </p>
+            <div className="bg-muted p-6 rounded-lg mb-4">
+              <p className="font-semibold mb-2">Plaid's Terms and Privacy</p>
+              <p className="mb-2">
+                By connecting accounts via Plaid, you also agree to Plaid's End User Services Agreement and acknowledge 
+                Plaid's privacy practices:
+              </p>
+              <ul className="space-y-2">
+                <li>
+                  <a 
+                    href="https://plaid.com/legal/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Plaid End User Services Agreement
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://plaid.com/legal/#end-user-privacy-policy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Plaid End User Privacy Policy
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <p className="leading-relaxed">
+              You acknowledge that Plaid may use your financial data to provide and improve their services, comply with 
+              legal obligations, and as described in Plaid's Privacy Policy. You have the right to revoke this authorization 
+              at any time by disconnecting your accounts through Finityo's dashboard or contacting us at info@finityo.com.
+            </p>
           </section>
 
           <section className="mb-8">
@@ -95,11 +159,17 @@ const Terms = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">10. Contact</h2>
             <div className="bg-muted p-6 rounded-lg">
-              <p className="mb-0">
+              <p className="mb-2 font-semibold">Finityo</p>
+              <p className="mb-1"><em>Business entity registration pending - currently in beta testing phase</em></p>
+              <p className="mb-1">
                 Email:{" "}
                 <a href="mailto:info@finityo.com" className="text-primary hover:underline">
                   info@finityo.com
                 </a>
+              </p>
+              <p className="mb-1">State: Texas</p>
+              <p className="mb-0 text-sm text-muted-foreground mt-2">
+                Full legal entity details will be updated upon official company registration.
               </p>
             </div>
           </section>

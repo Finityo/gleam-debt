@@ -3,6 +3,7 @@ import { usePlaidLink } from 'react-plaid-link';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { PlaidConsentDialog } from './PlaidConsentDialog';
 
 interface PlaidLinkProps {
   onSuccess?: () => void;
@@ -10,6 +11,8 @@ interface PlaidLinkProps {
 
 export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
+  const [showConsentDialog, setShowConsentDialog] = useState(false);
+  const [consentGiven, setConsentGiven] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -136,14 +139,39 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
 
   const { open, ready } = usePlaidLink(config);
 
+  const handleConnectClick = () => {
+    // Show consent dialog first if not already given
+    if (!consentGiven) {
+      setShowConsentDialog(true);
+    } else {
+      open();
+    }
+  };
+
+  const handleConsent = () => {
+    setConsentGiven(true);
+    // Open Plaid Link after consent
+    if (ready) {
+      open();
+    }
+  };
+
   return (
-    <Button 
-      onClick={() => open()} 
-      disabled={!ready}
-      size="lg"
-      className="w-full sm:w-auto"
-    >
-      Connect Bank Account
-    </Button>
+    <>
+      <Button 
+        onClick={handleConnectClick} 
+        disabled={!ready}
+        size="lg"
+        className="w-full sm:w-auto"
+      >
+        Connect Bank Account
+      </Button>
+
+      <PlaidConsentDialog
+        open={showConsentDialog}
+        onOpenChange={setShowConsentDialog}
+        onConsent={handleConsent}
+      />
+    </>
   );
 };

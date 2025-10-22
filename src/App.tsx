@@ -34,6 +34,7 @@ const SupportDashboard = lazy(() => import("./pages/SupportDashboard"));
 const SecurityAudit = lazy(() => import("./pages/SecurityAudit"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const MyData = lazy(() => import("./pages/MyData"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // ✅ Simple branded loading screen
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="/security-audit" element={<SecurityAudit />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/my-data" element={<MyData />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

@@ -102,8 +102,75 @@ const Privacy = () => {
 
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">5. Security & retention</h2>
+            <p className="leading-relaxed mb-4">
+              We use reasonable technical and organizational measures to protect your data, including encryption of sensitive 
+              financial information and secure token storage.
+            </p>
+            
+            <h3 className="text-xl font-semibold mt-6 mb-3">5.1 Plaid Data Retention Policy</h3>
+            <p className="leading-relaxed mb-4">
+              <strong>Active Connections:</strong> Plaid-sourced financial data (account balances, transaction history, account 
+              details, and liabilities) is retained for as long as your Finityo account remains active and your Plaid connection 
+              is maintained. This data is necessary to provide debt tracking, payoff planning, and strategy calculations.
+            </p>
+            <p className="leading-relaxed mb-4">
+              <strong>Disconnecting Accounts:</strong> You may disconnect any Plaid connection at any time from your Dashboard. 
+              Upon disconnection, we will immediately cease accessing new data from that financial institution.
+            </p>
+            <p className="leading-relaxed mb-4">
+              <strong>Post-Disconnection Retention:</strong> Data previously retrieved will be retained for 90 days after 
+              disconnection to support any in-progress debt payoff calculations and allow you to export your data. After 90 days, 
+              all Plaid-sourced data from that connection will be permanently deleted from our systems.
+            </p>
+            <p className="leading-relaxed mb-4">
+              <strong>Account Closure:</strong> If you delete your Finityo account entirely, all Plaid connections will be 
+              immediately terminated and all associated data (including Plaid-sourced financial data, account details, and 
+              debt records) will be permanently deleted within 30 days.
+            </p>
+            <p className="leading-relaxed mb-4">
+              <strong>User-Initiated Deletion:</strong> You may request deletion of specific Plaid data at any time by 
+              contacting info@finityo.com. We will process deletion requests within 30 days and provide confirmation.
+            </p>
+            <p className="leading-relaxed mb-4">
+              <strong>Secure Token Storage:</strong> Access tokens provided by Plaid are encrypted and stored securely in a vault. 
+              These tokens are automatically revoked and deleted when you disconnect an account or close your Finityo account.
+            </p>
+
+            <h3 className="text-xl font-semibold mt-6 mb-3">5.2 Security Breach Notification</h3>
+            <p className="leading-relaxed mb-4">
+              In the event of a security breach involving your personal or financial data (including Plaid-sourced data), we are 
+              committed to notifying affected users promptly and transparently.
+            </p>
+            <p className="leading-relaxed mb-4">
+              <strong>Timeline:</strong> We will notify you within 72 hours of discovering a breach that affects your data.
+            </p>
+            <p className="leading-relaxed mb-4">
+              <strong>Notification Method:</strong> You will be notified via email to the address on file. If the breach is 
+              widespread, we will also post a prominent notice on our website homepage and within the application dashboard.
+            </p>
+            <p className="leading-relaxed mb-4">
+              <strong>Information Provided:</strong> Our breach notification will include:
+            </p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>What data was affected (e.g., account information, financial data, personal details)</li>
+              <li>When the breach occurred and when it was discovered</li>
+              <li>What steps we are taking to address the breach and prevent future incidents</li>
+              <li>What steps you should take to protect yourself (e.g., monitoring accounts, changing passwords)</li>
+              <li>Contact information for questions and support</li>
+            </ul>
+            <p className="leading-relaxed mb-4">
+              <strong>Your Actions:</strong> If you receive a breach notification from us, we recommend immediately:
+            </p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>Reviewing your financial accounts for any suspicious or unauthorized activity</li>
+              <li>Changing your Finityo password and any reused passwords on other services</li>
+              <li>Monitoring your credit reports for unusual activity</li>
+              <li>Following any specific guidance provided in our notification</li>
+            </ul>
             <p className="leading-relaxed">
-              We use reasonable measures to protect your data and only retain it as long as needed or legally required.
+              <strong>Plaid-Related Breaches:</strong> If Plaid Technologies, Inc. experiences a security breach affecting 
+              your data, Plaid will notify users directly according to their breach notification procedures. We will cooperate 
+              fully with Plaid to ensure affected users are promptly informed and supported.
             </p>
           </section>
 
@@ -138,11 +205,18 @@ const Privacy = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">10. Contact</h2>
             <div className="bg-muted p-6 rounded-lg">
-              <p className="mb-0">
+              <p className="mb-2 font-semibold">Finityo</p>
+              <p className="mb-1"><em>Business entity registration pending - currently in beta testing phase</em></p>
+              <p className="mb-1">
                 Email:{" "}
                 <a href="mailto:info@finityo.com" className="text-primary hover:underline">
                   info@finityo.com
                 </a>
+              </p>
+              <p className="mb-1">State: Texas</p>
+              <p className="mb-1 mt-3 text-sm">Privacy Inquiries: info@finityo.com</p>
+              <p className="mb-0 text-sm text-muted-foreground mt-2">
+                Full legal entity details will be updated upon official company registration.
               </p>
             </div>
           </section>
