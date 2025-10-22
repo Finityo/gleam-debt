@@ -193,12 +193,26 @@ function computePlan(req: ComputeRequest) {
     const tracked = debtsTracking[i];
     const label = d.last4 ? `${d.name} (${d.last4})` : d.name;
     
+    // Calculate the starting balance after one-time payment was applied
+    let startingBalance = d.balance;
+    let remainingOneTime = oneTimePayment;
+    
+    // Simulate the one-time payment application to determine this debt's starting balance
+    for (let j = 0; j < i && remainingOneTime > 0; j++) {
+      const amountToApply = Math.min(remainingOneTime, ordered[j].balance);
+      remainingOneTime -= amountToApply;
+    }
+    
+    if (remainingOneTime > 0) {
+      startingBalance = Math.max(0, startingBalance - remainingOneTime);
+    }
+    
     return {
       index: i + 1,
       label,
       name: d.name,
       last4: d.last4,
-      balance: d.balance - (i === 0 ? oneTimePayment : 0),
+      balance: startingBalance,
       minPayment: d.minPayment,
       apr: d.apr,
       monthlyRate: d.apr / 12,
