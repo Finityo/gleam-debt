@@ -85,11 +85,13 @@ export type Database = {
           apr: number
           balance: number
           created_at: string
+          debt_type: string | null
           due_date: string | null
           id: string
           last4: string | null
           min_payment: number
           name: string
+          notes: string | null
           updated_at: string
           user_id: string
         }
@@ -97,11 +99,13 @@ export type Database = {
           apr: number
           balance: number
           created_at?: string
+          debt_type?: string | null
           due_date?: string | null
           id?: string
           last4?: string | null
           min_payment: number
           name: string
+          notes?: string | null
           updated_at?: string
           user_id: string
         }
@@ -109,11 +113,13 @@ export type Database = {
           apr?: number
           balance?: number
           created_at?: string
+          debt_type?: string | null
           due_date?: string | null
           id?: string
           last4?: string | null
           min_payment?: number
           name?: string
+          notes?: string | null
           updated_at?: string
           user_id?: string
         }
