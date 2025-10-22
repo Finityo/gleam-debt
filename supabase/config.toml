@@ -5,6 +5,3 @@ verify_jwt = false
 
 [functions.security-correction-task]
 verify_jwt = false
-
-[functions.parse-debt-pdf]
-verify_jwt = true

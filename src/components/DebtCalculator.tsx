@@ -407,96 +407,61 @@ export function DebtCalculator() {
     try {
       setIsLoading(true);
       
-      // Check if it's a PDF or Excel file
-      if (file.type === 'application/pdf') {
-        // Handle PDF import
-        const formData = new FormData();
-        formData.append('file', file);
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = new XLSX.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
+      
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet) {
+        throw new Error('No worksheet found');
+      }
+
+      const importedDebts: DebtInput[] = [];
+      
+      // Expected columns: Name, Last4, Balance, MinPayment, APR, DueDate
+      worksheet.eachRow((row, rowNumber) => {
+        // Skip header row
+        if (rowNumber === 1) return;
         
-        const { data, error } = await supabase.functions.invoke('parse-debt-pdf', {
-          body: formData
-        });
+        const name = row.getCell(1).value?.toString() || '';
+        const last4 = row.getCell(2).value?.toString() || '';
+        const balance = parseFloat(row.getCell(3).value?.toString() || '0');
+        const minPayment = parseFloat(row.getCell(4).value?.toString() || '0');
+        const apr = parseFloat(row.getCell(5).value?.toString() || '0');
+        const dueDateRaw = row.getCell(6).value?.toString() || '';
         
-        if (error) throw error;
-        
-        if (data && data.debtData && data.debtData.length > 0) {
-          const importedDebts: DebtInput[] = data.debtData.map((debt: any) => ({
-            name: debt.name || 'Credit Card',
-            last4: debt.last4 || '',
-            balance: debt.balance || 0,
-            minPayment: debt.minPayment || 0,
-            apr: debt.apr || 0,
-            dueDate: debt.dueDate || '',
+        // Extract just the day number from any format (e.g., "15", "15th", "Due by 15", etc.)
+        const dayMatch = dueDateRaw.match(/\d+/);
+        const dueDate = dayMatch ? dayMatch[0] : '';
+
+        if (name && balance > 0) {
+          importedDebts.push({
+            name,
+            last4,
+            balance,
+            minPayment,
+            apr,
+            dueDate,
             debtType: 'personal',
             notes: ''
-          }));
-          
-          setDebts(importedDebts);
-          toast({ 
-            title: "Success", 
-            description: `Imported ${importedDebts.length} debt(s) from PDF` 
           });
-        } else {
-          throw new Error('No valid debt data found in PDF');
         }
-      } else {
-        // Handle Excel import
-        const arrayBuffer = await file.arrayBuffer();
-        const workbook = new XLSX.Workbook();
-        await workbook.xlsx.load(arrayBuffer);
-        
-        const worksheet = workbook.worksheets[0];
-        if (!worksheet) {
-          throw new Error('No worksheet found');
-        }
+      });
 
-        const importedDebts: DebtInput[] = [];
-        
-        // Expected columns: Name, Last4, Balance, MinPayment, APR, DueDate
-        worksheet.eachRow((row, rowNumber) => {
-          // Skip header row
-          if (rowNumber === 1) return;
-          
-          const name = row.getCell(1).value?.toString() || '';
-          const last4 = row.getCell(2).value?.toString() || '';
-          const balance = parseFloat(row.getCell(3).value?.toString() || '0');
-          const minPayment = parseFloat(row.getCell(4).value?.toString() || '0');
-          const apr = parseFloat(row.getCell(5).value?.toString() || '0');
-          const dueDateRaw = row.getCell(6).value?.toString() || '';
-          
-          // Extract just the day number from any format (e.g., "15", "15th", "Due by 15", etc.)
-          const dayMatch = dueDateRaw.match(/\d+/);
-          const dueDate = dayMatch ? dayMatch[0] : '';
-
-          if (name && balance > 0) {
-            importedDebts.push({
-              name,
-              last4,
-              balance,
-              minPayment,
-              apr,
-              dueDate,
-              debtType: 'personal',
-              notes: ''
-            });
-          }
-        });
-
-        if (importedDebts.length === 0) {
-          throw new Error('No valid debts found in file');
-        }
-
-        setDebts(importedDebts);
-        toast({ 
-          title: "Success", 
-          description: `Imported ${importedDebts.length} debt(s) from Excel file` 
-        });
+      if (importedDebts.length === 0) {
+        throw new Error('No valid debts found in file');
       }
+
+      setDebts(importedDebts);
+      toast({ 
+        title: "Success", 
+        description: `Imported ${importedDebts.length} debt(s) from Excel file` 
+      });
     } catch (error) {
       logError('DebtCalculator - Import File', error);
       toast({ 
         title: "Error", 
-        description: "Failed to import file. Please ensure PDF contains credit card statement or Excel has columns: Name, Last4, Balance, MinPayment, APR, DueDate", 
+        description: "Failed to import Excel file. Please ensure it has columns: Name, Last4, Balance, MinPayment, APR, DueDate", 
         variant: "destructive" 
       });
     } finally {
@@ -569,12 +534,12 @@ export function DebtCalculator() {
                 <div className="flex gap-2 justify-center flex-wrap">
                   <Button onClick={handleImportClick} size="sm" variant="outline">
                     <Upload className="h-4 w-4 mr-2" />
-                    Import XLSX/PDF
+                    Import Excel
                   </Button>
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".xlsx,.xls,.pdf"
+                    accept=".xlsx,.xls"
                     onChange={handleFileImport}
                     style={{ display: 'none' }}
                   />
