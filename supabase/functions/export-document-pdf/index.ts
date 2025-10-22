@@ -141,44 +141,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { documentType } = await req.json();
+    const { documentType, content: providedContent, title: providedTitle } = await req.json();
 
-    let content = '';
-    let title = '';
+    let content = providedContent || '';
+    let title = providedTitle || '';
 
-    // Fetch document content based on type
-    switch (documentType) {
-      case 'plaid-compliance':
-        title = 'Plaid MSA Compliance Report';
-        content = await Deno.readTextFile('/var/task/PLAID_MSA_COMPLIANCE_REPORT.md');
-        break;
-      
-      case 'security-notes':
-        title = 'Security Review & Testing Checklist';
-        content = await Deno.readTextFile('/var/task/SECURITY_NOTES.md');
-        break;
-      
-      case 'privacy-policy':
-        title = 'Privacy Policy';
-        // This would need to fetch the rendered content from the Privacy page
-        content = '# Privacy Policy\n\n[Content would be fetched from the Privacy page component]';
-        break;
-      
-      case 'terms-of-service':
-        title = 'Terms of Service';
-        content = '# Terms of Service\n\n[Content would be fetched from the Terms page component]';
-        break;
-      
-      case 'disclosures':
-        title = 'Disclosures';
-        content = '# Disclosures\n\n[Content would be fetched from the Disclosures page component]';
-        break;
-      
-      default:
-        return new Response(JSON.stringify({ error: 'Invalid document type' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+    // Validate required parameters
+    if (!documentType || !content || !title) {
+      return new Response(JSON.stringify({ error: 'Missing required parameters: documentType, content, and title are required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Convert markdown to HTML
