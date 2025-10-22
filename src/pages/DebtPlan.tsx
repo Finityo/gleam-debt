@@ -6,7 +6,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ArrowLeft, Download, Info } from 'lucide-react';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { ArrowLeft, Download, Info, ChevronDown } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/logger';
@@ -452,36 +453,45 @@ const DebtPlan = () => {
           </TabsContent>
 
           <TabsContent value="mobile">
-            <div className="space-y-4">
+            <div className="space-y-2">
               {result.schedule && result.schedule.map((snapshot) => (
-                <Card key={snapshot.month}>
-                  <CardHeader>
-                    <CardTitle>Month {snapshot.month}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Total paid: ${snapshot.totalPaidThisMonth.toFixed(2)} | Snowball: ${snapshot.snowballExtra.toFixed(2)}
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {snapshot.debts.map((debt, idx) => (
-                      <div key={idx} className="p-4 bg-muted rounded-lg">
-                        <div className="font-semibold mb-2">{debt.name} {debt.last4 && `(${debt.last4})`}</div>
-                        {debt.endBalance > 0 ? (
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>Payment: ${debt.payment.toFixed(2)}</div>
-                            <div>Interest: ${debt.interest.toFixed(2)}</div>
-                            <div>Principal: ${debt.principal.toFixed(2)}</div>
-                            <div className="font-medium">Balance: ${debt.endBalance.toFixed(2)}</div>
+                <Collapsible key={snapshot.month}>
+                  <Card>
+                    <CollapsibleTrigger className="w-full">
+                      <CardHeader className="flex flex-row items-center justify-between py-4 hover:bg-muted/50 transition-colors">
+                        <div className="text-left">
+                          <CardTitle className="text-lg">Month {snapshot.month}</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            Total paid: ${snapshot.totalPaidThisMonth.toFixed(2)} | Snowball: ${snapshot.snowballExtra.toFixed(2)}
+                          </p>
+                        </div>
+                        <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
+                      </CardHeader>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <CardContent className="space-y-4 pt-0">
+                        {snapshot.debts.map((debt, idx) => (
+                          <div key={idx} className="p-4 bg-muted rounded-lg">
+                            <div className="font-semibold mb-2">{debt.name} {debt.last4 && `(${debt.last4})`}</div>
+                            {debt.endBalance > 0 ? (
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div>Payment: ${debt.payment.toFixed(2)}</div>
+                                <div>Interest: ${debt.interest.toFixed(2)}</div>
+                                <div>Principal: ${debt.principal.toFixed(2)}</div>
+                                <div className="font-medium">Balance: ${debt.endBalance.toFixed(2)}</div>
+                              </div>
+                            ) : (
+                              <div className="text-green-600 dark:text-green-400 font-semibold">PAID OFF ✓</div>
+                            )}
                           </div>
-                        ) : (
-                          <div className="text-green-600 dark:text-green-400 font-semibold">PAID OFF ✓</div>
-                        )}
-                      </div>
-                    ))}
-                    <div className="p-4 bg-primary/10 rounded-lg font-bold">
-                      Total Remaining: ${snapshot.totalRemaining.toFixed(2)}
-                    </div>
-                  </CardContent>
-                </Card>
+                        ))}
+                        <div className="p-4 bg-primary/10 rounded-lg font-bold">
+                          Total Remaining: ${snapshot.totalRemaining.toFixed(2)}
+                        </div>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
               ))}
             </div>
           </TabsContent>
