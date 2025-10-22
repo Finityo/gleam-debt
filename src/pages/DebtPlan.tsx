@@ -163,7 +163,9 @@ const DebtPlan = () => {
     }
   };
 
-  if (!result) return null;
+  if (!result) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
