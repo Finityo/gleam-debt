@@ -26,6 +26,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Disclosures = lazy(() => import("./pages/Disclosures"));
 const PlaidSubmission = lazy(() => import("./pages/PlaidSubmission"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AIAdvisor = lazy(() => import("./pages/AIAdvisor"));
 const DownloadPlaidProposal = lazy(() => import("./pages/DownloadPlaidProposal"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="/disclosures" element={<Disclosures />} />
               <Route path="/plaid-submission" element={<PlaidSubmission />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/ai-advisor" element={<AIAdvisor />} />
               <Route path="/plaid-proposal" element={<DownloadPlaidProposal />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/profile" element={<Profile />} />

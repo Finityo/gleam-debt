@@ -7,7 +7,7 @@ import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { AccountsList } from '@/components/AccountsList';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, PieChart, Calculator, User as UserIcon } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
 
@@ -133,7 +133,7 @@ const Dashboard = () => {
         <div className="grid gap-6 mb-8">
           <PlaidLink onSuccess={fetchAccounts} />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button
               onClick={() => navigate('/debts')}
               size="lg"
@@ -152,6 +152,16 @@ const Dashboard = () => {
             >
               <PieChart className="w-4 h-4 mr-2" />
               View Debt Visualization
+            </Button>
+
+            <Button
+              onClick={() => navigate('/ai-advisor')}
+              size="lg"
+              variant="outline"
+              className="w-full"
+            >
+              <Bot className="w-4 h-4 mr-2" />
+              AI Financial Advisor
             </Button>
           </div>
         </div>
