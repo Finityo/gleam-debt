@@ -94,39 +94,14 @@ serve(async (req) => {
 
     const { access_token, item_id } = exchangeData;
 
-    // Create admin client for vault operations (requires service role)
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    console.log('Storing Plaid item and token for:', { item_id, user_id: user.id });
 
-    // Store access token securely in Vault using admin client
-    const vaultSecretId = `plaid_token_${item_id}_${Date.now()}`;
-    
-    const { data: vaultData, error: vaultError } = await supabaseAdmin
-      .from('vault.secrets')
-      .insert({
-        name: vaultSecretId,
-        secret: access_token,
-        description: `Plaid access token for item ${item_id} (user: ${user.id})`
-      })
-      .select('id')
-      .single();
-
-    if (vaultError) {
-      console.error('Failed to store token in Vault:', vaultError);
-      throw new Error('Failed to securely store access token');
-    }
-
-    console.log('Token stored in Vault:', { vault_secret_id: vaultSecretId, item_id });
-
-    // Store item with vault reference only (no plaintext token)
+    // Store item with access token (encrypted at rest by Supabase)
     const { error: itemError } = await supabaseClient
       .from('plaid_items')
       .insert({
         user_id: user.id,
-        vault_secret_id: vaultSecretId,
-        access_token: '', // Empty string for backwards compatibility
+        access_token: access_token,
         item_id: item_id,
         institution_id: metadata?.institution?.institution_id,
         institution_name: metadata?.institution?.name,
@@ -137,7 +112,7 @@ serve(async (req) => {
       throw itemError;
     }
 
-    console.log('Item stored successfully with Vault encryption:', item_id);
+    console.log('Item stored successfully:', item_id);
 
     // Get accounts
     const accountsResponse = await fetch(`https://${PLAID_ENV}.plaid.com/accounts/get`, {
