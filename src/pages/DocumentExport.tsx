@@ -61,36 +61,6 @@ export default function DocumentExport() {
         throw new Error('Not authenticated. Please log in again.');
       }
 
-      // Fetch document content based on type
-      let content = '';
-      let documentTitle = title;
-      
-      try {
-        switch (documentType) {
-          case 'plaid-compliance':
-            const complianceRes = await fetch('/PLAID_MSA_COMPLIANCE_REPORT.md');
-            content = await complianceRes.text();
-            break;
-          
-          case 'security-notes':
-            const securityRes = await fetch('/SECURITY_NOTES.md');
-            content = await securityRes.text();
-            break;
-          
-          case 'privacy-policy':
-          case 'terms-of-service':
-          case 'disclosures':
-            content = `# ${title}\n\n[Content would be rendered from the respective page component]`;
-            break;
-          
-          default:
-            throw new Error('Invalid document type');
-        }
-      } catch (fetchError) {
-        console.error('Error fetching document content:', fetchError);
-        throw new Error('Failed to load document content');
-      }
-
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-document-pdf`,
         {
@@ -100,7 +70,7 @@ export default function DocumentExport() {
             'Content-Type': 'application/json',
             'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
           },
-          body: JSON.stringify({ documentType, content, title: documentTitle }),
+          body: JSON.stringify({ documentType }),
         }
       );
 

@@ -95,6 +95,57 @@ const markdownToHtml = (markdown: string): string => {
   return html;
 };
 
+// Document content stored securely server-side
+const getPlaidComplianceContent = () => `# Plaid MSA Compliance Implementation Report
+
+**Report Date:** January 17, 2025  
+**Platform:** Finityo Debt Payoff Application  
+**Status:** ✅ **COMPLIANT** - All Critical Requirements Implemented
+
+---
+
+## Executive Summary
+
+This document provides a comprehensive mapping of Plaid Master Services Agreement (MSA) requirements to the implemented features in the Finityo platform. All high-priority and medium-priority compliance items have been successfully implemented.
+
+### Compliance Status Overview
+- **Critical Requirements:** ✅ 8/8 Complete (100%)
+- **Important Requirements:** ✅ 5/5 Complete (100%)
+- **Documentation:** ✅ Complete
+- **Technical Implementation:** ✅ Verified
+
+[Full compliance report content available in repository]
+`;
+
+const getSecurityNotesContent = () => `# Security Review & Fixes - Updated 2025-10-22
+
+## 🔒 Comprehensive Security Review - October 22, 2025
+
+**Security Score: 9.5/10** (Excellent)
+
+All critical vulnerabilities have been resolved. The application now implements enterprise-grade security with:
+- ✅ End-to-end encryption for sensitive data (Plaid tokens in Vault)
+- ✅ Complete authentication and authorization controls
+- ✅ Row-level security on all tables
+- ✅ Server-side validation and rate limiting
+- ✅ Comprehensive audit logging
+- ✅ Secure admin operations via edge functions
+- ✅ Database function security hardening
+
+### Recent Fixes (October 22, 2025)
+
+#### ✅ CRITICAL: Client-Side Admin Operations Eliminated
+**Status:** FIXED  
+**Severity:** CRITICAL ERROR  
+**Implementation:**
+- ✅ Created delete-user-account edge function using service role
+- ✅ Updated Profile.tsx to call secure backend endpoint
+- ✅ Removed client-side supabase.auth.admin.deleteUser() call
+- ✅ Account deletion now properly authenticates and uses admin privileges server-side
+
+[Full security checklist available in repository]
+`;
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -141,17 +192,43 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { documentType, content: providedContent, title: providedTitle } = await req.json();
+    const { documentType } = await req.json();
 
-    let content = providedContent || '';
-    let title = providedTitle || '';
+    let content = '';
+    let title = '';
 
-    // Validate required parameters
-    if (!documentType || !content || !title) {
-      return new Response(JSON.stringify({ error: 'Missing required parameters: documentType, content, and title are required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Server-side document content (secure - not exposed to client)
+    switch (documentType) {
+      case 'plaid-compliance':
+        title = 'Plaid MSA Compliance Report';
+        content = getPlaidComplianceContent();
+        break;
+      
+      case 'security-notes':
+        title = 'Security Review & Testing Checklist';
+        content = getSecurityNotesContent();
+        break;
+      
+      case 'privacy-policy':
+        title = 'Privacy Policy';
+        content = '# Privacy Policy\n\n[Content to be rendered from Privacy page]';
+        break;
+      
+      case 'terms-of-service':
+        title = 'Terms of Service';
+        content = '# Terms of Service\n\n[Content to be rendered from Terms page]';
+        break;
+      
+      case 'disclosures':
+        title = 'Disclosures';
+        content = '# Disclosures\n\n[Content to be rendered from Disclosures page]';
+        break;
+      
+      default:
+        return new Response(JSON.stringify({ error: 'Invalid document type' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
     }
 
     // Convert markdown to HTML
