@@ -57,15 +57,16 @@ serve(async (req) => {
     const discounts = [];
     if (discountCode) {
       const validCodes: Record<string, string> = {
-        'FIRST5': '100% off for first 5 users',
-        'MILITARY': '50% off for military',
-        'FIRSTRESPONDER': '50% off for first responders'
+        'FIRST5': 'UkR6MwgX',
+        'MILITARY': 'UkR6MwgX',
+        'FIRSTRESPONDER': 'UkR6MwgX',
+        'DEBTFREE': 'UkR6MwgX'
       };
       
       if (validCodes[discountCode]) {
         logStep("Valid discount code provided", { code: discountCode });
-        // In production, you'd create actual Stripe coupons and use their IDs here
-        // For now, we'll pass it in metadata to track it
+        const couponId = validCodes[discountCode];
+        discounts.push({ coupon: couponId });
       }
     }
 
@@ -82,10 +83,8 @@ serve(async (req) => {
       success_url: `${req.headers.get("origin")}/dashboard?checkout=success`,
       cancel_url: `${req.headers.get("origin")}/pricing?checkout=canceled`,
       metadata: discountCode ? { discount_code: discountCode } : {},
+      discounts: discounts.length > 0 ? discounts : undefined,
     };
-
-    // Note: To actually apply discounts, you need to create Stripe coupons first
-    // and add them to the session with: discounts: [{ coupon: 'coupon_id' }]
     
     const session = await stripe.checkout.sessions.create(sessionConfig);
     logStep("Checkout session created", { sessionId: session.id, url: session.url });

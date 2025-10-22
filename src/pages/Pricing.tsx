@@ -110,7 +110,7 @@ const Pricing = () => {
       let validatedCode = null;
       if (discountCode.trim()) {
         setApplyingDiscount(true);
-        const validCodes = ['FIRST5', 'MILITARY', 'FIRSTRESPONDER'];
+        const validCodes = ['FIRST5', 'MILITARY', 'FIRSTRESPONDER', 'DEBTFREE'];
         if (validCodes.includes(discountCode.toUpperCase())) {
           validatedCode = discountCode.toUpperCase();
           toast({
@@ -182,13 +182,13 @@ const Pricing = () => {
               <CardHeader>
                 <CardTitle className="text-lg">Have a Discount Code?</CardTitle>
                 <CardDescription>
-                  Special codes for first 5 users, military, and first responders
+                  Enter your beta tester or special discount code
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Enter code (FIRST5, MILITARY, FIRSTRESPONDER)"
+                    placeholder="Enter discount code"
                     value={discountCode}
                     onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
                     disabled={applyingDiscount}
