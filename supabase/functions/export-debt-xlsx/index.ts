@@ -122,9 +122,14 @@ function computePlan(req: ComputeRequest) {
     paidOffMonth: 0
   }));
 
-  // Apply one-time payment to first debt
-  if (oneTimePayment > 0 && debtsTracking.length > 0) {
-    debtsTracking[0].currentBalance = Math.max(0, debtsTracking[0].currentBalance - oneTimePayment);
+  // Apply one-time payment cascading through debts in order
+  if (oneTimePayment > 0) {
+    let remainingOneTime = oneTimePayment;
+    for (let i = 0; i < debtsTracking.length && remainingOneTime > 0; i++) {
+      const amountToApply = Math.min(remainingOneTime, debtsTracking[i].currentBalance);
+      debtsTracking[i].currentBalance -= amountToApply;
+      remainingOneTime -= amountToApply;
+    }
   }
 
   let snowballExtra = userExtraBudget;
