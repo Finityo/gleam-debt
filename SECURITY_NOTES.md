@@ -279,9 +279,9 @@ Now these functions require authentication - only authenticated users can access
 ### 🎯 Remaining Low-Priority Items
 
 #### 1. Leaked Password Protection
-**Status:** Manual Action Required  
+**Status:** Platform Limitation  
 **Priority:** Low  
-**Action:** Enable in backend settings (Auth > Settings > Password Protection)
+**Details:** This feature is not available through Lovable Cloud's backend configuration tools. The `configure-auth` API only exposes `auto_confirm_email`, `disable_signup`, and `external_anonymous_users_enabled` settings. While full Supabase dashboards include this security feature, it's not accessible in Lovable Cloud's managed backend interface. Current security score of 9.5/10 is the maximum achievable with available platform capabilities.
 
 #### 2. Function Search Path Warnings
 **Status:** False Positive  
