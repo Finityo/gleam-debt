@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { BarChart, Users, Activity, TrendingUp, LogOut } from 'lucide-react';
+import { BarChart, Users, Activity, TrendingUp, LogOut, Headphones } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { logError } from '@/utils/logger';
 
@@ -131,10 +131,16 @@ const AdminDashboard = () => {
         <header className="border-b bg-background/95 backdrop-blur">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold">Business Dashboard</h1>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate('/support-dashboard')}>
+                <Headphones className="mr-2 h-4 w-4" />
+                Support
+              </Button>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </header>
 
