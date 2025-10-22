@@ -406,61 +406,97 @@ export function DebtCalculator() {
 
     try {
       setIsLoading(true);
-      const arrayBuffer = await file.arrayBuffer();
-      const workbook = new XLSX.Workbook();
-      await workbook.xlsx.load(arrayBuffer);
       
-      const worksheet = workbook.worksheets[0];
-      if (!worksheet) {
-        throw new Error('No worksheet found');
-      }
-
-      const importedDebts: DebtInput[] = [];
-      
-      // Expected columns: Name, Last4, Balance, MinPayment, APR, DueDate
-      worksheet.eachRow((row, rowNumber) => {
-        // Skip header row
-        if (rowNumber === 1) return;
+      // Check if it's a PDF or Excel file
+      if (file.type === 'application/pdf') {
+        // Handle PDF import
+        const formData = new FormData();
+        formData.append('file', file);
         
-        const name = row.getCell(1).value?.toString() || '';
-        const last4 = row.getCell(2).value?.toString() || '';
-        const balance = parseFloat(row.getCell(3).value?.toString() || '0');
-        const minPayment = parseFloat(row.getCell(4).value?.toString() || '0');
-        const apr = parseFloat(row.getCell(5).value?.toString() || '0');
-        const dueDateRaw = row.getCell(6).value?.toString() || '';
+        const { data, error } = await supabase.functions.invoke('parse-debt-pdf', {
+          body: formData
+        });
         
-        // Extract just the day number from any format (e.g., "15", "15th", "Due by 15", etc.)
-        const dayMatch = dueDateRaw.match(/\d+/);
-        const dueDate = dayMatch ? dayMatch[0] : '';
-
-        if (name && balance > 0) {
-          importedDebts.push({
-            name,
-            last4,
-            balance,
-            minPayment,
-            apr,
-            dueDate,
+        if (error) throw error;
+        
+        if (data && data.debtData && data.debtData.length > 0) {
+          const importedDebts: DebtInput[] = data.debtData.map((debt: any) => ({
+            name: debt.name || 'Credit Card',
+            last4: debt.last4 || '',
+            balance: debt.balance || 0,
+            minPayment: debt.minPayment || 0,
+            apr: debt.apr || 0,
+            dueDate: debt.dueDate || '',
             debtType: 'personal',
             notes: ''
+          }));
+          
+          setDebts(importedDebts);
+          toast({ 
+            title: "Success", 
+            description: `Imported ${importedDebts.length} debt(s) from PDF` 
           });
+        } else {
+          throw new Error('No valid debt data found in PDF');
         }
-      });
+      } else {
+        // Handle Excel import
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = new XLSX.Workbook();
+        await workbook.xlsx.load(arrayBuffer);
+        
+        const worksheet = workbook.worksheets[0];
+        if (!worksheet) {
+          throw new Error('No worksheet found');
+        }
 
-      if (importedDebts.length === 0) {
-        throw new Error('No valid debts found in file');
+        const importedDebts: DebtInput[] = [];
+        
+        // Expected columns: Name, Last4, Balance, MinPayment, APR, DueDate
+        worksheet.eachRow((row, rowNumber) => {
+          // Skip header row
+          if (rowNumber === 1) return;
+          
+          const name = row.getCell(1).value?.toString() || '';
+          const last4 = row.getCell(2).value?.toString() || '';
+          const balance = parseFloat(row.getCell(3).value?.toString() || '0');
+          const minPayment = parseFloat(row.getCell(4).value?.toString() || '0');
+          const apr = parseFloat(row.getCell(5).value?.toString() || '0');
+          const dueDateRaw = row.getCell(6).value?.toString() || '';
+          
+          // Extract just the day number from any format (e.g., "15", "15th", "Due by 15", etc.)
+          const dayMatch = dueDateRaw.match(/\d+/);
+          const dueDate = dayMatch ? dayMatch[0] : '';
+
+          if (name && balance > 0) {
+            importedDebts.push({
+              name,
+              last4,
+              balance,
+              minPayment,
+              apr,
+              dueDate,
+              debtType: 'personal',
+              notes: ''
+            });
+          }
+        });
+
+        if (importedDebts.length === 0) {
+          throw new Error('No valid debts found in file');
+        }
+
+        setDebts(importedDebts);
+        toast({ 
+          title: "Success", 
+          description: `Imported ${importedDebts.length} debt(s) from Excel file` 
+        });
       }
-
-      setDebts(importedDebts);
-      toast({ 
-        title: "Success", 
-        description: `Imported ${importedDebts.length} debt(s) from Excel file` 
-      });
     } catch (error) {
       logError('DebtCalculator - Import File', error);
       toast({ 
         title: "Error", 
-        description: "Failed to import Excel file. Please ensure it has columns: Name, Last4, Balance, MinPayment, APR, DueDate", 
+        description: "Failed to import file. Please ensure PDF contains credit card statement or Excel has columns: Name, Last4, Balance, MinPayment, APR, DueDate", 
         variant: "destructive" 
       });
     } finally {
@@ -527,9 +563,74 @@ export function DebtCalculator() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Debts</h3>
-              <div className="flex gap-2">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Debts</h3>
+                <div className="flex gap-2 justify-center flex-wrap">
+                  <Button onClick={handleImportClick} size="sm" variant="outline">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import XLSX/PDF
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx,.xls,.pdf"
+                    onChange={handleFileImport}
+                    style={{ display: 'none' }}
+                  />
+                  <Button onClick={addDebt} size="sm" variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Debt
+                  </Button>
+                  {selectedDebtIndices.size > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Selected ({selectedDebtIndices.size})
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Selected Debts?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete {selectedDebtIndices.size} selected debt(s). The plan will be recalculated with the remaining debts. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={deleteSelectedDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete Selected
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete All
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete All Debts?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete all {debts.filter(d => d.name.trim() !== '').length} debt(s) and clear your plan. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteAllDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete All
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+              <div>
                 <Button 
                   onClick={async () => {
                     try {
@@ -570,67 +671,6 @@ export function DebtCalculator() {
                   <Upload className="h-4 w-4 mr-2" />
                   Import from Bank
                 </Button>
-                <Button onClick={handleImportClick} size="sm" variant="outline">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Excel
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleFileImport}
-                  style={{ display: 'none' }}
-                />
-                <Button onClick={addDebt} size="sm" variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Debt
-                </Button>
-                {selectedDebtIndices.size > 0 && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="destructive">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Selected ({selectedDebtIndices.size})
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Selected Debts?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete {selectedDebtIndices.size} selected debt(s). The plan will be recalculated with the remaining debts. This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={deleteSelectedDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                          Delete Selected
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete All
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete All Debts?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete all {debts.filter(d => d.name.trim() !== '').length} debt(s) and clear your plan. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={deleteAllDebts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        Delete All
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
               </div>
             </div>
 
