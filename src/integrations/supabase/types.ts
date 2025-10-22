@@ -463,6 +463,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      migrate_plaid_tokens_to_vault: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          details: Json
+          failed_count: number
+          migrated_count: number
+        }[]
+      }
       store_plaid_token_in_vault: {
         Args: { p_description?: string; p_secret_name: string; p_token: string }
         Returns: string
