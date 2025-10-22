@@ -466,6 +466,22 @@ const Index = () => {
               </div>
               
               <div>
+                <h3 className="font-semibold mb-4">Company</h3>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <button onClick={() => navigate('/about')} className="text-muted-foreground hover:text-primary transition-colors">
+                      About Us
+                    </button>
+                  </li>
+                  <li>
+                    <a href="mailto:support@finityo-debt.com" className="text-muted-foreground hover:text-primary transition-colors">
+                      Contact
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
                 <h3 className="font-semibold mb-4">Legal</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
@@ -481,11 +497,6 @@ const Index = () => {
                   <li>
                     <button onClick={() => navigate('/disclosures')} className="text-muted-foreground hover:text-primary transition-colors">
                       Disclosures
-                    </button>
-                  </li>
-                  <li>
-                    <button onClick={() => navigate('/about')} className="text-muted-foreground hover:text-primary transition-colors">
-                      About Us
                     </button>
                   </li>
                 </ul>
@@ -518,7 +529,8 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
+            <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground space-y-2">
+              <p>Last updated: October 21, 2025</p>
               <p>© {new Date().getFullYear()} Finityo. All rights reserved. Your financial data is protected with bank-level security.</p>
             </div>
           </div>
