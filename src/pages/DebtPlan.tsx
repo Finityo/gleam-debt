@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Download } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ArrowLeft, Download, Info } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/logger';
@@ -180,6 +181,111 @@ const DebtPlan = () => {
             Review your personalized debt payoff strategy
           </p>
         </div>
+
+        <Card className="mb-6 border-primary/20 bg-primary/5">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg">How to Read Your Debt Payoff Plan</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="strategies">
+                <AccordionTrigger className="text-left">Understanding Debt Payoff Strategies</AccordionTrigger>
+                <AccordionContent className="space-y-3 text-muted-foreground">
+                  <div>
+                    <strong className="text-foreground">Snowball Method:</strong> Focuses on paying off your smallest balance first, regardless of interest rate. This builds momentum and motivation as you quickly eliminate debts one by one.
+                  </div>
+                  <div>
+                    <strong className="text-foreground">Avalanche Method:</strong> Focuses on paying off your highest interest rate debt first. This saves you the most money in interest charges over time.
+                  </div>
+                  <div className="text-sm italic">
+                    You can switch between strategies using the dropdown to see which approach works best for your situation.
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="table">
+                <AccordionTrigger className="text-left">Reading the Debt Strategy Table</AccordionTrigger>
+                <AccordionContent className="space-y-3 text-muted-foreground">
+                  <div>
+                    <strong className="text-foreground">Balance:</strong> The current amount you owe on this debt.
+                  </div>
+                  <div>
+                    <strong className="text-foreground">Min Payment:</strong> The minimum monthly payment required by your creditor.
+                  </div>
+                  <div>
+                    <strong className="text-foreground">APR:</strong> Annual Percentage Rate - the yearly interest rate charged on your debt.
+                  </div>
+                  <div>
+                    <strong className="text-foreground">Est. Months:</strong> Estimated number of months to pay off this specific debt using your chosen strategy.
+                  </div>
+                  <div>
+                    <strong className="text-foreground">Due Date:</strong> The day of the month your payment is due to avoid late fees.
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="calendar">
+                <AccordionTrigger className="text-left">Understanding the Payoff Calendar</AccordionTrigger>
+                <AccordionContent className="space-y-3 text-muted-foreground">
+                  <div>
+                    <strong className="text-foreground">Snowball Total:</strong> The extra payment amount (beyond minimums) being applied to accelerate debt payoff each month. As debts are paid off, their minimum payments roll into this amount.
+                  </div>
+                  <div>
+                    <strong className="text-foreground">Payment:</strong> Total amount paid toward this debt for the month (includes minimum + extra).
+                  </div>
+                  <div>
+                    <strong className="text-foreground">Interest (Int):</strong> Portion of your payment that goes toward interest charges - this doesn't reduce your balance.
+                  </div>
+                  <div>
+                    <strong className="text-foreground">Principal (Prin):</strong> Portion of your payment that reduces your actual debt balance - this is the good stuff!
+                  </div>
+                  <div>
+                    <strong className="text-foreground">Balance (Bal):</strong> Remaining amount owed at the end of the month.
+                  </div>
+                  <div>
+                    <strong className="text-foreground">PAID OFF ✓:</strong> Congratulations! This debt is completely eliminated.
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="snowball-effect">
+                <AccordionTrigger className="text-left">The Snowball Effect Explained</AccordionTrigger>
+                <AccordionContent className="space-y-3 text-muted-foreground">
+                  <div>
+                    The power of the snowball/avalanche method comes from the rolling payments. Here's how it works:
+                  </div>
+                  <ol className="list-decimal list-inside space-y-2 ml-2">
+                    <li>You pay minimums on all debts plus extra toward your target debt</li>
+                    <li>When the first debt is paid off, you take that entire payment amount...</li>
+                    <li>...and add it to the minimum of the next target debt</li>
+                    <li>This creates larger and larger payments that eliminate debts faster</li>
+                    <li>The "snowball" gets bigger with each paid-off debt!</li>
+                  </ol>
+                  <div className="text-sm italic mt-3">
+                    Watch the "Snowball Total" column in the Payoff Calendar grow as debts are eliminated - that's your momentum building!
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="tips">
+                <AccordionTrigger className="text-left">Tips for Success</AccordionTrigger>
+                <AccordionContent className="space-y-3 text-muted-foreground">
+                  <ul className="list-disc list-inside space-y-2 ml-2">
+                    <li>Pay attention to due dates to avoid late fees that set you back</li>
+                    <li>Any extra money you can add speeds up the entire timeline</li>
+                    <li>Consider the psychological benefit of quick wins (snowball) vs. maximum savings (avalanche)</li>
+                    <li>Export to Excel to track your actual progress against this plan</li>
+                    <li>Review and update your plan if your financial situation changes</li>
+                    <li>Celebrate each paid-off debt - you're making real progress!</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
 
         <Tabs defaultValue="snowball" className="w-full">
           <TabsList className="grid grid-cols-3 h-auto gap-2">
