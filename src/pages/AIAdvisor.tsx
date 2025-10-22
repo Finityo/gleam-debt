@@ -5,8 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Send, Bot, User } from "lucide-react";
+import { Loader2, Send, Bot, User, AlertTriangle } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Message = {
   role: "user" | "assistant";
@@ -150,14 +151,23 @@ const AIAdvisor = () => {
       <div className="min-h-screen bg-gradient-subtle p-4">
         <div className="max-w-4xl mx-auto">
           <Card className="h-[calc(100vh-2rem)] flex flex-col">
-            <div className="p-6 border-b">
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <Bot className="h-8 w-8 text-primary" />
-                AI Financial Advisor
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Ask me anything about managing your debt and finances
-              </p>
+            <div className="p-6 border-b space-y-4">
+              <div>
+                <h1 className="text-3xl font-bold flex items-center gap-2">
+                  <Bot className="h-8 w-8 text-primary" />
+                  AI Financial Advisor
+                </h1>
+                <p className="text-muted-foreground mt-2">
+                  Ask me anything about managing your debt and finances
+                </p>
+              </div>
+              
+              <Alert variant="destructive" className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900">
+                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+                <AlertDescription className="text-amber-800 dark:text-amber-200 text-sm">
+                  <strong>Disclaimer:</strong> This AI chatbot is for informational and educational purposes only. It does not constitute professional financial, legal, or tax advice. The information provided should not be relied upon as a substitute for consultation with qualified financial advisors, accountants, or legal professionals. Always consult with licensed professionals before making financial decisions. Finityo assumes no liability for actions taken based on information provided by this AI tool.
+                </AlertDescription>
+              </Alert>
             </div>
 
             <ScrollArea className="flex-1 p-6" ref={scrollRef}>
