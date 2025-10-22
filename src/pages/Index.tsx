@@ -368,47 +368,85 @@ const Index = () => {
                 How Finityo Works
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Get debt-free in just three simple steps
+                Get debt-free in four simple steps
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground text-2xl font-bold mb-6">
-                  1
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-4xl mb-6">
+                  📝
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Connect Your Accounts</h3>
+                <h3 className="text-xl font-bold mb-3">Input Debts</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Securely link your credit cards and loans through Plaid. We'll automatically import your balances, 
-                  APRs, and payment details—no manual entry needed.
+                  Connect accounts with Plaid or enter manually
                 </p>
               </div>
 
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent text-accent-foreground text-2xl font-bold mb-6">
-                  2
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 text-4xl mb-6">
+                  ⚖️
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Get Your Custom Plan</h3>
-                <p className="text-muted-foreground leading-relaxed">Our calculator analyzes your debts and creates a personalized payoff strategy. Choose between snowball (psychological wins) or avalanche (highest interest first).</p>
+                <h3 className="text-xl font-bold mb-3">Choose Method</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Pick Snowball or Avalanche strategy
+                </p>
               </div>
 
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success text-success-foreground text-2xl font-bold mb-6">
-                  3
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10 text-4xl mb-6">
+                  📅
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Track Your Progress</h3>
+                <h3 className="text-xl font-bold mb-3">See Timeline</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Watch your debt shrink with visual charts and milestones. See your debt-free date get closer 
-                  every month as you crush each balance.
+                  View month-by-month payoff schedule
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-4xl mb-6">
+                  📈
+                </div>
+                <h3 className="text-xl font-bold mb-3">Track Progress</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Monitor balances and stay motivated
                 </p>
               </div>
             </div>
 
-            <div className="text-center mt-12">
+            {/* Screenshot of sample plan */}
+            <div className="rounded-2xl border border-border overflow-hidden shadow-lg mb-12">
+              <img src="/images/sample-plan.png" alt="Finityo Debt Payoff Plan Screenshot" className="w-full" loading="lazy" />
+            </div>
+
+            <div className="text-center">
               <Button size="lg" onClick={() => navigate('/auth')} className="bg-gradient-primary hover:shadow-glow transition-all text-lg px-8">
                 Start Your Free Plan
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Badges Row */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col items-center text-center p-6 rounded-xl border border-border bg-card/50">
+              <Lock className="w-8 h-8 text-primary mb-3" />
+              <h3 className="font-semibold mb-2">No Bank Logins Required</h3>
+              <p className="text-sm text-muted-foreground">Manual entry or Plaid - your choice</p>
+            </div>
+            <div className="flex flex-col items-center text-center p-6 rounded-xl border border-border bg-card/50">
+              <Shield className="w-8 h-8 text-primary mb-3" />
+              <h3 className="font-semibold mb-2">Privacy First</h3>
+              <p className="text-sm text-muted-foreground">Bank-level encryption, zero data selling</p>
+            </div>
+            <div className="flex flex-col items-center text-center p-6 rounded-xl border border-border bg-card/50">
+              <Download className="w-8 h-8 text-primary mb-3" />
+              <h3 className="font-semibold mb-2">Export Anytime</h3>
+              <p className="text-sm text-muted-foreground">Download CSV, Excel, or PDF plans</p>
             </div>
           </div>
         </div>
