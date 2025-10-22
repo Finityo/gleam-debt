@@ -277,12 +277,14 @@ serve(async (req) => {
     
     const result = computePlan(validated);
     const csv = exportCSV(result);
+    
+    const filename = validated.strategy === 'snowball' ? 'Snowball.csv' : 'Avalanche.csv';
 
     return new Response(csv, {
       headers: { 
         ...corsHeaders, 
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': 'attachment; filename=debt_snowball.csv'
+        'Content-Disposition': `attachment; filename=${filename}`
       },
     });
   } catch (error) {

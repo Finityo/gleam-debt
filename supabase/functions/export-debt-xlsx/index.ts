@@ -292,12 +292,14 @@ serve(async (req) => {
     
     const result = computePlan(validated);
     const xlsx = await exportXLSX(result);
+    
+    const filename = validated.strategy === 'snowball' ? 'Snowball.xlsx' : 'Avalanche.xlsx';
 
     return new Response(xlsx, {
       headers: { 
         ...corsHeaders, 
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': 'attachment; filename=debt_snowball.xlsx'
+        'Content-Disposition': `attachment; filename=${filename}`
       },
     });
   } catch (error) {
