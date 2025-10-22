@@ -61,32 +61,54 @@ export default function DocumentExport() {
         throw new Error('Not authenticated. Please log in again.');
       }
 
-      const { data, error } = await supabase.functions.invoke('export-document-pdf', {
-        body: { documentType }
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-document-pdf`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ documentType }),
+        }
+      );
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Export failed');
+      }
 
-      // Create a blob and download
-      const blob = new Blob([data], { type: 'application/pdf' });
+      // Get HTML content
+      const htmlContent = await response.text();
+      
+      // Create blob and download
+      const blob = new Blob([htmlContent], { type: 'text/html' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${documentType}-${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = `${documentType}-${new Date().toISOString().split('T')[0]}.html`;
+      a.style.display = 'none';
       document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      
+      // Safari requires a delay
+      setTimeout(() => {
+        a.click();
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        }, 100);
+      }, 0);
 
       toast({
         title: 'Export Successful',
-        description: `${title} has been downloaded as PDF`,
+        description: `${title} has been downloaded`,
       });
     } catch (error: any) {
       console.error('Export error:', error);
       toast({
         title: 'Export Failed',
-        description: error.message || 'Failed to generate PDF. Please try again.',
+        description: error.message || 'Failed to generate document. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -96,22 +118,35 @@ export default function DocumentExport() {
 
   const handleExportAll = async () => {
     setLoadingDoc('all');
+    let successCount = 0;
+    let errorCount = 0;
     
     for (const doc of documents) {
       try {
         await handleExport(doc.id, doc.title);
-        // Small delay between downloads
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        successCount++;
+        // Longer delay for Safari to handle multiple downloads
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (error) {
         console.error(`Failed to export ${doc.title}:`, error);
+        errorCount++;
       }
     }
     
     setLoadingDoc(null);
-    toast({
-      title: 'Batch Export Complete',
-      description: 'All documents have been downloaded',
-    });
+    
+    if (errorCount === 0) {
+      toast({
+        title: 'Batch Export Complete',
+        description: `Successfully downloaded ${successCount} documents`,
+      });
+    } else {
+      toast({
+        title: 'Batch Export Completed with Errors',
+        description: `Downloaded ${successCount} documents, ${errorCount} failed`,
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
