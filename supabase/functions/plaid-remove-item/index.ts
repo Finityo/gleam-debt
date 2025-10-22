@@ -41,10 +41,10 @@ serve(async (req) => {
       throw new Error('item_id is required');
     }
 
-    // Get the item to ensure user owns it
+    // Get the item to ensure user owns it (need both vault_secret_id and access_token)
     const { data: item, error: itemError } = await supabaseClient
       .from('plaid_items')
-      .select('id, vault_secret_id')
+      .select('id, vault_secret_id, access_token')
       .eq('item_id', item_id)
       .eq('user_id', user.id)
       .single();
@@ -58,15 +58,50 @@ serve(async (req) => {
       throw new Error('Item not found or access denied');
     }
 
-    // Get access token from vault
-    const { data: accessToken, error: tokenError } = await supabaseClient.rpc('get_plaid_token_from_vault', {
-      p_item_id: item_id,
-      p_function_name: 'plaid-remove-item'
-    });
+    // Get access token - handle both migrated (vault) and unmigrated (plaintext) tokens
+    let accessToken: string | null = null;
 
-    if (tokenError || !accessToken) {
-      console.error('Failed to get token for item:', item_id, tokenError);
-      throw new Error('Failed to retrieve access token');
+    if (item.vault_secret_id) {
+      // Token is migrated - retrieve from vault
+      console.log('Retrieving migrated token from vault:', {
+        user_id: user.id,
+        item_id: item_id,
+        vault_secret_id: item.vault_secret_id
+      });
+
+      const { data: vaultToken, error: tokenError } = await supabaseClient.rpc('get_plaid_token_from_vault', {
+        p_item_id: item_id,
+        p_function_name: 'plaid-remove-item'
+      });
+
+      if (tokenError || !vaultToken) {
+        console.error('Failed to retrieve token from vault:', {
+          user_id: user.id,
+          item_id: item_id,
+          error: tokenError?.message
+        });
+        throw new Error('Failed to retrieve access token from vault');
+      }
+      
+      accessToken = vaultToken;
+    } else if (item.access_token) {
+      // Token is not migrated - use plaintext (legacy support)
+      console.warn('⚠️ Using legacy plaintext token for item removal:', {
+        user_id: user.id,
+        item_id: item_id,
+        migration_needed: true,
+        timestamp: new Date().toISOString()
+      });
+      
+      accessToken = item.access_token;
+    } else {
+      console.error('No access token found for item:', {
+        user_id: user.id,
+        item_id: item_id,
+        has_vault_secret: !!item.vault_secret_id,
+        has_plaintext: !!item.access_token
+      });
+      throw new Error('No access token found (neither vault nor plaintext)');
     }
 
     console.log('Item found, removing from Plaid:', {

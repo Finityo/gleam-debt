@@ -91,6 +91,15 @@ const Dashboard = () => {
           .filter(item => !item.vault_secret_id && item.access_token)
           .map(item => item.item_id);
         setUnmigratedItemIds(unmigrated);
+        
+        // Show toast notification if unmigrated tokens detected
+        if (unmigrated.length > 0) {
+          toast({
+            title: '🔒 Security Upgrade Available',
+            description: `${unmigrated.length} bank connection(s) can be upgraded to encrypted storage. Please upgrade to ensure full account management capabilities.`,
+            duration: 10000,
+          });
+        }
       }
     } catch (error: any) {
       logError('Dashboard - Fetch Accounts', error);

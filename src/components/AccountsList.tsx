@@ -55,7 +55,7 @@ export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) 
     try {
       setRemovingItemId(plaidItemId);
 
-      const { error } = await supabase.functions.invoke('plaid-remove-item', {
+      const { data, error } = await supabase.functions.invoke('plaid-remove-item', {
         body: { item_id: plaidItemId },
       });
 
@@ -70,11 +70,27 @@ export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) 
       onAccountsChange();
     } catch (error: any) {
       logError('AccountsList - Remove Item', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to disconnect account. Please try again.',
-        variant: 'destructive',
-      });
+      
+      // Check if error is related to unmigrated tokens
+      const errorMessage = error.message || '';
+      const isTokenMigrationError = errorMessage.includes('vault secret') || 
+                                    errorMessage.includes('retrieve access token') ||
+                                    errorMessage.includes('No vault secret');
+      
+      if (isTokenMigrationError) {
+        toast({
+          title: '🔒 Security Upgrade Required',
+          description: 'This account needs a security upgrade before it can be disconnected. Please use the "Upgrade Security Now" button above to migrate your tokens first.',
+          variant: 'destructive',
+          duration: 8000,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to disconnect account. Please try again or contact support if the issue persists.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setRemovingItemId(null);
     }

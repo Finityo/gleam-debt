@@ -62,24 +62,27 @@ export const PlaidTokenMigration = ({ unmigrated_item_ids, onMigrationComplete }
   }
 
   return (
-    <Alert className="mb-6 border-yellow-500 bg-yellow-50">
-      <Shield className="h-4 w-4 text-yellow-600" />
-      <AlertTitle className="text-yellow-900">Security Upgrade Available</AlertTitle>
-      <AlertDescription className="text-yellow-800">
-        <p className="mb-3">
-          {unmigrated_item_ids.length} of your bank connection(s) can be upgraded to use encrypted storage for enhanced security.
+    <Alert className="mb-6 border-orange-500 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-700">
+      <Shield className="h-4 w-4 text-orange-600 dark:text-orange-500" />
+      <AlertTitle className="text-orange-900 dark:text-orange-200 font-semibold">⚠️ Security Upgrade Required</AlertTitle>
+      <AlertDescription className="text-orange-800 dark:text-orange-300">
+        <p className="mb-2 font-medium">
+          {unmigrated_item_ids.length} bank connection(s) need a security upgrade before they can be disconnected or modified.
+        </p>
+        <p className="mb-3 text-sm">
+          Your tokens will be encrypted using secure vault storage. This is required for account management and enhanced security.
         </p>
         <Button 
           onClick={handleMigrate} 
           disabled={isMigrating}
           variant="default"
           size="sm"
-          className="bg-yellow-600 hover:bg-yellow-700"
+          className="bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600"
         >
           {isMigrating ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Encrypting Tokens...
+              Encrypting {unmigrated_item_ids.length} Token(s)...
             </>
           ) : (
             <>
@@ -88,8 +91,10 @@ export const PlaidTokenMigration = ({ unmigrated_item_ids, onMigrationComplete }
             </>
           )}
         </Button>
-        <p className="mt-2 text-xs">
-          This will encrypt your Plaid access tokens using vault storage without disconnecting your accounts.
+        <p className="mt-3 text-xs text-orange-700 dark:text-orange-400">
+          ✓ No account disconnection required<br />
+          ✓ Complies with Plaid security standards<br />
+          ✓ Takes less than 30 seconds
         </p>
       </AlertDescription>
     </Alert>
