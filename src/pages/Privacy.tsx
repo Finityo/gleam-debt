@@ -63,49 +63,80 @@ const Privacy = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">3. Sharing & disclosure</h2>
+            <h2 className="text-2xl font-semibold mb-4">3. Plaid financial data services</h2>
+            <p className="leading-relaxed mb-4">
+              When you connect your financial accounts through Finityo, we use Plaid Inc. ("Plaid") to facilitate secure, 
+              read-only access to your financial data. By using our service to link your financial accounts, you grant 
+              Plaid and Finityo the right, power, and authority to access and transmit your personal and financial 
+              information from your financial institution according to Plaid's terms and this privacy policy.
+            </p>
+            <p className="leading-relaxed mb-4">
+              Plaid collects data from your financial institution such as account balances, transaction history, 
+              account details, and other financial information necessary to provide debt tracking and payoff planning services.
+            </p>
+            <div className="bg-muted p-6 rounded-lg mb-4">
+              <p className="mb-2 font-semibold">
+                Plaid's Privacy Policy
+              </p>
+              <p className="mb-2">
+                For information about how Plaid collects, uses, and shares your data, please review Plaid's 
+                End User Privacy Policy:
+              </p>
+              <a 
+                href="https://plaid.com/legal/#end-user-privacy-policy" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-primary hover:underline font-medium"
+              >
+                https://plaid.com/legal/#end-user-privacy-policy
+              </a>
+            </div>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">4. Sharing & disclosure</h2>
             <p className="leading-relaxed">
-              We do not sell your personal data. We may share with trusted service providers or disclose if required by law.
+              We do not sell your personal data. We may share with trusted service providers (including Plaid for financial account connections) or disclose if required by law.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">4. Security & retention</h2>
+            <h2 className="text-2xl font-semibold mb-4">5. Security & retention</h2>
             <p className="leading-relaxed">
               We use reasonable measures to protect your data and only retain it as long as needed or legally required.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">5. Your rights</h2>
+            <h2 className="text-2xl font-semibold mb-4">6. Your rights</h2>
             <p className="leading-relaxed">
               You may request access, correction, deletion, or export of your data. Contact us for verification.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">6. International transfers</h2>
+            <h2 className="text-2xl font-semibold mb-4">7. International transfers</h2>
             <p className="leading-relaxed">
               Your data may be processed in the United States or other jurisdictions.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">7. Children</h2>
+            <h2 className="text-2xl font-semibold mb-4">8. Children</h2>
             <p className="leading-relaxed">
               Not directed to children under 13. Contact us if data was collected improperly.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">8. Changes</h2>
+            <h2 className="text-2xl font-semibold mb-4">9. Changes</h2>
             <p className="leading-relaxed">
               We may update this policy. Continued use means you accept changes.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">9. Contact</h2>
+            <h2 className="text-2xl font-semibold mb-4">10. Contact</h2>
             <div className="bg-muted p-6 rounded-lg">
               <p className="mb-0">
                 Email:{" "}
