@@ -78,16 +78,29 @@ const Index = () => {
               Connect accounts with Plaid, choose Snowball or Avalanche, and see your debt-free date
             </p>
 
-            <div className="flex flex-col gap-6 items-center pt-4">
+            <div className="flex flex-col gap-4 items-center pt-4">
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6" onClick={() => navigate('/auth')}>
+                Create your free plan
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+              
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6" onClick={() => navigate('/auth')}>
-                  Create your free plan
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
                 <Button size="lg" variant="ghost" className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6" onClick={() => navigate('/pricing')}>
                   <Star className="mr-2 w-5 h-5" />
                   View Pricing
                 </Button>
+              </div>
+              
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="bg-white/5 border-2 border-white/40 text-white hover:bg-white hover:text-primary backdrop-blur-sm text-lg px-8 py-6 font-semibold"
+                onClick={() => navigate('/auth')}
+              >
+                Member Login
+              </Button>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" variant="ghost" className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6" onClick={() => navigate('/debt-plan')}>
                   <BarChart3 className="mr-2 w-5 h-5" />
                   See a sample plan
