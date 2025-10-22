@@ -109,8 +109,8 @@ const Privacy = () => {
             <div className="bg-muted p-6 rounded-lg">
               <p className="mb-0">
                 Email:{" "}
-                <a href="mailto:hello@finityo-debt.com" className="text-primary hover:underline">
-                  hello@finityo-debt.com
+                <a href="mailto:info@finityo.com" className="text-primary hover:underline">
+                  info@finityo.com
                 </a>
               </p>
             </div>
