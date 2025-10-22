@@ -349,6 +349,36 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_log: {
+        Row: {
+          auto_fixed: boolean | null
+          check_type: string
+          created_at: string | null
+          description: string
+          id: string
+          metadata: Json | null
+          severity: string
+        }
+        Insert: {
+          auto_fixed?: boolean | null
+          check_type: string
+          created_at?: string | null
+          description: string
+          id?: string
+          metadata?: Json | null
+          severity: string
+        }
+        Update: {
+          auto_fixed?: boolean | null
+          check_type?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          metadata?: Json | null
+          severity?: string
+        }
+        Relationships: []
+      }
       support_tickets: {
         Row: {
           assigned_to: string | null
