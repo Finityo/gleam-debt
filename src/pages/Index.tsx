@@ -16,20 +16,72 @@ const Index = () => {
   } = useAnalytics();
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Finityo",
-    "applicationCategory": "FinanceApplication",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "1247"
-    },
-    "description": "Debt payoff planning tool using snowball and avalanche methods"
+    "@graph": [
+      {
+        "@type": "Organization",
+        "name": "Finityo",
+        "url": "https://finityo-debt.com",
+        "logo": "https://finityo-debt.com/og-image.jpg",
+        "description": "Debt payoff planning tool helping users achieve financial freedom",
+        "sameAs": []
+      },
+      {
+        "@type": "WebSite",
+        "name": "Finityo Debt Payoff",
+        "url": "https://finityo-debt.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://finityo-debt.com/?s={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "Finityo",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.8",
+          "ratingCount": "1247"
+        },
+        "description": "Debt payoff planning tool using snowball and avalanche methods with Plaid integration for automatic account sync"
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the snowball method?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The snowball method focuses on paying off your smallest debt first while making minimum payments on others, creating momentum through quick wins."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the avalanche method?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The avalanche method prioritizes debts with the highest interest rates first, potentially saving you more money over time."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my financial data secure?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, we use Plaid for bank-level 256-bit SSL encryption with read-only access. We cannot move or store funds, only view balances."
+            }
+          }
+        ]
+      }
+    ]
   };
 
   // Mock data for demo
