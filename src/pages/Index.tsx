@@ -504,7 +504,7 @@ const Index = () => {
                     </button>
                   </li>
                   <li>
-                    <button onClick={() => navigate('/admin')} className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                    <button onClick={() => navigate('/team-access')} className="text-muted-foreground hover:text-primary transition-colors font-medium">
                       Team Access
                     </button>
                   </li>
