@@ -137,32 +137,30 @@ const Profile = () => {
     setDeleting(true);
 
     try {
-      // First, get all Plaid items to revoke vault secrets
+      // First, revoke all Plaid connections
       const { data: plaidItems } = await supabase
         .from('plaid_items')
-        .select('id, item_id, vault_secret_id')
+        .select('item_id')
         .eq('user_id', user.id);
 
-      // Delete all Plaid items (this triggers cascade deletes for accounts, debts, etc.)
       if (plaidItems && plaidItems.length > 0) {
-        const { error: deleteError } = await supabase
-          .from('plaid_items')
-          .delete()
-          .eq('user_id', user.id);
-
-        if (deleteError) {
-          console.error('Error deleting Plaid items:', deleteError);
-          throw new Error('Failed to delete connected accounts');
+        console.log('Revoking Plaid items...');
+        for (const item of plaidItems) {
+          try {
+            await supabase.functions.invoke('plaid-remove-item', {
+              body: { itemId: item.item_id },
+            });
+          } catch (error) {
+            console.error('Error revoking Plaid item:', error);
+          }
         }
-
-        console.log(`Deleted ${plaidItems.length} Plaid items and associated data`);
       }
 
-      // Delete the user account (auth.users deletion will trigger cleanup function)
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+      // Call the server-side account deletion edge function
+      const { data, error } = await supabase.functions.invoke('delete-user-account');
 
-      if (authError) {
-        console.error('Error deleting user:', authError);
+      if (error) {
+        console.error('Edge function error:', error);
         throw new Error('Failed to delete account');
       }
 
