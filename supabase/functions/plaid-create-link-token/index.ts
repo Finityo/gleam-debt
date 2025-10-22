@@ -29,6 +29,93 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
+    // Rate limiting check - 5 attempts per hour, 20 per 24 hours
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    const { data: hourlyAttempts } = await supabaseClient
+      .from('plaid_rate_limits')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('action_type', 'create_link_token')
+      .gte('attempted_at', oneHourAgo);
+
+    const { data: dailyAttempts } = await supabaseClient
+      .from('plaid_rate_limits')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('action_type', 'create_link_token')
+      .gte('attempted_at', oneDayAgo);
+
+    const hourlyCount = hourlyAttempts?.length || 0;
+    const dailyCount = dailyAttempts?.length || 0;
+
+    console.log('Rate limit check:', {
+      user_id: user.id,
+      hourly_attempts: hourlyCount,
+      daily_attempts: dailyCount
+    });
+
+    if (hourlyCount >= 5) {
+      console.warn('Rate limit exceeded (hourly):', {
+        user_id: user.id,
+        attempts: hourlyCount
+      });
+
+      // Log rate limit hit
+      await supabaseClient.from('plaid_rate_limits').insert({
+        user_id: user.id,
+        action_type: 'create_link_token',
+        success: false,
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown'
+      });
+
+      return new Response(
+        JSON.stringify({ 
+          error: 'Too many connection attempts. Please wait an hour before trying again.',
+          retry_after: 3600
+        }),
+        {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': '3600'
+          },
+        }
+      );
+    }
+
+    if (dailyCount >= 20) {
+      console.warn('Rate limit exceeded (daily):', {
+        user_id: user.id,
+        attempts: dailyCount
+      });
+
+      // Log rate limit hit
+      await supabaseClient.from('plaid_rate_limits').insert({
+        user_id: user.id,
+        action_type: 'create_link_token',
+        success: false,
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown'
+      });
+
+      return new Response(
+        JSON.stringify({ 
+          error: 'Daily connection limit reached. Please try again tomorrow.',
+          retry_after: 86400
+        }),
+        {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': '86400'
+          },
+        }
+      );
+    }
+
     console.log('Creating link token:', {
       user_id: user.id,
       timestamp: new Date().toISOString()
@@ -76,6 +163,14 @@ serve(async (req) => {
       user_id: user.id,
       expiration: data.expiration,
       timestamp: new Date().toISOString()
+    });
+
+    // Log successful token creation
+    await supabaseClient.from('plaid_rate_limits').insert({
+      user_id: user.id,
+      action_type: 'create_link_token',
+      success: true,
+      ip_address: req.headers.get('x-forwarded-for') || 'unknown'
     });
 
     return new Response(JSON.stringify(data), {

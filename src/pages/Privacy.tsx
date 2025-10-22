@@ -36,7 +36,7 @@ const Privacy = () => {
 
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">1. Information we collect</h2>
-            <ul className="list-disc pl-6 space-y-2">
+            <ul className="list-disc pl-6 space-y-2 mb-6">
               <li>
                 <strong>Account and financial data:</strong> Read-only access through Plaid (balances, debts, transactions).
               </li>
@@ -50,6 +50,93 @@ const Privacy = () => {
                 <strong>Cookies:</strong> For performance and feature improvement.
               </li>
             </ul>
+
+            <h3 className="text-xl font-semibold mt-6 mb-3">1.1 Cookies, Analytics & Tracking</h3>
+            <p className="leading-relaxed mb-4">
+              We use cookies and similar tracking technologies to understand how users interact with Finityo, 
+              improve our services, and troubleshoot issues.
+            </p>
+            
+            <h4 className="font-semibold mb-2">What We Track:</h4>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>
+                <strong>Session Information:</strong> We track user sessions to maintain your logged-in state 
+                and provide a consistent experience. Session IDs are anonymized and do not contain personal information.
+              </li>
+              <li>
+                <strong>Page Views:</strong> We record which pages you visit within Finityo (e.g., dashboard, 
+                debt charts, AI advisor) to understand feature usage and improve user experience.
+              </li>
+              <li>
+                <strong>Feature Interactions:</strong> We track when you use specific features (e.g., connecting 
+                a bank account, running a debt calculation) to identify popular features and areas for improvement.
+              </li>
+              <li>
+                <strong>Technical Data:</strong> We collect browser type, device type, operating system, screen 
+                resolution, and referring website to optimize our service across different platforms.
+              </li>
+            </ul>
+
+            <h4 className="font-semibold mb-2">What We DON'T Track:</h4>
+            <div className="bg-muted p-4 rounded-lg mb-4">
+              <p className="font-semibold mb-2">⚠️ Important Privacy Protection</p>
+              <ul className="list-disc pl-6 space-y-1 text-sm">
+                <li>
+                  We <strong>do not</strong> track or log specific financial data (account balances, debt amounts, 
+                  institution names, transaction details) in our analytics.
+                </li>
+                <li>
+                  We <strong>do not</strong> send your Plaid-sourced financial information to any analytics service.
+                </li>
+                <li>
+                  We <strong>do not</strong> share identifiable financial data with third-party analytics providers.
+                </li>
+                <li>
+                  Page view tracking only records that you visited a financial page (e.g., "/dashboard"), 
+                  not the data displayed on that page.
+                </li>
+              </ul>
+            </div>
+
+            <h4 className="font-semibold mb-2">Analytics Services:</h4>
+            <p className="leading-relaxed mb-4">
+              We use our own analytics system to track usage patterns. We do not currently use third-party 
+              analytics services like Google Analytics. If we add third-party analytics in the future, 
+              we will update this policy and ensure financial data remains protected.
+            </p>
+
+            <h4 className="font-semibold mb-2">Cookie Types:</h4>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>
+                <strong>Essential Cookies:</strong> Required for authentication and core functionality. 
+                These cannot be disabled without breaking the service.
+              </li>
+              <li>
+                <strong>Analytics Cookies:</strong> Used to understand usage patterns and improve features. 
+                These collect anonymized data only.
+              </li>
+            </ul>
+
+            <h4 className="font-semibold mb-2">Your Choices:</h4>
+            <p className="leading-relaxed mb-2">
+              You can control cookies through your browser settings:
+            </p>
+            <ul className="list-disc pl-6 mb-4 space-y-1 text-sm">
+              <li>Most browsers allow you to refuse or delete cookies</li>
+              <li>You can set your browser to notify you when you receive a cookie</li>
+              <li>Browser settings vary; check your browser's help section for instructions</li>
+            </ul>
+            <p className="text-sm text-muted-foreground mb-4">
+              <strong>Note:</strong> Blocking essential cookies may prevent you from using certain features 
+              of Finityo, including logging in and connecting financial accounts.
+            </p>
+
+            <h4 className="font-semibold mb-2">Do Not Track (DNT):</h4>
+            <p className="leading-relaxed">
+              Some browsers have a "Do Not Track" feature. While we respect user privacy, we currently 
+              do not respond to DNT signals because there is no industry standard for how to interpret them. 
+              Our analytics only collect anonymized, non-financial usage data regardless of DNT settings.
+            </p>
           </section>
 
           <section className="mb-8">

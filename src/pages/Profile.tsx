@@ -6,7 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, User, Mail, Phone, MapPin, CreditCard, Save } from 'lucide-react';
+import { Loader2, ArrowLeft, User, Mail, Phone, MapPin, CreditCard, Save, Trash2, AlertTriangle } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Separator } from "@/components/ui/separator";
 import { SubscriptionManager } from '@/components/SubscriptionManager';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { SEOHead } from '@/components/SEOHead';
@@ -24,6 +35,9 @@ const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -106,6 +120,72 @@ const Profile = () => {
 
   const updateProfile = (field: keyof Profile, value: string) => {
     setProfile(prev => prev ? { ...prev, [field]: value } : null);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE MY ACCOUNT') {
+      toast({
+        title: 'Confirmation Required',
+        description: 'Please type "DELETE MY ACCOUNT" exactly to confirm.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!user) return;
+
+    setDeleting(true);
+
+    try {
+      // First, get all Plaid items to revoke vault secrets
+      const { data: plaidItems } = await supabase
+        .from('plaid_items')
+        .select('id, item_id, vault_secret_id')
+        .eq('user_id', user.id);
+
+      // Delete all Plaid items (this triggers cascade deletes for accounts, debts, etc.)
+      if (plaidItems && plaidItems.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('plaid_items')
+          .delete()
+          .eq('user_id', user.id);
+
+        if (deleteError) {
+          console.error('Error deleting Plaid items:', deleteError);
+          throw new Error('Failed to delete connected accounts');
+        }
+
+        console.log(`Deleted ${plaidItems.length} Plaid items and associated data`);
+      }
+
+      // Delete the user account (auth.users deletion will trigger cleanup function)
+      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+
+      if (authError) {
+        console.error('Error deleting user:', authError);
+        throw new Error('Failed to delete account');
+      }
+
+      toast({
+        title: 'Account Deleted',
+        description: 'Your account and all data have been permanently deleted.',
+      });
+
+      // Sign out and redirect
+      await supabase.auth.signOut();
+      navigate('/');
+    } catch (error: any) {
+      console.error('Delete account error:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete account. Please contact support.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteDialog(false);
+      setDeleteConfirmText('');
+    }
   };
 
   if (loading) {
@@ -251,8 +331,136 @@ const Profile = () => {
               <SubscriptionManager />
             </CardContent>
           </Card>
+
+          {/* Danger Zone - Account Deletion */}
+          <Card className="border-destructive">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="w-5 h-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription>
+                Permanently delete your account and all associated data
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                  <h4 className="font-semibold mb-2 text-destructive">Warning: This action cannot be undone</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Deleting your account will:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                    <li>• Immediately disconnect all Plaid connections</li>
+                    <li>• Permanently delete all your financial data within 30 days</li>
+                    <li>• Remove all debt records and payment plans</li>
+                    <li>• Delete your profile and account settings</li>
+                    <li>• Cancel any active subscriptions</li>
+                  </ul>
+                  <p className="text-sm text-muted-foreground mt-3">
+                    <strong>Data Retention:</strong> All Plaid-sourced data and personal information 
+                    will be permanently deleted within 30 days. Encrypted access tokens will be 
+                    immediately revoked from our secure vault.
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Before deleting, consider exporting your data from the{' '}
+                    <Button
+                      variant="link"
+                      className="h-auto p-0 text-primary"
+                      onClick={() => navigate('/my-data')}
+                    >
+                      My Data
+                    </Button>{' '}
+                    page.
+                  </p>
+                </div>
+
+                <Separator />
+
+                <Button
+                  variant="destructive"
+                  onClick={() => setDeleteDialog(true)}
+                  className="w-full"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete My Account
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive text-xl">
+              <AlertTriangle className="w-6 h-6" />
+              Are you absolutely sure?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4 text-base">
+              <p>
+                This action <strong>cannot be undone</strong>. This will permanently delete your account 
+                and remove all your data from our servers.
+              </p>
+              <div className="bg-destructive/10 border border-destructive/20 rounded p-3">
+                <p className="font-semibold mb-2">The following will be deleted:</p>
+                <ul className="text-sm space-y-1 ml-4">
+                  <li>✗ All Plaid connections (immediate disconnection)</li>
+                  <li>✗ All financial account data</li>
+                  <li>✗ All debt records and payment plans</li>
+                  <li>✗ Your profile and personal information</li>
+                  <li>✗ Access logs and consent history</li>
+                  <li>✗ Any subscriptions or billing information</li>
+                </ul>
+              </div>
+              <p className="text-sm">
+                <strong>Timeline:</strong> Plaid connections will be terminated immediately. 
+                All data will be permanently deleted within 30 days.
+              </p>
+              <div className="pt-4">
+                <Label htmlFor="deleteConfirm" className="text-base">
+                  To confirm deletion, please type{' '}
+                  <span className="font-mono font-bold bg-muted px-2 py-1 rounded">
+                    DELETE MY ACCOUNT
+                  </span>
+                </Label>
+                <Input
+                  id="deleteConfirm"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE MY ACCOUNT"
+                  className="mt-2"
+                  autoComplete="off"
+                />
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteConfirmText('')}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmText !== 'DELETE MY ACCOUNT' || deleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Yes, Delete My Account
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
