@@ -100,13 +100,6 @@ const Index = () => {
                 Member Login
               </Button>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" variant="ghost" className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6" onClick={() => window.open('/images/sample-plan.png', '_blank')}>
-                  <BarChart3 className="mr-2 w-5 h-5" />
-                  See a sample plan
-                </Button>
-              </div>
-              
               {/* Hero Preview Image */}
               <div className="mt-8 max-w-5xl mx-auto">
                 <img src={heroPreview} alt="Finityo debt payoff dashboard preview showing debt tracking and payment plans" className="rounded-xl shadow-2xl border border-white/20" loading="eager" />
