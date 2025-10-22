@@ -80,18 +80,27 @@ export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) 
     }
   };
 
-  // Group accounts by item
-  const accountsByItem = accounts.reduce((acc, account) => {
-    const itemId = account.plaid_items.item_id;
-    if (!acc[itemId]) {
-      acc[itemId] = {
-        item: account.plaid_items,
-        accounts: [],
-      };
-    }
-    acc[itemId].accounts.push(account);
-    return acc;
-  }, {} as Record<string, { item: Account['plaid_items']; accounts: Account[] }>);
+  // Separate accounts by type
+  const creditAccounts = accounts.filter(account => account.type === 'credit');
+  const depositoryAccounts = accounts.filter(account => account.type === 'depository');
+
+  // Group accounts by item for each type
+  const groupAccountsByItem = (accountsList: Account[]) => {
+    return accountsList.reduce((acc, account) => {
+      const itemId = account.plaid_items.item_id;
+      if (!acc[itemId]) {
+        acc[itemId] = {
+          item: account.plaid_items,
+          accounts: [],
+        };
+      }
+      acc[itemId].accounts.push(account);
+      return acc;
+    }, {} as Record<string, { item: Account['plaid_items']; accounts: Account[] }>);
+  };
+
+  const creditAccountsByItem = groupAccountsByItem(creditAccounts);
+  const depositoryAccountsByItem = groupAccountsByItem(depositoryAccounts);
 
   if (accounts.length === 0) {
     return (
@@ -105,8 +114,8 @@ export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) 
     );
   }
 
-  return (
-    <div className="space-y-6">
+  const renderAccountsByItem = (accountsByItem: Record<string, { item: Account['plaid_items']; accounts: Account[] }>) => (
+    <>
       {Object.entries(accountsByItem).map(([itemId, { item, accounts: itemAccounts }]) => (
         <div key={itemId} className="space-y-4">
           <div className="flex items-center justify-between">
@@ -190,6 +199,28 @@ export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) 
           </div>
         </div>
       ))}
+    </>
+  );
+
+  return (
+    <div className="space-y-8">
+      {depositoryAccounts.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">Checking & Savings Accounts</h2>
+          <div className="space-y-6">
+            {renderAccountsByItem(depositoryAccountsByItem)}
+          </div>
+        </div>
+      )}
+      
+      {creditAccounts.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">Credit Accounts</h2>
+          <div className="space-y-6">
+            {renderAccountsByItem(creditAccountsByItem)}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
