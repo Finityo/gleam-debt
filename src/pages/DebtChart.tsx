@@ -209,7 +209,6 @@ const DebtChart = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                       outerRadius={120}
                       fill="#8884d8"
                       dataKey="value"
@@ -223,9 +222,11 @@ const DebtChart = () => {
                         `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       }
                     />
-                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
+                <div className="mt-4 text-sm text-muted-foreground text-center">
+                  Use the color-coded list below to identify each debt on the chart
+                </div>
               </CardContent>
             </Card>
 
@@ -279,34 +280,36 @@ const DebtChart = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-primary" />
-                  Debt Details
+                  Color-Coded Debt Legend
                 </CardTitle>
-                <CardDescription>All active debts sorted by balance</CardDescription>
+                <CardDescription>Match the colors to identify each debt on the chart above</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {debts.map((debt, index) => (
                     <div 
                       key={debt.id}
-                      className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:bg-primary/5 hover:border-primary/20 transition-all duration-300 hover:shadow-sm"
+                      className="flex items-start gap-3 p-4 border-2 rounded-lg transition-all duration-300 hover:shadow-md"
+                      style={{ 
+                        borderColor: CHART_COLORS[index % CHART_COLORS.length],
+                        backgroundColor: `${CHART_COLORS[index % CHART_COLORS.length]}10`
+                      }}
                     >
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-4 h-4 rounded-full shadow-sm" 
-                          style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
-                        />
-                        <div>
-                          <p className="font-medium">{debt.name}</p>
+                      <div 
+                        className="w-6 h-6 rounded-full shadow-md flex-shrink-0 mt-0.5" 
+                        style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-base truncate">{debt.name}</p>
+                        <div className="flex flex-col gap-1 mt-1">
                           <p className="text-sm text-muted-foreground">APR: {debt.apr}%</p>
+                          <p className="font-bold text-lg">
+                            ${debt.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {((debt.balance / totalDebt) * 100).toFixed(1)}% of total debt
+                          </p>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg">
-                          ${debt.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {((debt.balance / totalDebt) * 100).toFixed(1)}% of total
-                        </p>
                       </div>
                     </div>
                   ))}
