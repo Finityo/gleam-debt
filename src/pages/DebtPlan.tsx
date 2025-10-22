@@ -299,8 +299,8 @@ const DebtPlan = () => {
           <TabsContent value="snowball">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center gap-4">
-                  <div className="flex items-center gap-4 flex-1">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex flex-col items-center gap-2">
                     <CardTitle>Strategy</CardTitle>
                     <Select value={strategy} onValueChange={(value: Strategy) => handleStrategyChange(value)}>
                       <SelectTrigger className="w-[180px]">

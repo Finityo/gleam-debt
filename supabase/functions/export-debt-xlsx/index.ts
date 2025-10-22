@@ -238,8 +238,41 @@ function computePlan(req: ComputeRequest) {
 
 async function exportXLSX(result: { rows: DebtPlanRow[], totals: any }): Promise<ArrayBuffer> {
   const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet("Snowball 25");
+  const ws = wb.addWorksheet("Debt Plan");
+  
+  // Get current date for export
+  const exportDate = new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  // Determine plan title based on strategy
+  const planTitle = result.totals.strategy === 'snowball' ? 'SNOWBALL PLAN' : 'AVALANCHE PLAN';
 
+  // Add title row
+  ws.mergeCells('A1:L1');
+  const titleCell = ws.getCell('A1');
+  titleCell.value = planTitle;
+  titleCell.font = { size: 18, bold: true };
+  titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  titleCell.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFFFFFFF' }
+  };
+  
+  // Add date row
+  ws.mergeCells('A2:L2');
+  const dateCell = ws.getCell('A2');
+  dateCell.value = `Exported: ${exportDate}`;
+  dateCell.font = { size: 11, italic: true };
+  dateCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  
+  // Add empty row for spacing
+  ws.addRow([]);
+
+  // Define columns (starting from row 4)
   ws.columns = [
     { header: "Index", key: "index", width: 6 },
     { header: "Debt", key: "label", width: 30 },
@@ -255,8 +288,29 @@ async function exportXLSX(result: { rows: DebtPlanRow[], totals: any }): Promise
     { header: "DueDate", key: "dueDate", width: 14 }
   ];
 
+  // Style header row (row 4)
+  const headerRow = ws.getRow(4);
+  headerRow.font = { bold: true, color: { argb: 'FF000000' } };
+  headerRow.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFADD8E6' } // Baby blue
+  };
+  headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+  
+  // Add borders to header row
+  headerRow.eachCell((cell) => {
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+  });
+
+  // Add data rows with borders
   result.rows.forEach(r => {
-    ws.addRow({
+    const row = ws.addRow({
       index: r.index,
       label: r.label,
       name: r.name,
@@ -270,8 +324,19 @@ async function exportXLSX(result: { rows: DebtPlanRow[], totals: any }): Promise
       cumulativeMonths: r.cumulativeMonths,
       dueDate: r.dueDate ?? ""
     });
+    
+    // Add borders to all cells in this row
+    row.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
   });
 
+  // Add totals row with styling and borders
   const totalsRow = ws.addRow({
     index: "",
     label: "TOTALS",
@@ -287,6 +352,14 @@ async function exportXLSX(result: { rows: DebtPlanRow[], totals: any }): Promise
     dueDate: ""
   });
   totalsRow.font = { bold: true };
+  totalsRow.eachCell((cell) => {
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+  });
 
   const buf = await wb.xlsx.writeBuffer();
   return buf;
