@@ -64,20 +64,16 @@ serve(async (req) => {
 
     const item = items[0];
 
-    // Get access token from database
-    const { data: plaidItem, error: itemError } = await supabaseClient
-      .from('plaid_items')
-      .select('access_token')
-      .eq('item_id', item.item_id)
-      .eq('user_id', user.id)
-      .single();
+    // Get access token from vault
+    const { data: accessToken, error: tokenError } = await supabaseClient.rpc('get_plaid_token_from_vault', {
+      p_item_id: item.item_id,
+      p_function_name: 'plaid-test-webhook'
+    });
 
-    if (itemError || !plaidItem?.access_token) {
-      console.error('Failed to get token for item:', item.item_id, itemError);
+    if (tokenError || !accessToken) {
+      console.error('Failed to get token for item:', item.item_id, tokenError);
       throw new Error('Failed to retrieve access token');
     }
-
-    const accessToken = plaidItem.access_token;
 
     console.log('Firing webhook for item:', item.item_id, 'webhook_code:', webhook_code);
 

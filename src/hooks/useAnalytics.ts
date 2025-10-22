@@ -4,14 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 export const useAnalytics = () => {
   const trackEvent = async (eventType: string, metadata?: Record<string, any>) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      await supabase.from('analytics_events').insert({
-        event_type: eventType,
-        user_id: session?.user?.id || null,
-        page_path: window.location.pathname,
-        metadata,
-        user_agent: navigator.userAgent,
+      // Call server-side analytics endpoint
+      await supabase.functions.invoke('track-event', {
+        body: {
+          event_type: eventType,
+          page_path: window.location.pathname,
+          metadata,
+        },
       });
     } catch (error) {
       // Silently fail analytics - don't disrupt user experience

@@ -2,6 +2,3 @@ project_id = "jsvduobkznoszmxedkss"
 
 [functions.plaid-webhook]
 verify_jwt = false
-
-[functions.ai-financial-advisor]
-verify_jwt = false

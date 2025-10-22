@@ -58,20 +58,16 @@ serve(async (req) => {
       throw new Error('Item not found or access denied');
     }
 
-    // Get access token from database
-    const { data: plaidItem, error: tokenError } = await supabaseClient
-      .from('plaid_items')
-      .select('access_token')
-      .eq('item_id', item_id)
-      .eq('user_id', user.id)
-      .single();
+    // Get access token from vault
+    const { data: accessToken, error: tokenError } = await supabaseClient.rpc('get_plaid_token_from_vault', {
+      p_item_id: item_id,
+      p_function_name: 'plaid-remove-item'
+    });
 
-    if (tokenError || !plaidItem?.access_token) {
+    if (tokenError || !accessToken) {
       console.error('Failed to get token for item:', item_id, tokenError);
       throw new Error('Failed to retrieve access token');
     }
-
-    const accessToken = plaidItem.access_token;
 
     console.log('Item found, removing from Plaid:', {
       user_id: user.id,

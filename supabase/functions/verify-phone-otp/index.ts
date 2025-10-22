@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,11 +13,19 @@ serve(async (req) => {
   }
 
   try {
-    const { phone, otp } = await req.json();
+    // Validate input with zod
+    const otpRequestSchema = z.object({
+      phone: z.string()
+        .min(10, 'Phone number too short')
+        .max(20, 'Phone number too long')
+        .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone format (use E.164: +1234567890)'),
+      otp: z.string()
+        .length(6, 'OTP must be exactly 6 digits')
+        .regex(/^\d{6}$/, 'OTP must contain only digits')
+    });
 
-    if (!phone || !otp) {
-      throw new Error('Phone number and OTP are required');
-    }
+    const validated = otpRequestSchema.parse(await req.json());
+    const { phone, otp } = validated;
 
     // Get IP address for rate limiting
     const ip_address = req.headers.get('x-forwarded-for') || 
@@ -132,6 +141,17 @@ serve(async (req) => {
       }
     );
   } catch (error: any) {
+    // Handle validation errors separately
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: error.errors[0].message }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     console.error('Error in verify-phone-otp:', error);
     return new Response(
       JSON.stringify({ error: error.message }),

@@ -31,9 +31,8 @@ serve(async (req) => {
     const { public_token, metadata } = await req.json();
 
     console.log('Token exchange initiated:', {
-      user_id: user.id,
-      institution_id: metadata?.institution?.institution_id,
-      institution_name: metadata?.institution?.name,
+      request_id: crypto.randomUUID(),
+      institution_category: 'financial',
       account_count: metadata?.accounts?.length,
       timestamp: new Date().toISOString()
     });
@@ -94,14 +93,33 @@ serve(async (req) => {
 
     const { access_token, item_id } = exchangeData;
 
-    console.log('Storing Plaid item and token for:', { item_id, user_id: user.id });
+    console.log('Storing Plaid item and token in vault for:', { item_id, user_id: user.id });
 
-    // Store item with access token (encrypted at rest by Supabase)
+    // Store access token in Vault for security
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const vaultSecretId = `plaid_token_${item_id}`;
+    const { data: storedSecretId, error: vaultError } = await supabaseAdmin.rpc('store_plaid_token_in_vault', {
+      p_token: access_token,
+      p_secret_name: vaultSecretId,
+      p_description: `Plaid access token for item ${item_id}`
+    });
+
+    if (vaultError) {
+      console.error('Vault storage error:', vaultError);
+      throw new Error('Failed to securely store access token');
+    }
+
+    // Store item with vault reference (no plaintext token)
     const { error: itemError } = await supabaseClient
       .from('plaid_items')
       .insert({
         user_id: user.id,
-        access_token: access_token,
+        vault_secret_id: storedSecretId,
+        access_token: '', // Empty for backward compatibility
         item_id: item_id,
         institution_id: metadata?.institution?.institution_id,
         institution_name: metadata?.institution?.name,
@@ -112,7 +130,7 @@ serve(async (req) => {
       throw itemError;
     }
 
-    console.log('Item stored successfully:', item_id);
+    console.log('Item stored successfully with vault encryption:', item_id);
 
     // Get accounts
     const accountsResponse = await fetch(`https://${PLAID_ENV}.plaid.com/accounts/get`, {
@@ -198,7 +216,7 @@ serve(async (req) => {
 
     if (liabilitiesResponse.ok) {
       const liabilitiesData = await liabilitiesResponse.json();
-      console.log('Liabilities response:', JSON.stringify(liabilitiesData, null, 2));
+      console.log('Liabilities fetched, processing debts');
       
       // Create a map of account_id to account info for quick lookup
       const accountsMap = new Map();
