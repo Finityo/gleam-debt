@@ -32,7 +32,7 @@ serve(async (req) => {
                        req.headers.get('x-real-ip') || 
                        'unknown';
 
-    console.log('OTP verification attempt:', { phone, ip_address });
+    console.log('OTP verification attempt received');
 
     // Create admin client for rate limit check
     const supabaseAdmin = createClient(
@@ -56,11 +56,7 @@ serve(async (req) => {
     const rateLimitCheck = rateLimitData as { allowed: boolean; attempts_count: number; wait_seconds: number };
 
     if (!rateLimitCheck.allowed) {
-      console.warn('Rate limit exceeded:', { 
-        phone, 
-        ip_address, 
-        attempts: rateLimitCheck.attempts_count 
-      });
+      console.warn('Rate limit exceeded for verification attempt');
 
       // Log failed attempt
       await supabaseAdmin
@@ -110,11 +106,7 @@ serve(async (req) => {
       .insert(attemptLog);
 
     if (verifyError) {
-      console.warn('OTP verification failed:', { 
-        phone, 
-        error: verifyError.message,
-        attempts: rateLimitCheck.attempts_count + 1
-      });
+      console.warn('OTP verification failed');
 
       return new Response(
         JSON.stringify({ 
@@ -128,7 +120,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('OTP verification successful:', { phone });
+    console.log('OTP verification successful');
 
     return new Response(
       JSON.stringify({ 
