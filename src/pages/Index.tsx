@@ -4,31 +4,16 @@ import { StatCard } from "@/components/ui/stat-card";
 import { DebtCard } from "@/components/DebtCard";
 import { SEOHead } from "@/components/SEOHead";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { 
-  Wallet, 
-  TrendingDown, 
-  Target, 
-  Zap,
-  ArrowRight,
-  CreditCard,
-  PiggyBank,
-  BarChart3,
-  Download,
-  Lock,
-  FileText,
-  CheckCircle2,
-  Shield,
-  Star
-} from "lucide-react";
+import { Wallet, TrendingDown, Target, Zap, ArrowRight, CreditCard, PiggyBank, BarChart3, Download, Lock, FileText, CheckCircle2, Shield, Star } from "lucide-react";
 import heroImage from "@/assets/hero-financial-freedom.jpg";
 import finityoLogo from "@/assets/finityo-logo.png";
 import heroPreview from "@/assets/hero-preview.png";
 import plaidBadge from "@/assets/plaid-badge.png";
-
 const Index = () => {
   const navigate = useNavigate();
-  const { trackEvent } = useAnalytics();
-
+  const {
+    trackEvent
+  } = useAnalytics();
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -46,53 +31,38 @@ const Index = () => {
     },
     "description": "Debt payoff planning tool using snowball and avalanche methods"
   };
-  
-  // Mock data for demo
-  const mockDebts = [
-    {
-      creditor: "Chase Freedom",
-      balance: 350000,
-      apr: 1899,
-      minPayment: 10500,
-      dueDay: 15,
-      type: "credit card"
-    },
-    {
-      creditor: "Capital One Venture",
-      balance: 225000,
-      apr: 2149,
-      minPayment: 6750,
-      dueDay: 10,
-      type: "credit card"
-    }
-  ];
 
-  return (
-    <div className="min-h-screen bg-background">
-      <SEOHead 
-        title="Finityo Debt Payoff | Snowball or Avalanche Plan"
-        description="Connect with Plaid, choose Snowball or Avalanche, and get a month-by-month payoff plan. Free to start."
-        canonical="https://finityo-debt.com/"
-        structuredData={structuredData}
-      />
+  // Mock data for demo
+  const mockDebts = [{
+    creditor: "Chase Freedom",
+    balance: 350000,
+    apr: 1899,
+    minPayment: 10500,
+    dueDay: 15,
+    type: "credit card"
+  }, {
+    creditor: "Capital One Venture",
+    balance: 225000,
+    apr: 2149,
+    minPayment: 6750,
+    dueDay: 10,
+    type: "credit card"
+  }];
+  return <div className="min-h-screen bg-background">
+      <SEOHead title="Finityo Debt Payoff | Snowball or Avalanche Plan" description="Connect with Plaid, choose Snowball or Avalanche, and get a month-by-month payoff plan. Free to start." canonical="https://finityo-debt.com/" structuredData={structuredData} />
       
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero opacity-95" />
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-10"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        />
+        <div className="absolute inset-0 bg-cover bg-center opacity-10" style={{
+        backgroundImage: `url(${heroImage})`
+      }} />
         
         <div className="relative container mx-auto px-4 py-20 lg:py-32">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             {/* Logo */}
             <div className="flex justify-center mb-8">
-              <img 
-                src={finityoLogo} 
-                alt="Finityo Logo - Debt Management App" 
-                className="w-full max-w-[280px] sm:max-w-md lg:max-w-lg h-auto animate-fade-in px-4"
-              />
+              <img src={finityoLogo} alt="Finityo Logo - Debt Management App" className="w-full max-w-[280px] sm:max-w-md lg:max-w-lg h-auto animate-fade-in px-4" />
             </div>
             
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white">
@@ -110,29 +80,15 @@ const Index = () => {
 
             <div className="flex flex-col gap-6 items-center pt-4">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  size="lg" 
-                  className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6"
-                  onClick={() => navigate('/auth')}
-                >
+                <Button size="lg" className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6" onClick={() => navigate('/auth')}>
                   Create your free plan
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
-                <Button 
-                  size="lg" 
-                  variant="ghost"
-                  className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6"
-                  onClick={() => navigate('/pricing')}
-                >
+                <Button size="lg" variant="ghost" className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6" onClick={() => navigate('/pricing')}>
                   <Star className="mr-2 w-5 h-5" />
                   View Pricing
                 </Button>
-                <Button 
-                  size="lg" 
-                  variant="ghost"
-                  className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6"
-                  onClick={() => navigate('/debt-plan')}
-                >
+                <Button size="lg" variant="ghost" className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6" onClick={() => navigate('/debt-plan')}>
                   <BarChart3 className="mr-2 w-5 h-5" />
                   See a sample plan
                 </Button>
@@ -140,12 +96,7 @@ const Index = () => {
               
               {/* Hero Preview Image */}
               <div className="mt-8 max-w-5xl mx-auto">
-                <img 
-                  src={heroPreview} 
-                  alt="Finityo debt payoff dashboard preview showing debt tracking and payment plans" 
-                  className="rounded-xl shadow-2xl border border-white/20"
-                  loading="eager"
-                />
+                <img src={heroPreview} alt="Finityo debt payoff dashboard preview showing debt tracking and payment plans" className="rounded-xl shadow-2xl border border-white/20" loading="eager" />
               </div>
             </div>
           </div>
@@ -154,10 +105,7 @@ const Index = () => {
         {/* Wave Divider */}
         <div className="absolute bottom-0 left-0 right-0">
           <svg viewBox="0 0 1440 120" className="w-full h-auto text-background">
-            <path 
-              fill="currentColor" 
-              d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"
-            />
+            <path fill="currentColor" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z" />
           </svg>
         </div>
       </section>
@@ -165,26 +113,15 @@ const Index = () => {
       {/* Stats Section */}
       <section className="container mx-auto px-4 -mt-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          <StatCard
-            title="Total Debt"
-            value="$5,750"
-            subtitle="Across 4 accounts"
-            icon={CreditCard}
-            trend={{ value: "↓ $450 this month", isPositive: true }}
-          />
-          <StatCard
-            title="Monthly Budget"
-            value="$1,200"
-            subtitle="Available for payoff"
-            icon={Wallet}
-            trend={{ value: "2 debts target", isPositive: true }}
-          />
-          <StatCard
-            title="Debt-Free Date"
-            value="Dec 2026"
-            subtitle="22 months remaining"
-            icon={Target}
-          />
+          <StatCard title="Total Debt" value="$5,750" subtitle="Across 4 accounts" icon={CreditCard} trend={{
+          value: "↓ $450 this month",
+          isPositive: true
+        }} />
+          <StatCard title="Monthly Budget" value="$1,200" subtitle="Available for payoff" icon={Wallet} trend={{
+          value: "2 debts target",
+          isPositive: true
+        }} />
+          <StatCard title="Debt-Free Date" value="Dec 2026" subtitle="22 months remaining" icon={Target} />
         </div>
       </section>
 
@@ -208,12 +145,7 @@ const Index = () => {
           <p className="max-w-3xl mx-auto mb-8 text-lg text-muted-foreground">
             Connect your accounts with Plaid, choose Snowball or Avalanche, and we'll generate a simple month-by-month schedule that shows balances shrinking and a clear payoff date.
           </p>
-          <img 
-            src="/images/sample-plan.png" 
-            alt="Sample debt payoff calendar screenshot" 
-            className="max-w-full w-full border border-border rounded-lg shadow-lg mx-auto"
-            loading="lazy"
-          />
+          <img src="/images/sample-plan.png" alt="Sample debt payoff calendar screenshot" className="max-w-full w-full border border-border rounded-lg shadow-lg mx-auto" loading="lazy" />
           <p className="mt-4 text-sm text-muted-foreground">
             This example is for demo purposes only. Your results will vary based on your accounts and payments.
           </p>
@@ -299,12 +231,7 @@ const Index = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-12">
               <div className="flex justify-center">
-                <img 
-                  src={plaidBadge} 
-                  alt="Powered by Plaid - Secure financial connections" 
-                  className="w-full max-w-xs"
-                  loading="lazy"
-                />
+                <img src={plaidBadge} alt="Powered by Plaid - Secure financial connections" className="w-full max-w-xs" loading="lazy" />
               </div>
               
               <div className="space-y-4">
@@ -339,27 +266,15 @@ const Index = () => {
             </div>
 
             <div className="flex flex-wrap justify-center gap-4">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/privacy')}
-                className="gap-2"
-              >
+              <Button variant="outline" onClick={() => navigate('/privacy')} className="gap-2">
                 <Shield className="w-4 h-4" />
                 Privacy Policy
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate('/terms')}
-                className="gap-2"
-              >
+              <Button variant="outline" onClick={() => navigate('/terms')} className="gap-2">
                 <FileText className="w-4 h-4" />
                 Terms of Service
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate('/disclosures')}
-                className="gap-2"
-              >
+              <Button variant="outline" onClick={() => navigate('/disclosures')} className="gap-2">
                 <Lock className="w-4 h-4" />
                 Security Disclosures
               </Button>
@@ -383,9 +298,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-gradient-card rounded-2xl p-8 border border-border/50">
               <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-warning text-warning" />
-                ))}
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-warning text-warning" />)}
               </div>
               <p className="text-muted-foreground mb-6 leading-relaxed">
                 "Finityo helped me pay off $18,000 in credit card debt in just 14 months. The visual progress charts kept me motivated every step of the way!"
@@ -403,9 +316,7 @@ const Index = () => {
 
             <div className="bg-gradient-card rounded-2xl p-8 border border-border/50">
               <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-warning text-warning" />
-                ))}
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-warning text-warning" />)}
               </div>
               <p className="text-muted-foreground mb-6 leading-relaxed">
                 "The snowball method gave me quick wins that kept me going. Being able to connect all my accounts automatically saved so much time."
@@ -423,9 +334,7 @@ const Index = () => {
 
             <div className="bg-gradient-card rounded-2xl p-8 border border-border/50">
               <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-warning text-warning" />
-                ))}
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-warning text-warning" />)}
               </div>
               <p className="text-muted-foreground mb-6 leading-relaxed">
                 "Finally a debt app that actually makes sense! The month-by-month plan showed me exactly when I'd be debt-free. Game changer."
@@ -474,10 +383,7 @@ const Index = () => {
                   2
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Get Your Custom Plan</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Our calculator analyzes your debts and creates a personalized payoff strategy. Choose between 
-                  snowball (psychological wins) or avalanche (lowest interest first).
-                </p>
+                <p className="text-muted-foreground leading-relaxed">Our calculator analyzes your debts and creates a personalized payoff strategy. Choose between snowball (psychological wins) or avalanche (highest interest first).</p>
               </div>
 
               <div className="text-center">
@@ -493,11 +399,7 @@ const Index = () => {
             </div>
 
             <div className="text-center mt-12">
-              <Button 
-                size="lg"
-                onClick={() => navigate('/auth')}
-                className="bg-gradient-primary hover:shadow-glow transition-all text-lg px-8"
-              >
+              <Button size="lg" onClick={() => navigate('/auth')} className="bg-gradient-primary hover:shadow-glow transition-all text-lg px-8">
                 Start Your Free Plan
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
@@ -514,19 +416,14 @@ const Index = () => {
               <h2 className="text-3xl font-bold text-foreground mb-2">Active Debts</h2>
               <p className="text-muted-foreground">Track and manage all your debt accounts in one place</p>
             </div>
-            <Button 
-              className="bg-gradient-primary hover:shadow-glow transition-all"
-              onClick={() => navigate('/auth')}
-            >
+            <Button className="bg-gradient-primary hover:shadow-glow transition-all" onClick={() => navigate('/auth')}>
               <CreditCard className="mr-2 w-4 h-4" />
               Connect Accounts
             </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {mockDebts.map((debt, idx) => (
-              <DebtCard key={idx} {...debt} />
-            ))}
+            {mockDebts.map((debt, idx) => <DebtCard key={idx} {...debt} />)}
           </div>
         </div>
       </section>
@@ -542,11 +439,7 @@ const Index = () => {
             <p className="text-xl text-white/90">
               Join thousands who've crushed their debt and achieved financial freedom.
             </p>
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6"
-              onClick={() => navigate('/auth')}
-            >
+            <Button size="lg" className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6" onClick={() => navigate('/auth')}>
               Start Your Journey
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
@@ -570,34 +463,22 @@ const Index = () => {
                 <h3 className="font-semibold mb-4">Legal</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <button 
-                      onClick={() => navigate('/privacy')}
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <button onClick={() => navigate('/privacy')} className="text-muted-foreground hover:text-primary transition-colors">
                       Privacy Policy
                     </button>
                   </li>
                   <li>
-                    <button 
-                      onClick={() => navigate('/terms')}
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <button onClick={() => navigate('/terms')} className="text-muted-foreground hover:text-primary transition-colors">
                       Terms of Service
                     </button>
                   </li>
                   <li>
-                    <button 
-                      onClick={() => navigate('/disclosures')}
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <button onClick={() => navigate('/disclosures')} className="text-muted-foreground hover:text-primary transition-colors">
                       Disclosures
                     </button>
                   </li>
                   <li>
-                    <button 
-                      onClick={() => navigate('/about')}
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <button onClick={() => navigate('/about')} className="text-muted-foreground hover:text-primary transition-colors">
                       About Us
                     </button>
                   </li>
@@ -608,34 +489,22 @@ const Index = () => {
                 <h3 className="font-semibold mb-4">Resources</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <button 
-                      onClick={() => navigate('/debt-chart')}
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <button onClick={() => navigate('/debt-chart')} className="text-muted-foreground hover:text-primary transition-colors">
                       Debt Visualizer
                     </button>
                   </li>
                   <li>
-                    <button 
-                      onClick={() => navigate('/debt-plan')}
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <button onClick={() => navigate('/debt-plan')} className="text-muted-foreground hover:text-primary transition-colors">
                       Payoff Calculator
                     </button>
                   </li>
                   <li>
-                    <button 
-                      onClick={() => navigate('/auth')}
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <button onClick={() => navigate('/auth')} className="text-muted-foreground hover:text-primary transition-colors">
                       Sign In / Sign Up
                     </button>
                   </li>
                   <li>
-                    <button 
-                      onClick={() => navigate('/admin')}
-                      className="text-muted-foreground hover:text-primary transition-colors font-medium"
-                    >
+                    <button onClick={() => navigate('/admin')} className="text-muted-foreground hover:text-primary transition-colors font-medium">
                       Team Access
                     </button>
                   </li>
@@ -649,8 +518,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
