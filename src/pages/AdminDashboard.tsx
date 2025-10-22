@@ -169,6 +169,10 @@ const AdminDashboard = () => {
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold">Business Dashboard</h1>
             <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate('/admin/roles')}>
+                <Users className="mr-2 h-4 w-4" />
+                User Roles
+              </Button>
               <Button variant="outline" onClick={() => navigate('/security-audit')}>
                 <Activity className="mr-2 h-4 w-4" />
                 Security
