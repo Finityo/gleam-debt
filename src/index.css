@@ -136,4 +136,50 @@ All colors MUST be HSL.
   .skip-to-main {
     @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded;
   }
+
+  /* Prose styles for blog content */
+  .prose {
+    @apply text-foreground max-w-none;
+  }
+  
+  .prose h2 {
+    @apply text-3xl font-bold text-foreground mt-12 mb-6;
+  }
+  
+  .prose h3 {
+    @apply text-2xl font-semibold text-foreground mt-8 mb-4;
+  }
+  
+  .prose p {
+    @apply text-lg text-foreground/90 leading-relaxed mb-6;
+  }
+  
+  .prose ul, .prose ol {
+    @apply text-lg text-foreground/90 space-y-2 mb-6 ml-6;
+  }
+  
+  .prose li {
+    @apply leading-relaxed;
+  }
+  
+  .prose strong {
+    @apply text-foreground font-semibold;
+  }
+  
+  .prose em {
+    @apply italic;
+  }
+  
+  .prose a {
+    @apply text-primary hover:text-primary-glow underline;
+  }
+
+  /* Dark mode prose adjustments */
+  .dark .prose p {
+    @apply text-foreground/85;
+  }
+  
+  .dark .prose ul, .dark .prose ol {
+    @apply text-foreground/85;
+  }
 }

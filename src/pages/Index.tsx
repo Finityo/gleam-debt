@@ -566,6 +566,11 @@ const Index = () => {
                     </button>
                   </li>
                   <li>
+                    <button onClick={() => navigate('/blog')} className="text-muted-foreground hover:text-primary transition-colors">
+                      Blog
+                    </button>
+                  </li>
+                  <li>
                     <a href="mailto:support@finityo-debt.com" className="text-muted-foreground hover:text-primary transition-colors">
                       Contact
                     </a>
