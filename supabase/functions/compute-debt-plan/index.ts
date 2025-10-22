@@ -263,7 +263,7 @@ function computePlan(req: ComputeRequest) {
       name: d.name,
       last4: d.last4,
       balance: startingBalance,
-      minPayment: d.minPayment,
+      minPayment: startingBalance === 0 ? 0 : d.minPayment,
       apr: d.apr,
       monthlyRate: d.apr / 12,
       totalPayment: 0, // legacy field
