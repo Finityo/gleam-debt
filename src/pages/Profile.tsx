@@ -156,17 +156,14 @@ const Profile = () => {
         }
       }
 
-      // Call the server-side account deletion edge function
+      // Call the secure server-side account deletion edge function
       const { data, error } = await supabase.functions.invoke('delete-user-account');
 
-      if (error) {
-        console.error('Edge function error:', error);
-        throw new Error('Failed to delete account');
-      }
+      if (error) throw error;
 
       toast({
         title: 'Account Deleted',
-        description: 'Your account and all data have been permanently deleted.',
+        description: 'Your account has been permanently deleted',
       });
 
       // Sign out and redirect
