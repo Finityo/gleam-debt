@@ -2,3 +2,6 @@ project_id = "jsvduobkznoszmxedkss"
 
 [functions.plaid-webhook]
 verify_jwt = false
+
+[functions.track-event]
+verify_jwt = false
