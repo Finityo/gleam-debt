@@ -219,6 +219,16 @@ async function handleItemWebhook(supabase: any, payload: any) {
     
     case 'PENDING_EXPIRATION':
       console.log('Item pending expiration:', payload.item_id);
+      
+      // Mark token rotation required
+      await supabase
+        .from('plaid_items')
+        .update({
+          token_rotation_required: true,
+          token_rotation_reason: 'pending_expiration'
+        })
+        .eq('item_id', payload.item_id);
+      
       await supabase
         .from('plaid_item_status')
         .upsert({
@@ -261,6 +271,17 @@ async function handleItemWebhook(supabase: any, payload: any) {
     
     case 'LOGIN_REPAIRED':
       console.log('Login repaired for item:', payload.item_id);
+      
+      // Clear token rotation requirement and update rotation timestamp
+      await supabase
+        .from('plaid_items')
+        .update({
+          token_rotation_required: false,
+          token_rotation_reason: null,
+          token_last_rotated_at: new Date().toISOString()
+        })
+        .eq('item_id', payload.item_id);
+      
       // Clear the update requirement
       await supabase
         .from('plaid_item_status')
@@ -278,6 +299,16 @@ async function handleItemWebhook(supabase: any, payload: any) {
       // Check if it's ITEM_LOGIN_REQUIRED
       if (payload.error?.error_code === 'ITEM_LOGIN_REQUIRED') {
         console.log('Item login required:', payload.item_id);
+        
+        // Mark token rotation required
+        await supabase
+          .from('plaid_items')
+          .update({
+            token_rotation_required: true,
+            token_rotation_reason: 'login_required'
+          })
+          .eq('item_id', payload.item_id);
+        
         await supabase
           .from('plaid_item_status')
           .upsert({

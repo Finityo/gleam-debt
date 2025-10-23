@@ -74,6 +74,9 @@ serve(async (req) => {
     const PLAID_ENV = Deno.env.get('PLAID_ENV') || 'production';
 
     // Exchange public token for access token
+    // Track API call timing
+    const exchangeStartTime = Date.now();
+    
     const exchangeResponse = await fetch(`https://${PLAID_ENV}.plaid.com/item/public_token/exchange`, {
       method: 'POST',
       headers: {
@@ -85,21 +88,46 @@ serve(async (req) => {
     });
 
     const exchangeData = await exchangeResponse.json();
+    const exchangeResponseTime = Date.now() - exchangeStartTime;
+
+    // Log API call with request_id
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
     if (!exchangeResponse.ok) {
       console.error('Plaid exchange error:', exchangeData);
+      
+      // Log failed API call
+      await supabaseAdmin.rpc('log_plaid_api_call', {
+        p_user_id: user.id,
+        p_item_id: null,
+        p_endpoint: '/item/public_token/exchange',
+        p_request_id: exchangeData.request_id || 'unknown',
+        p_status_code: exchangeResponse.status,
+        p_error_code: exchangeData.error_code,
+        p_error_type: exchangeData.error_type,
+        p_error_message: exchangeData.error_message,
+        p_response_time_ms: exchangeResponseTime
+      });
+      
       throw new Error(exchangeData.error_message || 'Failed to exchange token');
     }
 
     const { access_token, item_id } = exchangeData;
 
-    console.log('Storing Plaid item and token in vault for:', { item_id, user_id: user.id });
+    // Log successful API call
+    await supabaseAdmin.rpc('log_plaid_api_call', {
+      p_user_id: user.id,
+      p_item_id: item_id,
+      p_endpoint: '/item/public_token/exchange',
+      p_request_id: exchangeData.request_id || 'unknown',
+      p_status_code: 200,
+      p_response_time_ms: exchangeResponseTime
+    });
 
-    // Store access token in Vault for security
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    console.log('Storing Plaid item and token in vault for:', { item_id, user_id: user.id });
 
     const vaultSecretId = `plaid_token_${item_id}`;
     const { data: storedSecretId, error: vaultError } = await supabaseAdmin.rpc('store_plaid_token_in_vault', {
@@ -113,7 +141,8 @@ serve(async (req) => {
       throw new Error('Failed to securely store access token');
     }
 
-    // Store item with vault reference (no plaintext token)
+    // Store item with vault reference and token tracking
+    const tokenCreatedAt = new Date().toISOString();
     const { error: itemError } = await supabaseClient
       .from('plaid_items')
       .insert({
@@ -123,6 +152,8 @@ serve(async (req) => {
         item_id: item_id,
         institution_id: metadata?.institution?.institution_id,
         institution_name: metadata?.institution?.name,
+        token_created_at: tokenCreatedAt,
+        token_rotation_required: false
       });
 
     if (itemError) {
@@ -132,7 +163,8 @@ serve(async (req) => {
 
     console.log('Item stored successfully with vault encryption:', item_id);
 
-    // Get accounts
+    // Get accounts with timing
+    const accountsStartTime = Date.now();
     const accountsResponse = await fetch(`https://${PLAID_ENV}.plaid.com/accounts/get`, {
       method: 'POST',
       headers: {
@@ -144,6 +176,7 @@ serve(async (req) => {
     });
 
     const accountsData = await accountsResponse.json();
+    const accountsResponseTime = Date.now() - accountsStartTime;
 
     if (!accountsResponse.ok) {
       console.error('Failed to fetch accounts from Plaid:', {
@@ -152,13 +185,38 @@ serve(async (req) => {
         error_code: accountsData.error_code,
         error_message: accountsData.error_message
       });
+      
+      // Log failed accounts fetch
+      await supabaseAdmin.rpc('log_plaid_api_call', {
+        p_user_id: user.id,
+        p_item_id: item_id,
+        p_endpoint: '/accounts/get',
+        p_request_id: accountsData.request_id || 'unknown',
+        p_status_code: accountsResponse.status,
+        p_error_code: accountsData.error_code,
+        p_error_type: accountsData.error_type,
+        p_error_message: accountsData.error_message,
+        p_response_time_ms: accountsResponseTime
+      });
+      
       throw new Error(accountsData.error_message || 'Failed to fetch accounts');
     }
+
+    // Log successful accounts fetch
+    await supabaseAdmin.rpc('log_plaid_api_call', {
+      p_user_id: user.id,
+      p_item_id: item_id,
+      p_endpoint: '/accounts/get',
+      p_request_id: accountsData.request_id || 'unknown',
+      p_status_code: 200,
+      p_response_time_ms: accountsResponseTime
+    });
 
     console.log('Accounts fetched from Plaid:', {
       user_id: user.id,
       item_id: item_id,
-      account_count: accountsData.accounts?.length
+      account_count: accountsData.accounts?.length,
+      request_id: accountsData.request_id
     });
 
     // Get the plaid_item_id we just inserted
@@ -200,6 +258,7 @@ serve(async (req) => {
     // Fetch and import liabilities (credit cards, loans, mortgages)
     console.log('Fetching liabilities for item:', item_id);
     
+    const liabilitiesStartTime = Date.now();
     const liabilitiesResponse = await fetch(`https://${PLAID_ENV}.plaid.com/liabilities/get`, {
       method: 'POST',
       headers: {
@@ -216,6 +275,17 @@ serve(async (req) => {
 
     if (liabilitiesResponse.ok) {
       const liabilitiesData = await liabilitiesResponse.json();
+      const liabilitiesResponseTime = Date.now() - liabilitiesStartTime;
+      
+      // Log successful liabilities fetch
+      await supabaseAdmin.rpc('log_plaid_api_call', {
+        p_user_id: user.id,
+        p_item_id: item_id,
+        p_endpoint: '/liabilities/get',
+        p_request_id: liabilitiesData.request_id || 'unknown',
+        p_status_code: 200,
+        p_response_time_ms: liabilitiesResponseTime
+      });
       console.log('Liabilities fetched, processing debts');
       
       // Create a map of account_id to account info for quick lookup
@@ -314,6 +384,21 @@ serve(async (req) => {
       console.log('Successfully imported', importedDebtsCount, 'debts for user:', user.id);
     } else {
       const errorData = await liabilitiesResponse.json();
+      const liabilitiesResponseTime = Date.now() - liabilitiesStartTime;
+      
+      // Log failed liabilities fetch
+      await supabaseAdmin.rpc('log_plaid_api_call', {
+        p_user_id: user.id,
+        p_item_id: item_id,
+        p_endpoint: '/liabilities/get',
+        p_request_id: errorData.request_id || 'unknown',
+        p_status_code: liabilitiesResponse.status,
+        p_error_code: errorData.error_code,
+        p_error_type: errorData.error_type,
+        p_error_message: errorData.error_message,
+        p_response_time_ms: liabilitiesResponseTime
+      });
+      
       console.error('Failed to fetch liabilities:', {
         status: liabilitiesResponse.status,
         error: errorData

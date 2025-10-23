@@ -211,6 +211,48 @@ export type Database = {
           },
         ]
       }
+      plaid_api_logs: {
+        Row: {
+          created_at: string
+          endpoint: string
+          error_code: string | null
+          error_message: string | null
+          error_type: string | null
+          id: string
+          item_id: string | null
+          request_id: string
+          response_time_ms: number | null
+          status_code: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          error_code?: string | null
+          error_message?: string | null
+          error_type?: string | null
+          id?: string
+          item_id?: string | null
+          request_id: string
+          response_time_ms?: number | null
+          status_code?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          error_code?: string | null
+          error_message?: string | null
+          error_type?: string | null
+          id?: string
+          item_id?: string | null
+          request_id?: string
+          response_time_ms?: number | null
+          status_code?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       plaid_consent_log: {
         Row: {
           accepted_privacy: boolean
@@ -291,6 +333,10 @@ export type Database = {
           institution_id: string | null
           institution_name: string | null
           item_id: string
+          token_created_at: string | null
+          token_last_rotated_at: string | null
+          token_rotation_reason: string | null
+          token_rotation_required: boolean | null
           updated_at: string
           user_id: string
           vault_secret_id: string | null
@@ -302,6 +348,10 @@ export type Database = {
           institution_id?: string | null
           institution_name?: string | null
           item_id: string
+          token_created_at?: string | null
+          token_last_rotated_at?: string | null
+          token_rotation_reason?: string | null
+          token_rotation_required?: boolean | null
           updated_at?: string
           user_id: string
           vault_secret_id?: string | null
@@ -313,6 +363,10 @@ export type Database = {
           institution_id?: string | null
           institution_name?: string | null
           item_id?: string
+          token_created_at?: string | null
+          token_last_rotated_at?: string | null
+          token_rotation_reason?: string | null
+          token_rotation_required?: boolean | null
           updated_at?: string
           user_id?: string
           vault_secret_id?: string | null
@@ -525,6 +579,20 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_plaid_api_call: {
+        Args: {
+          p_endpoint: string
+          p_error_code?: string
+          p_error_message?: string
+          p_error_type?: string
+          p_item_id: string
+          p_request_id: string
+          p_response_time_ms?: number
+          p_status_code?: number
+          p_user_id: string
+        }
+        Returns: string
       }
       migrate_single_plaid_token: { Args: { p_item_id: string }; Returns: Json }
       store_plaid_token_in_vault: {
