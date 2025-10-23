@@ -424,6 +424,54 @@ export type Database = {
         }
         Relationships: []
       }
+      plaid_link_events: {
+        Row: {
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          error_type: string | null
+          event_name: string
+          id: string
+          institution_id: string | null
+          institution_name: string | null
+          link_session_id: string
+          metadata: Json | null
+          timestamp: string
+          user_id: string | null
+          view_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          error_type?: string | null
+          event_name: string
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          link_session_id: string
+          metadata?: Json | null
+          timestamp: string
+          user_id?: string | null
+          view_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          error_type?: string | null
+          event_name?: string
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          link_session_id?: string
+          metadata?: Json | null
+          timestamp?: string
+          user_id?: string | null
+          view_name?: string | null
+        }
+        Relationships: []
+      }
       plaid_rate_limits: {
         Row: {
           action_type: string
@@ -609,7 +657,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      plaid_link_conversion_stats: {
+        Row: {
+          abandoned_sessions: number | null
+          conversion_rate_pct: number | null
+          date: string | null
+          error_sessions: number | null
+          successful_sessions: number | null
+          total_sessions: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_otp_rate_limit: {
@@ -657,6 +715,22 @@ export type Database = {
           p_request_id?: string
           p_status?: string
           p_user_id: string
+        }
+        Returns: string
+      }
+      log_plaid_link_event: {
+        Args: {
+          p_error_code?: string
+          p_error_message?: string
+          p_error_type?: string
+          p_event_name: string
+          p_institution_id?: string
+          p_institution_name?: string
+          p_link_session_id: string
+          p_metadata?: Json
+          p_timestamp?: string
+          p_user_id: string
+          p_view_name?: string
         }
         Returns: string
       }
