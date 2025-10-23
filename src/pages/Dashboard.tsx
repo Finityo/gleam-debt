@@ -7,6 +7,7 @@ import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { PlaidTokenMigration } from '@/components/PlaidTokenMigration';
 import { AccountsList } from '@/components/AccountsList';
+import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
@@ -160,6 +161,9 @@ const Dashboard = () => {
         />
 
         <div className="grid gap-6 mb-8">
+          {/* Show connected accounts to prevent accidental duplicates */}
+          {accounts.length > 0 && <ConnectedAccountsList />}
+          
           <PlaidLink onSuccess={fetchAccounts} />
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

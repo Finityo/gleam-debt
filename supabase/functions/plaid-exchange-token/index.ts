@@ -41,31 +41,73 @@ serve(async (req) => {
       throw new Error('public_token is required');
     }
 
-    // Check for duplicate items (same institution)
-    if (metadata?.institution?.institution_id) {
+    // Enhanced duplicate detection per Plaid best practices
+    // Check at account level (institution_id + name + mask) instead of just institution
+    if (metadata?.institution?.institution_id && metadata?.accounts) {
+      // Get user's existing accounts from this institution
       const { data: existingItems } = await supabaseClient
         .from('plaid_items')
-        .select('institution_id, institution_name')
+        .select(`
+          id,
+          institution_id,
+          institution_name,
+          plaid_accounts (
+            account_id,
+            name,
+            mask
+          )
+        `)
         .eq('user_id', user.id)
         .eq('institution_id', metadata.institution.institution_id);
 
       if (existingItems && existingItems.length > 0) {
-        console.warn('Duplicate item detected:', {
+        // Check for account-level duplicates (name + mask match)
+        const newAccounts = metadata.accounts.map((acc: any) => ({
+          name: acc.name,
+          mask: acc.mask
+        }));
+
+        const existingAccounts = existingItems.flatMap((item: any) => 
+          item.plaid_accounts.map((acc: any) => ({
+            name: acc.name,
+            mask: acc.mask
+          }))
+        );
+
+        // Check if any new account matches existing ones
+        const hasDuplicate = newAccounts.some((newAcc: any) =>
+          existingAccounts.some((existingAcc: any) =>
+            existingAcc.name === newAcc.name && existingAcc.mask === newAcc.mask
+          )
+        );
+
+        if (hasDuplicate) {
+          console.warn('Duplicate account detected:', {
+            user_id: user.id,
+            institution_id: metadata.institution.institution_id,
+            institution_name: metadata.institution.name,
+            duplicate_accounts: newAccounts
+          });
+          
+          return new Response(
+            JSON.stringify({ 
+              error: `You've already connected this account from ${metadata.institution.name}. To update your connection, use the "Reconnect" option instead.`,
+              duplicate: true,
+              institution_name: metadata.institution.name
+            }),
+            {
+              status: 409,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }
+          );
+        }
+
+        // If accounts don't match, allow multiple items from same institution
+        console.log('Multiple items from same institution allowed - different accounts:', {
           user_id: user.id,
           institution_id: metadata.institution.institution_id,
           existing_count: existingItems.length
         });
-        
-        return new Response(
-          JSON.stringify({ 
-            error: 'This bank account is already connected. Please select a different institution.',
-            duplicate: true
-          }),
-          {
-            status: 409,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          }
-        );
       }
     }
 
