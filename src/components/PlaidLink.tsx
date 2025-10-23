@@ -90,6 +90,47 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   const config = {
     token: linkToken,
     onSuccess: onSuccessCallback,
+    onEvent: (eventName: string, metadata: any) => {
+      // Track all Link events for conversion analytics
+      const eventData = {
+        event_name: eventName,
+        view_name: metadata?.view_name,
+        timestamp: metadata?.timestamp ? new Date(metadata.timestamp) : new Date(),
+        link_session_id: metadata?.link_session_id || 'unknown',
+        institution_id: metadata?.institution_id,
+        institution_name: metadata?.institution_name,
+        error_type: metadata?.error_type,
+        error_code: metadata?.error_code,
+        error_message: metadata?.error_message,
+        metadata: metadata
+      };
+
+      // Log important events to console for monitoring
+      if (['OPEN', 'HANDOFF', 'ERROR', 'EXIT'].includes(eventName)) {
+        console.log(`Plaid Link Event: ${eventName}`, {
+          link_session_id: eventData.link_session_id,
+          institution: eventData.institution_name,
+          view_name: eventData.view_name
+        });
+      }
+
+      // Persist event to database for analytics (async, non-blocking)
+      supabase.rpc('log_plaid_link_event', {
+        p_user_id: null, // Will be set by RLS if authenticated
+        p_link_session_id: eventData.link_session_id,
+        p_event_name: eventData.event_name,
+        p_view_name: eventData.view_name,
+        p_timestamp: eventData.timestamp.toISOString(),
+        p_institution_id: eventData.institution_id,
+        p_institution_name: eventData.institution_name,
+        p_error_type: eventData.error_type,
+        p_error_code: eventData.error_code,
+        p_error_message: eventData.error_message,
+        p_metadata: eventData.metadata
+      }).then(({ error }) => {
+        if (error) console.error('Failed to log Link event:', error);
+      });
+    },
     onExit: (err: any, metadata: any) => {
       // Detailed logging for Plaid Link exits
       const exitInfo = {

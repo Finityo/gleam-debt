@@ -8,6 +8,7 @@ import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { PlaidTokenMigration } from '@/components/PlaidTokenMigration';
 import { AccountsList } from '@/components/AccountsList';
 import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
+import { PlaidAnalytics } from '@/components/PlaidAnalytics';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
@@ -154,6 +155,8 @@ const Dashboard = () => {
         </div>
 
         <PlaidUpdateBanner />
+        
+        <PlaidAnalytics />
         
         <PlaidTokenMigration 
           unmigrated_item_ids={unmigratedItemIds}
