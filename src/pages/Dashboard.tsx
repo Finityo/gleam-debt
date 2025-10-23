@@ -82,25 +82,27 @@ const Dashboard = () => {
       
       setAccounts(data.accounts || []);
       
-      // Check for unmigrated tokens
-      const { data: items, error: itemsError } = await supabase
-        .from('plaid_items')
-        .select('item_id, vault_secret_id, access_token')
-        .eq('user_id', user?.id || '');
-      
-      if (!itemsError && items) {
-        const unmigrated = items
-          .filter(item => !item.vault_secret_id && item.access_token)
-          .map(item => item.item_id);
-        setUnmigratedItemIds(unmigrated);
+      // Check for unmigrated tokens (only if user is authenticated)
+      if (user?.id) {
+        const { data: items, error: itemsError } = await supabase
+          .from('plaid_items')
+          .select('item_id, vault_secret_id, access_token')
+          .eq('user_id', user.id);
         
-        // Show toast notification if unmigrated tokens detected
-        if (unmigrated.length > 0) {
-          toast({
-            title: '🔒 Security Upgrade Available',
-            description: `${unmigrated.length} bank connection(s) can be upgraded to encrypted storage. Please upgrade to ensure full account management capabilities.`,
-            duration: 10000,
-          });
+        if (!itemsError && items) {
+          const unmigrated = items
+            .filter(item => !item.vault_secret_id && item.access_token)
+            .map(item => item.item_id);
+          setUnmigratedItemIds(unmigrated);
+          
+          // Show toast notification if unmigrated tokens detected
+          if (unmigrated.length > 0) {
+            toast({
+              title: '🔒 Security Upgrade Available',
+              description: `${unmigrated.length} bank connection(s) can be upgraded to encrypted storage. Please upgrade to ensure full account management capabilities.`,
+              duration: 10000,
+            });
+          }
         }
       }
     } catch (error: any) {
