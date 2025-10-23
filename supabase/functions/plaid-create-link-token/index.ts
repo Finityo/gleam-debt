@@ -123,9 +123,10 @@ serve(async (req) => {
 
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
-    const PLAID_ENV = 'production'; // Now using production environment
+    const PLAID_ENV = Deno.env.get('PLAID_ENV') || 'production';
     const WEBHOOK_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/plaid-webhook`;
 
+    console.log('Using Plaid environment:', PLAID_ENV);
     console.log('Using webhook URL:', WEBHOOK_URL);
 
     const response = await fetch(`https://${PLAID_ENV}.plaid.com/link/token/create`, {
@@ -139,11 +140,13 @@ serve(async (req) => {
         user: {
           client_user_id: user.id,
         },
-        client_name: 'Debt Management App',
+        client_name: 'Finityo',
         products: ['auth', 'liabilities'],
         country_codes: ['US'],
         language: 'en',
         webhook: WEBHOOK_URL,
+        redirect_uri: null,
+        android_package_name: null,
       }),
     });
 
