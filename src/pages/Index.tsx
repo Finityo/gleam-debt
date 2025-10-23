@@ -104,58 +104,50 @@ const Index = () => {
       <SEOHead title="Finityo Debt Payoff | Snowball or Avalanche Plan" description="Connect with Plaid, choose Snowball or Avalanche, and get a month-by-month payoff plan. Free to start." canonical="https://finityo-debt.com/" structuredData={structuredData} />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-95" />
-        <div className="absolute inset-0 bg-cover bg-center opacity-10" style={{
-        backgroundImage: `url(${heroImage})`
-      }} />
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-hero" />
         
-        <div className="relative container mx-auto px-4 py-20 lg:py-32">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            {/* Logo */}
-            <div className="flex justify-center mb-8">
-              <img src={finityoLogo} alt="Finityo Logo - Debt Management App" className="w-full max-w-[280px] sm:max-w-md lg:max-w-lg h-auto animate-fade-in px-4" />
-            </div>
-            
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white">
-              <Zap className="w-4 h-4 text-accent" />
-              <span className="text-sm font-medium">Accelerate Your Debt Freedom</span>
-            </div>
-            
-            <h1 className="text-4xl lg:text-6xl font-bold text-white leading-tight">
-              Build your debt payoff plan in minutes
-            </h1>
-            
-            <p className="text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto">
-              Connect accounts with Plaid, choose Snowball or Avalanche, and see your debt-free date
-            </p>
-
-            <div className="flex flex-col gap-4 items-center pt-4">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 hover:shadow-glow transition-all text-lg px-8 py-6" onClick={() => navigate('/auth?mode=signup')}>
-                Create your free plan
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" variant="ghost" className="bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg px-8 py-6" onClick={() => navigate('/pricing')}>
-                  <Star className="mr-2 w-5 h-5" />
-                  View Pricing
-                </Button>
+        <div className="relative container mx-auto px-4 py-20">
+          <div className="max-w-2xl mx-auto text-center">
+            {/* Glassmorphism Card */}
+            <div className="backdrop-blur-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-3xl p-10 shadow-[var(--shadow-glass)] animate-fade-in">
+              {/* Icon */}
+              <div className="flex justify-center mb-6">
+                <img 
+                  src="/finityo-icon-1024.png" 
+                  alt="Finityo Icon" 
+                  className="w-[90px] h-[90px] rounded-[22px] shadow-lg"
+                  loading="eager"
+                />
               </div>
               
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-full bg-indigo-200/20 border border-indigo-200/30 text-indigo-100">
+                <Zap className="w-4 h-4" />
+                <span className="text-sm font-medium">Accelerate Your Debt Freedom</span>
+              </div>
+              
+              {/* Headline */}
+              <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
+                Build your debt payoff plan in minutes
+              </h1>
+              
+              {/* Subtext */}
+              <p className="text-lg lg:text-xl text-indigo-100 mb-8 max-w-lg mx-auto">
+                Connect accounts with Plaid, choose Snowball or Avalanche, and see your debt-free date
+              </p>
+
+              {/* CTA Button */}
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="bg-white/5 border-2 border-white/40 text-white hover:bg-white hover:text-primary backdrop-blur-sm text-lg px-8 py-6 font-semibold"
-                onClick={() => navigate('/auth?mode=signin')}
+                className="bg-white/80 text-primary hover:bg-white hover:shadow-glow transition-all text-lg px-8 py-6 font-semibold"
+                onClick={() => {
+                  trackEvent('hero_cta_click');
+                  navigate('/auth?mode=signup');
+                }}
               >
-                Member Login
+                Create your free plan →
               </Button>
-              
-              {/* Hero Preview Image */}
-              <div className="mt-8 max-w-5xl mx-auto">
-                <img src={heroPreview} alt="Finityo debt payoff dashboard preview showing debt tracking and payment plans" className="rounded-xl shadow-2xl border border-white/20" loading="eager" />
-              </div>
             </div>
           </div>
         </div>
