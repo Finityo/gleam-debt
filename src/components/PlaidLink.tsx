@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { PlaidConsentDialog } from './PlaidConsentDialog';
+import { PlaidSuccessScreen } from './PlaidSuccessScreen';
 
 interface PlaidLinkProps {
   onSuccess?: () => void;
@@ -13,6 +14,11 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [showConsentDialog, setShowConsentDialog] = useState(false);
   const [consentGiven, setConsentGiven] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [successData, setSuccessData] = useState<{
+    accountMask?: string;
+    institutionName?: string;
+  }>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -66,15 +72,12 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
         return;
       }
       
-      toast({
-        title: 'Success!',
-        description: 'Your bank account has been connected successfully.',
+      // Show success screen with account details
+      setSuccessData({
+        accountMask: metadata?.account?.mask || metadata?.accounts?.[0]?.mask,
+        institutionName: metadata?.institution?.name,
       });
-
-      // Reload the page to show the connected accounts
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      setShowSuccessScreen(true);
 
       onSuccess?.();
     } catch (error: any) {
@@ -219,8 +222,29 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
     }
   };
 
+  const handleConnectAnother = () => {
+    setShowSuccessScreen(false);
+    setConsentGiven(false);
+    setSuccessData({});
+    // Show consent dialog again for next connection
+    setShowConsentDialog(true);
+  };
+
+  const handleViewAccounts = () => {
+    window.location.reload();
+  };
+
   return (
     <>
+      {showSuccessScreen && (
+        <PlaidSuccessScreen
+          accountMask={successData.accountMask}
+          institutionName={successData.institutionName}
+          onConnectAnother={handleConnectAnother}
+          onViewAccounts={handleViewAccounts}
+        />
+      )}
+
       <Button 
         onClick={handleConnectClick} 
         disabled={!ready}

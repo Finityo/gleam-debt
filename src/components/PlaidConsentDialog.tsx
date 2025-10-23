@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Shield, ExternalLink, AlertCircle } from "lucide-react";
+import { Shield, ExternalLink, AlertCircle, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -90,11 +90,61 @@ export const PlaidConsentDialog = ({
             Connect Your Financial Account
           </DialogTitle>
           <DialogDescription className="text-base mt-2">
-            Before connecting, please review and accept the following
+            Securely link your accounts for automatic debt tracking and personalized payoff plans
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Benefits Banner */}
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-primary" />
+              Why Connect Your Account?
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <span><strong>Save time</strong> - No manual entry of balances or transactions</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <span><strong>Stay accurate</strong> - Real-time updates from your bank</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <span><strong>Get insights</strong> - AI-powered recommendations based on your data</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Security Banner */}
+          <div className="bg-muted p-4 rounded-lg border border-border">
+            <div className="flex items-start gap-3">
+              <Shield className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold mb-2">Bank-Level Security</h4>
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <span>256-bit encryption - same security banks use</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <span>We never see your bank credentials</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <span>Trusted by thousands of financial apps</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <span>Disconnect anytime from your dashboard</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           {/* What We Access */}
           <div className="space-y-3">
             <h3 className="font-semibold text-lg">What Data We Access</h3>
