@@ -26,13 +26,26 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
       try {
         const { data, error } = await supabase.functions.invoke('plaid-create-link-token');
         
-        if (error) throw error;
+        if (error) {
+          // Check if it's a rate limit error
+          if (error.message?.includes('Too many connection attempts') || 
+              error.message?.includes('Daily connection limit')) {
+            toast({
+              title: 'Rate Limit Reached',
+              description: error.message,
+              variant: 'destructive',
+            });
+            return;
+          }
+          throw error;
+        }
         
         setLinkToken(data.link_token);
       } catch (error: any) {
+        console.error('Create link token error:', error);
         toast({
           title: 'Error',
-          description: 'Failed to initialize bank connection. Please try again.',
+          description: error.message || 'Failed to initialize bank connection. Please try again.',
           variant: 'destructive',
         });
       }
