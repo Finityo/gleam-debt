@@ -213,6 +213,7 @@ export type Database = {
       }
       plaid_api_logs: {
         Row: {
+          account_id: string | null
           created_at: string
           endpoint: string
           error_code: string | null
@@ -226,6 +227,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_id?: string | null
           created_at?: string
           endpoint: string
           error_code?: string | null
@@ -239,6 +241,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_id?: string | null
           created_at?: string
           endpoint?: string
           error_code?: string | null
@@ -333,6 +336,7 @@ export type Database = {
           institution_id: string | null
           institution_name: string | null
           item_id: string
+          link_session_id: string | null
           token_created_at: string | null
           token_last_rotated_at: string | null
           token_rotation_reason: string | null
@@ -348,6 +352,7 @@ export type Database = {
           institution_id?: string | null
           institution_name?: string | null
           item_id: string
+          link_session_id?: string | null
           token_created_at?: string | null
           token_last_rotated_at?: string | null
           token_rotation_reason?: string | null
@@ -363,6 +368,7 @@ export type Database = {
           institution_id?: string | null
           institution_name?: string | null
           item_id?: string
+          link_session_id?: string | null
           token_created_at?: string | null
           token_last_rotated_at?: string | null
           token_rotation_reason?: string | null
@@ -370,6 +376,51 @@ export type Database = {
           updated_at?: string
           user_id?: string
           vault_secret_id?: string | null
+        }
+        Relationships: []
+      }
+      plaid_link_errors: {
+        Row: {
+          created_at: string
+          display_message: string | null
+          error_code: string | null
+          error_message: string | null
+          error_type: string | null
+          id: string
+          institution_id: string | null
+          institution_name: string | null
+          link_session_id: string
+          request_id: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_message?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          error_type?: string | null
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          link_session_id: string
+          request_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_message?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          error_type?: string | null
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          link_session_id?: string
+          request_id?: string | null
+          status?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -590,6 +641,21 @@ export type Database = {
           p_request_id: string
           p_response_time_ms?: number
           p_status_code?: number
+          p_user_id: string
+        }
+        Returns: string
+      }
+      log_plaid_link_error: {
+        Args: {
+          p_display_message?: string
+          p_error_code?: string
+          p_error_message?: string
+          p_error_type?: string
+          p_institution_id?: string
+          p_institution_name?: string
+          p_link_session_id: string
+          p_request_id?: string
+          p_status?: string
           p_user_id: string
         }
         Returns: string

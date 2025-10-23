@@ -37,15 +37,21 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
 
   const onSuccessCallback = async (public_token: string, metadata: any) => {
     try {
-      // Log successful Plaid Link completion
+      // Log successful Plaid Link completion with all key identifiers
       console.log('Plaid Link success:', {
         institution: metadata?.institution?.name,
         institution_id: metadata?.institution?.institution_id,
         accounts_count: metadata?.accounts?.length,
+        link_session_id: metadata?.link_session_id,
+        request_id: metadata?.request_id,
       });
 
       const { data, error } = await supabase.functions.invoke('plaid-exchange-token', {
-        body: { public_token, metadata },
+        body: { 
+          public_token, 
+          metadata,
+          link_session_id: metadata?.link_session_id 
+        },
       });
 
       if (error) throw error;
@@ -100,6 +106,22 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
 
       if (err) {
         console.error('Plaid Link exit with error:', exitInfo);
+        
+        // Persist Link error to database for diagnostics (async, don't block UI)
+        supabase.rpc('log_plaid_link_error', {
+          p_user_id: null, // Will be set by RLS if user is authenticated
+          p_link_session_id: metadata?.link_session_id || 'unknown',
+          p_request_id: metadata?.request_id,
+          p_error_type: err.error_type,
+          p_error_code: err.error_code,
+          p_error_message: err.error_message,
+          p_display_message: err.display_message,
+          p_institution_id: metadata?.institution?.institution_id,
+          p_institution_name: metadata?.institution?.name,
+          p_status: metadata?.status
+        }).then(({ error: logError }) => {
+          if (logError) console.error('Failed to log Link error:', logError);
+        });
         
         // Provide more helpful error messages based on error type
         let errorTitle = 'Connection Failed';

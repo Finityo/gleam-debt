@@ -28,7 +28,7 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { public_token, metadata } = await req.json();
+    const { public_token, metadata, link_session_id } = await req.json();
 
     console.log('Token exchange initiated:', {
       request_id: crypto.randomUUID(),
@@ -127,7 +127,11 @@ serve(async (req) => {
       p_response_time_ms: exchangeResponseTime
     });
 
-    console.log('Storing Plaid item and token in vault for:', { item_id, user_id: user.id });
+    console.log('Storing Plaid item and token in vault for:', { 
+      item_id, 
+      user_id: user.id,
+      link_session_id: link_session_id || 'not_provided'
+    });
 
     const vaultSecretId = `plaid_token_${item_id}`;
     const { data: storedSecretId, error: vaultError } = await supabaseAdmin.rpc('store_plaid_token_in_vault', {
@@ -141,7 +145,7 @@ serve(async (req) => {
       throw new Error('Failed to securely store access token');
     }
 
-    // Store item with vault reference and token tracking
+    // Store item with vault reference, token tracking, and link_session_id
     const tokenCreatedAt = new Date().toISOString();
     const { error: itemError } = await supabaseClient
       .from('plaid_items')
@@ -152,6 +156,7 @@ serve(async (req) => {
         item_id: item_id,
         institution_id: metadata?.institution?.institution_id,
         institution_name: metadata?.institution?.name,
+        link_session_id: link_session_id,
         token_created_at: tokenCreatedAt,
         token_rotation_required: false
       });
@@ -231,7 +236,7 @@ serve(async (req) => {
       throw new Error('Failed to retrieve plaid item');
     }
 
-    // Store accounts in database
+    // Store accounts in database and log account_ids
     const accountsToInsert = accountsData.accounts.map((account: any) => ({
       user_id: user.id,
       plaid_item_id: plaidItems.id,
@@ -254,6 +259,13 @@ serve(async (req) => {
       console.error('Database error storing accounts:', accountsError);
       throw accountsError;
     }
+
+    // Log all account IDs for diagnostics
+    console.log('Stored accounts with IDs:', {
+      item_id,
+      account_ids: accountsData.accounts.map((a: any) => a.account_id),
+      link_session_id
+    });
 
     // Fetch and import liabilities (credit cards, loans, mortgages)
     console.log('Fetching liabilities for item:', item_id);
