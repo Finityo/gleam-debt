@@ -114,7 +114,7 @@ const Index = () => {
               {/* Icon */}
               <div className="flex justify-center mb-6">
                 <img 
-                  src="/finityo-icon-1024.png" 
+                  src="/finityo-icon-new.png" 
                   alt="Finityo Icon" 
                   className="w-[90px] h-[90px] rounded-[22px] shadow-lg"
                   loading="eager"
