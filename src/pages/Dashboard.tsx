@@ -196,7 +196,7 @@ const Dashboard = () => {
             }} />
           )}
           
-          {accounts.length > 0 && (
+          {accounts.length > 0 && !showPlaidLink && (
             <Button 
               onClick={() => setShowPlaidLink(true)}
               size="lg"
