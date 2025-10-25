@@ -292,6 +292,30 @@ export type Database = {
         }
         Relationships: []
       }
+      plaid_encrypted_tokens: {
+        Row: {
+          created_at: string | null
+          encrypted_token: string
+          id: string
+          item_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          encrypted_token: string
+          id?: string
+          item_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          encrypted_token?: string
+          id?: string
+          item_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       plaid_item_status: {
         Row: {
           created_at: string
