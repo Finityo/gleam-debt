@@ -37,6 +37,7 @@ const Dashboard = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [unmigratedItemIds, setUnmigratedItemIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPlaidLink, setShowPlaidLink] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -169,7 +170,42 @@ const Dashboard = () => {
           {/* Show connected accounts to prevent accidental duplicates */}
           {accounts.length > 0 && <ConnectedAccountsList />}
           
-          <PlaidLink onSuccess={fetchAccounts} />
+          {/* Only show PlaidLink when user clicks the button */}
+          {!showPlaidLink && accounts.length === 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center space-y-4">
+                  <p className="text-muted-foreground">
+                    Connect your bank account to get started
+                  </p>
+                  <Button 
+                    onClick={() => setShowPlaidLink(true)}
+                    size="lg"
+                  >
+                    Connect Bank Account
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {showPlaidLink && (
+            <PlaidLink onSuccess={() => {
+              setShowPlaidLink(false);
+              fetchAccounts();
+            }} />
+          )}
+          
+          {accounts.length > 0 && (
+            <Button 
+              onClick={() => setShowPlaidLink(true)}
+              size="lg"
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              Connect Another Bank Account
+            </Button>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button
@@ -204,10 +240,12 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-foreground">Connected Accounts</h2>
-          <AccountsList accounts={accounts} onAccountsChange={fetchAccounts} />
-        </div>
+        {accounts.length > 0 && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-foreground">Connected Accounts</h2>
+            <AccountsList accounts={accounts} onAccountsChange={fetchAccounts} />
+          </div>
+        )}
       </div>
     </div>
   );

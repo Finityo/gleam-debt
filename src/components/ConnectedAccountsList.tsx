@@ -29,7 +29,7 @@ export const ConnectedAccountsList = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Get items with their accounts and status
+      // Get items with their accounts
       const { data: items, error } = await supabase
         .from('plaid_items')
         .select(`
@@ -40,14 +40,23 @@ export const ConnectedAccountsList = () => {
             name,
             mask,
             type
-          ),
-          plaid_item_status (
-            needs_update
           )
         `)
         .eq('user_id', user.id);
 
       if (error) throw error;
+
+      // Get item status separately (no foreign key relationship)
+      const { data: statusData } = await supabase
+        .from('plaid_item_status')
+        .select('item_id, needs_update')
+        .eq('user_id', user.id)
+        .eq('needs_update', true);
+
+      // Create a map of item_id -> needs_update
+      const statusMap = new Map(
+        statusData?.map(s => [s.item_id, s.needs_update]) || []
+      );
 
       // Group by institution
       const grouped: Record<string, ConnectedAccount> = {};
@@ -59,7 +68,7 @@ export const ConnectedAccountsList = () => {
             institution_name: item.institution_name,
             institution_id: item.institution_id,
             accounts: [],
-            needs_update: item.plaid_item_status?.[0]?.needs_update || false
+            needs_update: statusMap.get(item.item_id) || false
           };
         }
         
@@ -92,14 +101,7 @@ export const ConnectedAccountsList = () => {
   }
 
   if (connectedAccounts.length === 0) {
-    return (
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          You haven't connected any bank accounts yet. Click "Connect Bank Account" to get started.
-        </AlertDescription>
-      </Alert>
-    );
+    return null;
   }
 
   return (

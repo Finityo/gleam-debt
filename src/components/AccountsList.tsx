@@ -119,15 +119,7 @@ export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) 
   const depositoryAccountsByItem = groupAccountsByItem(depositoryAccounts);
 
   if (accounts.length === 0) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-center text-muted-foreground">
-            No accounts connected yet. Click the button above to connect your bank account.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   const renderAccountsByItem = (accountsByItem: Record<string, { item: Account['plaid_items']; accounts: Account[] }>) => (
