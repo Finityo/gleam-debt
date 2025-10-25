@@ -19,6 +19,8 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
     accountMask?: string;
     institutionName?: string;
   }>({});
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const { toast } = useToast();
 
   const onSuccessCallback = async (public_token: string, metadata: any) => {
@@ -186,7 +188,12 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   const { open, ready } = usePlaidLink(config);
 
   useEffect(() => {
+    // Only attempt to fetch once
+    if (hasAttemptedFetch || isRateLimited) return;
+
     const createLinkToken = async () => {
+      setHasAttemptedFetch(true);
+      
       try {
         const response = await supabase.functions.invoke('plaid-create-link-token');
         
@@ -197,10 +204,12 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
           
           if (errorMsg.includes('Too many connection attempts') || 
               errorMsg.includes('Daily connection limit') ||
-              errorMsg.includes('FunctionsHttpError: 429')) {
+              errorMsg.includes('FunctionsHttpError: 429') ||
+              errorMsg.includes('429')) {
+            setIsRateLimited(true);
             toast({
               title: 'Connection Limit Reached',
-              description: 'You\'ve exceeded the hourly limit for bank connections. Please wait a few minutes and try again.',
+              description: 'Please wait an hour before attempting more connections. Your accounts are still connected and accessible.',
               variant: 'destructive',
             });
             return;
@@ -217,12 +226,16 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
       } catch (error: any) {
         console.error('Create link token error:', error);
         
-        // Better error message for common issues
-        let errorMessage = 'Failed to initialize bank connection. Please try again.';
-        
+        // Check if it's a rate limit error
         if (error.message?.includes('429') || error.message?.includes('rate limit')) {
-          errorMessage = 'Too many connection attempts. Please wait a few minutes before trying again.';
-        } else if (error.message?.includes('Network')) {
+          setIsRateLimited(true);
+          return; // Don't show toast, already handled above
+        }
+        
+        // Better error message for other issues
+        let errorMessage = 'Failed to initialize bank connection. Please try again later.';
+        
+        if (error.message?.includes('Network')) {
           errorMessage = 'Network error. Please check your connection and try again.';
         }
         
@@ -255,7 +268,7 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
     return () => {
       window.removeEventListener('plaid-oauth-redirect', handleOAuthRedirect);
     };
-  }, [toast, ready, open]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleConnectClick = () => {
     // Show consent dialog first if not already given
@@ -299,11 +312,11 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
 
       <Button 
         onClick={handleConnectClick} 
-        disabled={!ready}
+        disabled={!ready || isRateLimited}
         size="lg"
         className="w-full sm:w-auto"
       >
-        Connect Bank Account
+        {isRateLimited ? 'Rate Limit Reached' : 'Connect Bank Account'}
       </Button>
 
       <PlaidConsentDialog
