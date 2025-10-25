@@ -24,28 +24,47 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   useEffect(() => {
     const createLinkToken = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('plaid-create-link-token');
+        const response = await supabase.functions.invoke('plaid-create-link-token');
         
-        if (error) {
-          // Check if it's a rate limit error
-          if (error.message?.includes('Too many connection attempts') || 
-              error.message?.includes('Daily connection limit')) {
+        // Handle HTTP error responses
+        if (response.error) {
+          // Check for rate limit (429) or other HTTP errors
+          const errorMsg = response.error.message || '';
+          
+          if (errorMsg.includes('Too many connection attempts') || 
+              errorMsg.includes('Daily connection limit') ||
+              errorMsg.includes('FunctionsHttpError: 429')) {
             toast({
-              title: 'Rate Limit Reached',
-              description: error.message,
+              title: 'Connection Limit Reached',
+              description: 'You\'ve exceeded the hourly limit for bank connections. Please wait a few minutes and try again.',
               variant: 'destructive',
             });
             return;
           }
-          throw error;
+          
+          throw response.error;
         }
         
-        setLinkToken(data.link_token);
+        if (!response.data?.link_token) {
+          throw new Error('No link token received');
+        }
+        
+        setLinkToken(response.data.link_token);
       } catch (error: any) {
         console.error('Create link token error:', error);
+        
+        // Better error message for common issues
+        let errorMessage = 'Failed to initialize bank connection. Please try again.';
+        
+        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+          errorMessage = 'Too many connection attempts. Please wait a few minutes before trying again.';
+        } else if (error.message?.includes('Network')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        }
+        
         toast({
-          title: 'Error',
-          description: error.message || 'Failed to initialize bank connection. Please try again.',
+          title: 'Connection Error',
+          description: errorMessage,
           variant: 'destructive',
         });
       }
