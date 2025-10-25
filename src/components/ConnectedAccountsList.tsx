@@ -85,12 +85,11 @@ export const ConnectedAccountsList = () => {
       const accountsList = Object.values(grouped);
       setConnectedAccounts(accountsList);
       
-      // Auto-expand institutions with only 1 account
+      // Set initial open state for all institutions
       const initialOpenState: Record<string, boolean> = {};
       accountsList.forEach(institution => {
-        if (institution.accounts.length === 1) {
-          initialOpenState[institution.institution_id] = true;
-        }
+        // Auto-expand institutions with only 1 account, collapse others
+        initialOpenState[institution.institution_id] = institution.accounts.length === 1;
       });
       setOpenInstitutions(initialOpenState);
     } catch (error) {
@@ -138,7 +137,7 @@ export const ConnectedAccountsList = () => {
         <div className="space-y-4">
           {connectedAccounts.map((institution) => {
             const hasMultipleAccounts = institution.accounts.length > 1;
-            const isOpen = openInstitutions[institution.institution_id];
+            const isOpen = openInstitutions[institution.institution_id] ?? false;
             
             return (
               <Collapsible
