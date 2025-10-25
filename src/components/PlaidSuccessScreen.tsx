@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { CheckCircle2, Plus, ArrowRight, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,6 +16,14 @@ export const PlaidSuccessScreen = ({
   onConnectAnother,
   onViewAccounts,
 }: PlaidSuccessScreenProps) => {
+  // Auto-redirect after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onViewAccounts();
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [onViewAccounts]);
   return (
     <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
