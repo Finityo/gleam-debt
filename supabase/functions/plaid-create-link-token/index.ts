@@ -29,7 +29,7 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Rate limiting check - 20 attempts per hour, 50 per 24 hours
+    // Rate limiting check - 100 attempts per hour, 200 per 24 hours
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
@@ -56,7 +56,7 @@ serve(async (req) => {
       daily_attempts: dailyCount
     });
 
-    if (hourlyCount >= 20) {
+    if (hourlyCount >= 100) {
       console.warn('Rate limit exceeded (hourly):', {
         user_id: user.id,
         attempts: hourlyCount
@@ -86,7 +86,7 @@ serve(async (req) => {
       );
     }
 
-    if (dailyCount >= 50) {
+    if (dailyCount >= 200) {
       console.warn('Rate limit exceeded (daily):', {
         user_id: user.id,
         attempts: dailyCount
