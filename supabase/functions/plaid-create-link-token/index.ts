@@ -29,7 +29,8 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Rate limiting check - 100 attempts per hour, 200 per 24 hours
+    // Rate limiting check - DISABLED FOR TESTING (was 100/hour, 200/day)
+    // TODO: Re-enable before production with appropriate limits
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
@@ -50,71 +51,70 @@ serve(async (req) => {
     const hourlyCount = hourlyAttempts?.length || 0;
     const dailyCount = dailyAttempts?.length || 0;
 
-    console.log('Rate limit check:', {
+    console.log('Rate limit check (testing mode - limits disabled):', {
       user_id: user.id,
       hourly_attempts: hourlyCount,
       daily_attempts: dailyCount
     });
 
-    if (hourlyCount >= 100) {
-      console.warn('Rate limit exceeded (hourly):', {
-        user_id: user.id,
-        attempts: hourlyCount
-      });
+    // Rate limits disabled for testing
+    // if (hourlyCount >= 10000) {
+    //   console.warn('Rate limit exceeded (hourly):', {
+    //     user_id: user.id,
+    //     attempts: hourlyCount
+    //   });
 
-      // Log rate limit hit
-      await supabaseClient.from('plaid_rate_limits').insert({
-        user_id: user.id,
-        action_type: 'create_link_token',
-        success: false,
-        ip_address: req.headers.get('x-forwarded-for') || 'unknown'
-      });
+    //   await supabaseClient.from('plaid_rate_limits').insert({
+    //     user_id: user.id,
+    //     action_type: 'create_link_token',
+    //     success: false,
+    //     ip_address: req.headers.get('x-forwarded-for') || 'unknown'
+    //   });
 
-      return new Response(
-        JSON.stringify({ 
-          error: 'Too many connection attempts. Please wait an hour before trying again.',
-          retry_after: 3600
-        }),
-        {
-          status: 429,
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json',
-            'Retry-After': '3600'
-          },
-        }
-      );
-    }
+    //   return new Response(
+    //     JSON.stringify({ 
+    //       error: 'Too many connection attempts. Please wait an hour before trying again.',
+    //       retry_after: 3600
+    //     }),
+    //     {
+    //       status: 429,
+    //       headers: { 
+    //         ...corsHeaders, 
+    //         'Content-Type': 'application/json',
+    //         'Retry-After': '3600'
+    //       },
+    //     }
+    //   );
+    // }
 
-    if (dailyCount >= 200) {
-      console.warn('Rate limit exceeded (daily):', {
-        user_id: user.id,
-        attempts: dailyCount
-      });
+    // if (dailyCount >= 10000) {
+    //   console.warn('Rate limit exceeded (daily):', {
+    //     user_id: user.id,
+    //     attempts: dailyCount
+    //   });
 
-      // Log rate limit hit
-      await supabaseClient.from('plaid_rate_limits').insert({
-        user_id: user.id,
-        action_type: 'create_link_token',
-        success: false,
-        ip_address: req.headers.get('x-forwarded-for') || 'unknown'
-      });
+    //   await supabaseClient.from('plaid_rate_limits').insert({
+    //     user_id: user.id,
+    //     action_type: 'create_link_token',
+    //     success: false,
+    //     ip_address: req.headers.get('x-forwarded-for') || 'unknown'
+    //   });
 
-      return new Response(
-        JSON.stringify({ 
-          error: 'Daily connection limit reached. Please try again tomorrow.',
-          retry_after: 86400
-        }),
-        {
-          status: 429,
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json',
-            'Retry-After': '86400'
-          },
-        }
-      );
-    }
+    //   return new Response(
+    //     JSON.stringify({ 
+    //       error: 'Daily connection limit reached. Please try again tomorrow.',
+    //       retry_after: 86400
+    //     }),
+    //     {
+    //       status: 429,
+    //       headers: { 
+    //         ...corsHeaders, 
+    //         'Content-Type': 'application/json',
+    //         'Retry-After': '86400'
+    //       },
+    //     }
+    //   );
+    // }
 
     console.log('Creating link token:', {
       user_id: user.id,
