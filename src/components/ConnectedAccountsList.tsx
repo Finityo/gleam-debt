@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Building2, ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface ConnectedAccount {
   institution_name: string;
@@ -19,6 +19,7 @@ interface ConnectedAccount {
 export const ConnectedAccountsList = () => {
   const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openInstitutions, setOpenInstitutions] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchConnectedAccounts();
@@ -81,7 +82,17 @@ export const ConnectedAccountsList = () => {
         });
       });
 
-      setConnectedAccounts(Object.values(grouped));
+      const accountsList = Object.values(grouped);
+      setConnectedAccounts(accountsList);
+      
+      // Auto-expand institutions with only 1 account
+      const initialOpenState: Record<string, boolean> = {};
+      accountsList.forEach(institution => {
+        if (institution.accounts.length === 1) {
+          initialOpenState[institution.institution_id] = true;
+        }
+      });
+      setOpenInstitutions(initialOpenState);
     } catch (error) {
       console.error('Error fetching connected accounts:', error);
     } finally {
@@ -104,6 +115,17 @@ export const ConnectedAccountsList = () => {
     return null;
   }
 
+  const capitalizeType = (type: string) => {
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
+  const toggleInstitution = (institutionId: string) => {
+    setOpenInstitutions(prev => ({
+      ...prev,
+      [institutionId]: !prev[institutionId]
+    }));
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -114,34 +136,69 @@ export const ConnectedAccountsList = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {connectedAccounts.map((institution) => (
-            <div 
-              key={institution.institution_id}
-              className="flex items-start gap-3 p-4 rounded-lg border bg-card"
-            >
-              <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium">{institution.institution_name}</h3>
-                  {institution.needs_update && (
-                    <Badge variant="destructive" className="text-xs">
-                      Needs Update
-                    </Badge>
+          {connectedAccounts.map((institution) => {
+            const hasMultipleAccounts = institution.accounts.length > 1;
+            const isOpen = openInstitutions[institution.institution_id];
+            
+            return (
+              <Collapsible
+                key={institution.institution_id}
+                open={isOpen}
+                onOpenChange={() => toggleInstitution(institution.institution_id)}
+              >
+                <div className="rounded-lg border bg-card">
+                  <CollapsibleTrigger 
+                    className="flex items-start gap-3 p-4 w-full hover:bg-accent/50 transition-colors"
+                    disabled={!hasMultipleAccounts}
+                  >
+                    <Building2 className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-medium">{institution.institution_name}</h3>
+                        <div className="flex items-center gap-2">
+                          {institution.needs_update && (
+                            <Badge variant="destructive" className="text-xs">
+                              Needs Update
+                            </Badge>
+                          )}
+                          {hasMultipleAccounts && (
+                            <ChevronDown 
+                              className={`h-4 w-4 text-muted-foreground transition-transform ${
+                                isOpen ? 'transform rotate-180' : ''
+                              }`}
+                            />
+                          )}
+                        </div>
+                      </div>
+                      {!hasMultipleAccounts && institution.accounts[0] && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {institution.accounts[0].name} {institution.accounts[0].mask && `(••${institution.accounts[0].mask})`}
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            {capitalizeType(institution.accounts[0].type)}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </CollapsibleTrigger>
+                  
+                  {hasMultipleAccounts && (
+                    <CollapsibleContent>
+                      <div className="px-4 pb-4 space-y-2 border-t pt-3">
+                        {institution.accounts.map((account, idx) => (
+                          <div key={idx} className="text-sm text-muted-foreground pl-8">
+                            {account.name} {account.mask && `(••${account.mask})`}
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              {capitalizeType(account.type)}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
                   )}
                 </div>
-                <div className="space-y-1">
-                  {institution.accounts.map((account, idx) => (
-                    <div key={idx} className="text-sm text-muted-foreground">
-                      {account.name} {account.mask && `(••${account.mask})`}
-                      <Badge variant="outline" className="ml-2 text-xs">
-                        {account.type}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
+              </Collapsible>
+            );
+          })}
         </div>
       </CardContent>
     </Card>
