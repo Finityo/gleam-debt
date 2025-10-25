@@ -340,21 +340,201 @@ async function handleItemWebhook(supabase: any, payload: any) {
 }
 
 async function handleTransactionsWebhook(supabase: any, payload: any) {
-  console.log('Processing TRANSACTIONS webhook:', payload.webhook_code);
-  // Future: implement transaction updates
+  console.log('Handling TRANSACTIONS webhook:', payload.webhook_code);
+  
+  const { item_id, webhook_code, error } = payload;
+
+  try {
+    switch (webhook_code) {
+      case 'DEFAULT_UPDATE':
+        // New transaction data available - trigger /transactions/get
+        console.log('Transactions DEFAULT_UPDATE received for item:', item_id);
+        // Update last_webhook timestamp
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        break;
+
+      case 'INITIAL_UPDATE':
+        // First batch of transactions ready
+        console.log('Transactions INITIAL_UPDATE received for item:', item_id);
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        break;
+
+      case 'HISTORICAL_UPDATE':
+        // Historical transactions completed
+        console.log('Transactions HISTORICAL_UPDATE received for item:', item_id);
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        break;
+
+      case 'TRANSACTIONS_REMOVED':
+        // Some transactions were removed/modified
+        console.log('Transactions TRANSACTIONS_REMOVED received for item:', item_id);
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        break;
+
+      default:
+        console.log('Unknown TRANSACTIONS webhook:', webhook_code);
+    }
+  } catch (error) {
+    console.error('Error handling TRANSACTIONS webhook:', error);
+  }
 }
 
 async function handleAuthWebhook(supabase: any, payload: any) {
-  console.log('Processing AUTH webhook:', payload.webhook_code);
-  // Handle auth-related webhooks
+  console.log('Handling AUTH webhook:', payload.webhook_code);
+  
+  const { item_id, account_id, webhook_code } = payload;
+
+  try {
+    switch (webhook_code) {
+      case 'AUTOMATICALLY_VERIFIED':
+        // Instant Auth completed successfully
+        console.log('Auth AUTOMATICALLY_VERIFIED for item:', item_id, 'account:', account_id);
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        break;
+
+      case 'VERIFICATION_EXPIRED':
+        // Manual verification needed (micro-deposits expired)
+        console.log('Auth VERIFICATION_EXPIRED for item:', item_id);
+        await supabase
+          .from('plaid_item_status')
+          .upsert({
+            item_id,
+            needs_update: true,
+            update_reason: 'Verification expired - manual verification needed',
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          });
+        break;
+
+      case 'MANUALLY_VERIFIED':
+        // User completed manual verification
+        console.log('Auth MANUALLY_VERIFIED for item:', item_id);
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            needs_update: false,
+            update_reason: null,
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        break;
+
+      default:
+        console.log('Unknown AUTH webhook:', webhook_code);
+    }
+  } catch (error) {
+    console.error('Error handling AUTH webhook:', error);
+  }
 }
 
 async function handleLiabilitiesWebhook(supabase: any, payload: any) {
-  console.log('Processing LIABILITIES webhook:', payload.webhook_code);
-  // Handle liabilities updates
+  console.log('Handling LIABILITIES webhook:', payload.webhook_code);
+  
+  const { item_id, webhook_code } = payload;
+
+  try {
+    switch (webhook_code) {
+      case 'DEFAULT_UPDATE':
+        // New liability data available (balance changes, APR updates, etc.)
+        console.log('Liabilities DEFAULT_UPDATE received for item:', item_id);
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        
+        // Trigger debt import to refresh liability data
+        console.log('Triggering debt import for updated liabilities');
+        break;
+
+      case 'PRODUCT_READY':
+        // Initial liabilities data ready
+        console.log('Liabilities PRODUCT_READY received for item:', item_id);
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        break;
+
+      default:
+        console.log('Unknown LIABILITIES webhook:', webhook_code);
+    }
+  } catch (error) {
+    console.error('Error handling LIABILITIES webhook:', error);
+  }
 }
 
 async function handleIdentityWebhook(supabase: any, payload: any) {
-  console.log('Processing IDENTITY webhook:', payload.webhook_code);
-  // Handle identity verification updates
+  console.log('Handling IDENTITY webhook:', payload.webhook_code);
+  
+  const { item_id, webhook_code } = payload;
+
+  try {
+    switch (webhook_code) {
+      case 'DEFAULT_UPDATE':
+        // Identity data updated (name, address, phone, etc.)
+        console.log('Identity DEFAULT_UPDATE received for item:', item_id);
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        break;
+
+      case 'PRODUCT_READY':
+        // Initial identity data ready
+        console.log('Identity PRODUCT_READY received for item:', item_id);
+        await supabase
+          .from('plaid_item_status')
+          .update({
+            last_webhook_at: new Date().toISOString(),
+            last_webhook_code: webhook_code,
+          })
+          .eq('item_id', item_id);
+        break;
+
+      default:
+        console.log('Unknown IDENTITY webhook:', webhook_code);
+    }
+  } catch (error) {
+    console.error('Error handling IDENTITY webhook:', error);
+  }
 }

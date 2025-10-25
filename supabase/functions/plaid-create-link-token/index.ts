@@ -146,7 +146,8 @@ serve(async (req) => {
         country_codes: ['US'],
         language: 'en',
         webhook: WEBHOOK_URL,
-        redirect_uri: null,
+        // OAuth redirect for institutions that require OAuth authentication
+        redirect_uri: 'https://finityo-debt.lovable.app/oauth-redirect',
         android_package_name: null,
       }),
     });

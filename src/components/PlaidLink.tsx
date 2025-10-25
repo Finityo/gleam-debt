@@ -21,58 +21,6 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   }>({});
   const { toast } = useToast();
 
-  useEffect(() => {
-    const createLinkToken = async () => {
-      try {
-        const response = await supabase.functions.invoke('plaid-create-link-token');
-        
-        // Handle HTTP error responses
-        if (response.error) {
-          // Check for rate limit (429) or other HTTP errors
-          const errorMsg = response.error.message || '';
-          
-          if (errorMsg.includes('Too many connection attempts') || 
-              errorMsg.includes('Daily connection limit') ||
-              errorMsg.includes('FunctionsHttpError: 429')) {
-            toast({
-              title: 'Connection Limit Reached',
-              description: 'You\'ve exceeded the hourly limit for bank connections. Please wait a few minutes and try again.',
-              variant: 'destructive',
-            });
-            return;
-          }
-          
-          throw response.error;
-        }
-        
-        if (!response.data?.link_token) {
-          throw new Error('No link token received');
-        }
-        
-        setLinkToken(response.data.link_token);
-      } catch (error: any) {
-        console.error('Create link token error:', error);
-        
-        // Better error message for common issues
-        let errorMessage = 'Failed to initialize bank connection. Please try again.';
-        
-        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
-          errorMessage = 'Too many connection attempts. Please wait a few minutes before trying again.';
-        } else if (error.message?.includes('Network')) {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        }
-        
-        toast({
-          title: 'Connection Error',
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      }
-    };
-
-    createLinkToken();
-  }, [toast]);
-
   const onSuccessCallback = async (public_token: string, metadata: any) => {
     try {
       // Log successful Plaid Link completion with all key identifiers
@@ -236,6 +184,78 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   };
 
   const { open, ready } = usePlaidLink(config);
+
+  useEffect(() => {
+    const createLinkToken = async () => {
+      try {
+        const response = await supabase.functions.invoke('plaid-create-link-token');
+        
+        // Handle HTTP error responses
+        if (response.error) {
+          // Check for rate limit (429) or other HTTP errors
+          const errorMsg = response.error.message || '';
+          
+          if (errorMsg.includes('Too many connection attempts') || 
+              errorMsg.includes('Daily connection limit') ||
+              errorMsg.includes('FunctionsHttpError: 429')) {
+            toast({
+              title: 'Connection Limit Reached',
+              description: 'You\'ve exceeded the hourly limit for bank connections. Please wait a few minutes and try again.',
+              variant: 'destructive',
+            });
+            return;
+          }
+          
+          throw response.error;
+        }
+        
+        if (!response.data?.link_token) {
+          throw new Error('No link token received');
+        }
+        
+        setLinkToken(response.data.link_token);
+      } catch (error: any) {
+        console.error('Create link token error:', error);
+        
+        // Better error message for common issues
+        let errorMessage = 'Failed to initialize bank connection. Please try again.';
+        
+        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+          errorMessage = 'Too many connection attempts. Please wait a few minutes before trying again.';
+        } else if (error.message?.includes('Network')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        }
+        
+        toast({
+          title: 'Connection Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
+    };
+
+    createLinkToken();
+
+    // Handle OAuth redirect from sessionStorage
+    const handleOAuthRedirect = () => {
+      const oauthStateId = sessionStorage.getItem('plaid_oauth_state_id');
+      if (oauthStateId && ready) {
+        console.log('Resuming Link with OAuth state:', oauthStateId);
+        sessionStorage.removeItem('plaid_oauth_state_id');
+        open();
+      }
+    };
+
+    // Listen for OAuth redirect event
+    window.addEventListener('plaid-oauth-redirect', handleOAuthRedirect);
+    
+    // Check immediately in case we just redirected
+    handleOAuthRedirect();
+
+    return () => {
+      window.removeEventListener('plaid-oauth-redirect', handleOAuthRedirect);
+    };
+  }, [toast, ready, open]);
 
   const handleConnectClick = () => {
     // Show consent dialog first if not already given

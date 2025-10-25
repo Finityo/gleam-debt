@@ -57,6 +57,8 @@ serve(async (req) => {
       access_token: accessToken,
       country_codes: ['US'],
       language: 'en',
+      // OAuth redirect for update mode
+      redirect_uri: 'https://finityo-debt.lovable.app/oauth-redirect',
     };
 
     // Enable account selection if updating for new accounts
