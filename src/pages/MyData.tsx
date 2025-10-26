@@ -269,9 +269,9 @@ const MyData = () => {
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate(-1)}>
+            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
               <ArrowLeft className="mr-2 w-4 h-4" />
-              Back
+              Back to Dashboard
             </Button>
             <div>
               <h1 className="text-4xl font-bold">My Data</h1>

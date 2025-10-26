@@ -171,14 +171,21 @@ const DebtPlan = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/debts')}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Debt Management
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Dashboard
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/debts')}
+            >
+              Debt Management
+            </Button>
+          </div>
           <h1 className="text-4xl font-bold text-foreground">Your Debt Payoff Plan</h1>
           <p className="text-muted-foreground mt-2">
             Review your personalized debt payoff strategy

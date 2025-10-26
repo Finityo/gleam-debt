@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Send, Bot, User, AlertTriangle } from "lucide-react";
+import { Loader2, Send, Bot, User, AlertTriangle, ArrowLeft } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -15,6 +16,7 @@ type Message = {
 };
 
 const AIAdvisor = () => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -150,7 +152,15 @@ const AIAdvisor = () => {
       />
       <div className="min-h-screen bg-gradient-subtle p-4">
         <div className="max-w-4xl mx-auto">
-          <Card className="h-[calc(100vh-2rem)] flex flex-col">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/dashboard')}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <Card className="h-[calc(100vh-6rem)] flex flex-col">
             <div className="p-6 border-b space-y-4">
               <div>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
