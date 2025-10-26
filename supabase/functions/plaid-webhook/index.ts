@@ -468,6 +468,17 @@ async function handleLiabilitiesWebhook(supabase: any, payload: any) {
       case 'DEFAULT_UPDATE':
         // New liability data available (balance changes, APR updates, etc.)
         console.log('Liabilities DEFAULT_UPDATE received for item:', item_id);
+        
+        // Sync accounts to update balances instead of creating duplicates
+        try {
+          await supabase.functions.invoke('plaid-sync-accounts', {
+            body: { item_id }
+          });
+          console.log('Successfully synced accounts after liabilities update');
+        } catch (syncError) {
+          console.error('Failed to sync accounts:', syncError);
+        }
+        
         await supabase
           .from('plaid_item_status')
           .update({
@@ -475,9 +486,6 @@ async function handleLiabilitiesWebhook(supabase: any, payload: any) {
             last_webhook_code: webhook_code,
           })
           .eq('item_id', item_id);
-        
-        // Trigger debt import to refresh liability data
-        console.log('Triggering debt import for updated liabilities');
         break;
 
       case 'PRODUCT_READY':

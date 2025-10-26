@@ -8,10 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Plus, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, Plus, Upload } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from 'exceljs';
 import { logError } from '@/utils/logger';
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 type Strategy = "snowball" | "avalanche";
 
@@ -105,7 +106,6 @@ export function DebtCalculator() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDebtIndices, setSelectedDebtIndices] = useState<Set<number>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Load saved data on mount
   useEffect(() => {
@@ -388,18 +388,6 @@ export function DebtCalculator() {
     fileInputRef.current?.click();
   };
 
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -400, behavior: 'smooth' });
-    }
-  };
-
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 400, behavior: 'smooth' });
-    }
-  };
-
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -644,173 +632,156 @@ export function DebtCalculator() {
               </div>
             </div>
 
-              <div className="relative">
-                <div 
-                  ref={scrollContainerRef}
-                  className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth"
-                  style={{ scrollbarWidth: 'thin' }}
-                >
-                  {debts.map((debt, index) => (
-                    <Card key={index} className="min-w-[350px] md:min-w-[400px] snap-start shrink-0">
+            <Carousel className="w-full">
+              <CarouselContent className="-ml-4">
+                {debts.map((debt, index) => (
+                  <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                    <Card className="h-full">
                       <CardContent className="pt-6">
-                        <div className="flex gap-4">
-                          <div className="flex items-center pt-8">
-                            <Checkbox
-                              checked={selectedDebtIndices.has(index)}
-                              onCheckedChange={() => toggleDebtSelection(index)}
-                            />
-                          </div>
-                          <div className="flex-1 space-y-4">
-                            <div className="space-y-2">
-                              <Label>Name</Label>
-                              <Input
-                                value={debt.name}
-                                onChange={(e) => updateDebt(index, 'name', e.target.value)}
-                                placeholder="Credit Card"
-                                className="placeholder:text-muted-foreground/50"
+                          <div className="flex gap-4">
+                            <div className="flex items-center pt-8">
+                              <Checkbox
+                                checked={selectedDebtIndices.has(index)}
+                                onCheckedChange={() => toggleDebtSelection(index)}
                               />
                             </div>
-                            <div className="space-y-2">
-                              <Label>Debt Type</Label>
-                              <Select 
-                                value={debt.debtType || 'personal'} 
-                                onValueChange={(value) => updateDebt(index, 'debtType', value)}
-                              >
-                                <SelectTrigger className="bg-background">
-                                  <SelectValue placeholder="Select type" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-popover border-border z-50">
-                                  <SelectItem value="personal">Personal</SelectItem>
-                                  <SelectItem value="child">Child's Debt</SelectItem>
-                                  <SelectItem value="parent">Parent's Debt</SelectItem>
-                                  <SelectItem value="spouse">Spouse's Debt</SelectItem>
-                                  <SelectItem value="other">Other Family</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Last 4</Label>
-                              <Input
-                                value={debt.last4 || ''}
-                                onChange={(e) => updateDebt(index, 'last4', e.target.value)}
-                                maxLength={4}
-                                placeholder="1234"
-                                className="placeholder:text-muted-foreground/50"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Balance</Label>
-                              <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <div className="flex-1 space-y-4">
+                              <div className="space-y-2">
+                                <Label>Name</Label>
                                 <Input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  placeholder="0.00"
-                                  className="pl-7 placeholder:text-muted-foreground/50"
-                                  value={debt.balance || ''}
-                                  onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
+                                  value={debt.name}
+                                  onChange={(e) => updateDebt(index, 'name', e.target.value)}
+                                  placeholder="Credit Card"
+                                  className="placeholder:text-muted-foreground/50"
                                 />
                               </div>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Min Payment</Label>
-                              <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                              <div className="space-y-2">
+                                <Label>Debt Type</Label>
+                                <Select 
+                                  value={debt.debtType || 'personal'} 
+                                  onValueChange={(value) => updateDebt(index, 'debtType', value)}
+                                >
+                                  <SelectTrigger className="bg-background">
+                                    <SelectValue placeholder="Select type" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-popover border-border z-50">
+                                    <SelectItem value="personal">Personal</SelectItem>
+                                    <SelectItem value="child">Child's Debt</SelectItem>
+                                    <SelectItem value="parent">Parent's Debt</SelectItem>
+                                    <SelectItem value="spouse">Spouse's Debt</SelectItem>
+                                    <SelectItem value="other">Other Family</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Last 4</Label>
                                 <Input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  placeholder="0.00"
-                                  className="pl-7 placeholder:text-muted-foreground/50"
-                                  value={debt.minPayment || ''}
-                                  onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
+                                  value={debt.last4 || ''}
+                                  onChange={(e) => updateDebt(index, 'last4', e.target.value)}
+                                  maxLength={4}
+                                  placeholder="1234"
+                                  className="placeholder:text-muted-foreground/50"
                                 />
                               </div>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>APR (%)</Label>
-                              <Input
-                                type="text"
-                                inputMode="decimal"
-                                placeholder="18.99"
-                                className="placeholder:text-muted-foreground/50"
-                                value={debt.apr || ''}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-                                    const numValue = value === '' ? 0 : parseFloat(value);
-                                    if (numValue <= 100) {
-                                      updateDebt(index, 'apr', numValue || 0);
+                              <div className="space-y-2">
+                                <Label>Balance</Label>
+                                <div className="relative">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="0.00"
+                                    className="pl-7 placeholder:text-muted-foreground/50"
+                                    value={debt.balance || ''}
+                                    onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Min Payment</Label>
+                                <div className="relative">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="0.00"
+                                    className="pl-7 placeholder:text-muted-foreground/50"
+                                    value={debt.minPayment || ''}
+                                    onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <Label>APR (%)</Label>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  placeholder="18.99"
+                                  className="placeholder:text-muted-foreground/50"
+                                  value={debt.apr || ''}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                                      const numValue = value === '' ? 0 : parseFloat(value);
+                                      if (numValue <= 100) {
+                                        updateDebt(index, 'apr', numValue || 0);
+                                      }
                                     }
-                                  }
-                                }}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Due Date</Label>
-                              <Input
-                                type="text"
-                                placeholder="Due by 15"
-                                className="placeholder:text-muted-foreground/50"
-                                value={debt.dueDate || ''}
-                                onChange={(e) => {
-                                  const value = e.target.value.trim();
-                                  const dayMatch = value.match(/\d+/);
-                                  const day = dayMatch ? parseInt(dayMatch[0]) : '';
-                                  updateDebt(index, 'dueDate', day.toString());
-                                }}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Notes (Optional)</Label>
-                              <Input
-                                value={debt.notes || ''}
-                                onChange={(e) => updateDebt(index, 'notes', e.target.value)}
-                                placeholder="E.g., College tuition for Sarah"
-                                className="placeholder:text-muted-foreground/50"
-                              />
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={() => removeDebt(index)}
-                                variant="destructive"
-                                size="sm"
-                                disabled={debts.length === 1}
-                                className="w-full"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Remove
-                              </Button>
+                                  }}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Due Date</Label>
+                                <Input
+                                  type="text"
+                                  placeholder="Due by 15"
+                                  className="placeholder:text-muted-foreground/50"
+                                  value={debt.dueDate || ''}
+                                  onChange={(e) => {
+                                    const value = e.target.value.trim();
+                                    const dayMatch = value.match(/\d+/);
+                                    const day = dayMatch ? parseInt(dayMatch[0]) : '';
+                                    updateDebt(index, 'dueDate', day.toString());
+                                  }}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Notes (Optional)</Label>
+                                <Input
+                                  value={debt.notes || ''}
+                                  onChange={(e) => updateDebt(index, 'notes', e.target.value)}
+                                  placeholder="E.g., College tuition for Sarah"
+                                  className="placeholder:text-muted-foreground/50"
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={() => removeDebt(index)}
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={debts.length === 1}
+                                  className="w-full"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Remove
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+                    </CarouselItem>
                   ))}
-                </div>
-              
+                </CarouselContent>
               {debts.length > 1 && (
-                <div className="flex justify-center gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={scrollLeft}
-                    className="rounded-full"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={scrollRight}
-                    className="rounded-full"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                <>
+                  <CarouselPrevious className="left-0" />
+                  <CarouselNext className="right-0" />
+                </>
               )}
-            </div>
+            </Carousel>
           </div>
 
           <Button onClick={() => compute()} disabled={isLoading} className="w-full">

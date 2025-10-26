@@ -42,9 +42,41 @@ serve(async (req) => {
     }
 
     // Enhanced duplicate detection per Plaid best practices
-    // Check at account level (institution_id + name + mask) instead of just institution
+    // Check at account level (account_id match) for exact duplicates
+    if (metadata?.accounts && metadata.accounts.length > 0) {
+      const newAccountIds = metadata.accounts.map((acc: any) => acc.id);
+      
+      // Check if ANY of these account IDs already exist in our database
+      const { data: existingAccounts } = await supabaseClient
+        .from('plaid_accounts')
+        .select('account_id, name, mask')
+        .eq('user_id', user.id)
+        .in('account_id', newAccountIds);
+
+      if (existingAccounts && existingAccounts.length > 0) {
+        console.warn('Duplicate accounts detected by account_id:', {
+          user_id: user.id,
+          duplicate_account_ids: existingAccounts.map(a => a.account_id),
+          institution_name: metadata.institution?.name
+        });
+        
+        return new Response(
+          JSON.stringify({ 
+            error: `You've already connected these accounts from ${metadata.institution?.name || 'this institution'}. To refresh your connection, please use the "Reconnect" option instead of connecting again.`,
+            duplicate: true,
+            institution_name: metadata.institution?.name,
+            duplicate_accounts: existingAccounts
+          }),
+          {
+            status: 409,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+    }
+
+    // Also check by institution + account name/mask for edge cases
     if (metadata?.institution?.institution_id && metadata?.accounts) {
-      // Get user's existing accounts from this institution
       const { data: existingItems } = await supabaseClient
         .from('plaid_items')
         .select(`
@@ -61,7 +93,6 @@ serve(async (req) => {
         .eq('institution_id', metadata.institution.institution_id);
 
       if (existingItems && existingItems.length > 0) {
-        // Check for account-level duplicates (name + mask match)
         const newAccounts = metadata.accounts.map((acc: any) => ({
           name: acc.name,
           mask: acc.mask
@@ -74,24 +105,23 @@ serve(async (req) => {
           }))
         );
 
-        // Check if any new account matches existing ones
-        const hasDuplicate = newAccounts.some((newAcc: any) =>
+        // Check if any new account matches by name AND mask
+        const hasSimilarAccount = newAccounts.some((newAcc: any) =>
           existingAccounts.some((existingAcc: any) =>
             existingAcc.name === newAcc.name && existingAcc.mask === newAcc.mask
           )
         );
 
-        if (hasDuplicate) {
-          console.warn('Duplicate account detected:', {
+        if (hasSimilarAccount) {
+          console.warn('Similar accounts detected by name+mask:', {
             user_id: user.id,
             institution_id: metadata.institution.institution_id,
-            institution_name: metadata.institution.name,
-            duplicate_accounts: newAccounts
+            institution_name: metadata.institution.name
           });
           
           return new Response(
             JSON.stringify({ 
-              error: `You've already connected this account from ${metadata.institution.name}. To update your connection, use the "Reconnect" option instead.`,
+              error: `Accounts with the same name and last 4 digits from ${metadata.institution.name} are already connected. Please use "Reconnect" to update your existing connection.`,
               duplicate: true,
               institution_name: metadata.institution.name
             }),
@@ -102,7 +132,6 @@ serve(async (req) => {
           );
         }
 
-        // If accounts don't match, allow multiple items from same institution
         console.log('Multiple items from same institution allowed - different accounts:', {
           user_id: user.id,
           institution_id: metadata.institution.institution_id,
