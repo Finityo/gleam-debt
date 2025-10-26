@@ -9,10 +9,6 @@ import heroImage from "@/assets/hero-financial-freedom.jpg";
 import finityoLogo from "@/assets/finityo-logo.png";
 import heroPreview from "@/assets/hero-preview.png";
 import plaidBadge from "@/assets/plaid-badge.png";
-import heroScreenshot1 from "@/assets/hero-screenshot-1.png";
-import heroScreenshot2 from "@/assets/hero-screenshot-2.png";
-import heroScreenshot3 from "@/assets/hero-screenshot-3.png";
-import heroScreenshot4 from "@/assets/hero-screenshot-4.png";
 const Index = () => {
   const navigate = useNavigate();
   const {
@@ -152,57 +148,6 @@ const Index = () => {
               >
                 Create your free plan →
               </Button>
-            </div>
-
-            {/* App Screenshots */}
-            <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto px-4">
-              {/* Left screenshot - shifted down */}
-              <div className="flex items-end md:translate-y-12">
-                <div className="w-full max-w-[180px] mx-auto bg-gradient-hero/50 rounded-2xl p-2">
-                  <img 
-                    src={heroScreenshot1} 
-                    alt="Finityo app home screen" 
-                    className="w-full h-auto rounded-xl shadow-2xl"
-                    loading="eager"
-                  />
-                </div>
-              </div>
-              
-              {/* Center left screenshot - centered */}
-              <div className="flex items-center">
-                <div className="w-full max-w-[180px] mx-auto bg-gradient-hero/50 rounded-2xl p-2">
-                  <img 
-                    src={heroScreenshot2} 
-                    alt="Debt visualization dashboard" 
-                    className="w-full h-auto rounded-xl shadow-2xl"
-                    loading="eager"
-                  />
-                </div>
-              </div>
-              
-              {/* Center right screenshot - centered */}
-              <div className="flex items-center">
-                <div className="w-full max-w-[180px] mx-auto bg-gradient-hero/50 rounded-2xl p-2">
-                  <img 
-                    src={heroScreenshot3} 
-                    alt="Debt distribution chart" 
-                    className="w-full h-auto rounded-xl shadow-2xl"
-                    loading="eager"
-                  />
-                </div>
-              </div>
-              
-              {/* Right screenshot - same height as left (shifted down) */}
-              <div className="flex items-end md:translate-y-12">
-                <div className="w-full max-w-[180px] mx-auto bg-gradient-hero/50 rounded-2xl p-2">
-                  <img 
-                    src={heroScreenshot4} 
-                    alt="Credit utilization tracker" 
-                    className="w-full h-auto rounded-xl shadow-2xl"
-                    loading="eager"
-                  />
-                </div>
-              </div>
             </div>
           </div>
         </div>
