@@ -148,6 +148,16 @@ const Index = () => {
               >
                 Create your free plan →
               </Button>
+
+              {/* Pricing Link */}
+              <Button
+                variant="ghost"
+                size="lg"
+                className="text-white/90 hover:text-white hover:bg-white/10 mt-4"
+                onClick={() => navigate('/pricing')}
+              >
+                View Pricing
+              </Button>
             </div>
           </div>
         </div>
