@@ -155,47 +155,50 @@ const Index = () => {
             </div>
 
             {/* App Screenshots */}
-            <div className="mt-16 relative">
-              {/* Gradient background that flows with hero */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent -mx-4 rounded-3xl" />
-              
-              <div className="relative grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-                {/* Left screenshot - shifted down */}
-                <div className="flex items-end md:translate-y-8">
+            <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto px-4">
+              {/* Left screenshot - shifted down */}
+              <div className="flex items-end md:translate-y-12">
+                <div className="w-full max-w-[180px] mx-auto bg-gradient-hero/50 rounded-2xl p-2">
                   <img 
                     src={heroScreenshot1} 
                     alt="Finityo app home screen" 
-                    className="w-full h-auto rounded-2xl shadow-2xl ring-1 ring-white/20"
+                    className="w-full h-auto rounded-xl shadow-2xl"
                     loading="eager"
                   />
                 </div>
-                
-                {/* Center left screenshot - centered */}
-                <div className="flex items-center">
+              </div>
+              
+              {/* Center left screenshot - centered */}
+              <div className="flex items-center">
+                <div className="w-full max-w-[180px] mx-auto bg-gradient-hero/50 rounded-2xl p-2">
                   <img 
                     src={heroScreenshot2} 
                     alt="Debt visualization dashboard" 
-                    className="w-full h-auto rounded-2xl shadow-2xl ring-1 ring-white/20"
+                    className="w-full h-auto rounded-xl shadow-2xl"
                     loading="eager"
                   />
                 </div>
-                
-                {/* Center right screenshot - centered */}
-                <div className="flex items-center">
+              </div>
+              
+              {/* Center right screenshot - centered */}
+              <div className="flex items-center">
+                <div className="w-full max-w-[180px] mx-auto bg-gradient-hero/50 rounded-2xl p-2">
                   <img 
                     src={heroScreenshot3} 
                     alt="Debt distribution chart" 
-                    className="w-full h-auto rounded-2xl shadow-2xl ring-1 ring-white/20"
+                    className="w-full h-auto rounded-xl shadow-2xl"
                     loading="eager"
                   />
                 </div>
-                
-                {/* Right screenshot - same height as left (shifted down) */}
-                <div className="flex items-end md:translate-y-8">
+              </div>
+              
+              {/* Right screenshot - same height as left (shifted down) */}
+              <div className="flex items-end md:translate-y-12">
+                <div className="w-full max-w-[180px] mx-auto bg-gradient-hero/50 rounded-2xl p-2">
                   <img 
                     src={heroScreenshot4} 
                     alt="Credit utilization tracker" 
-                    className="w-full h-auto rounded-2xl shadow-2xl ring-1 ring-white/20"
+                    className="w-full h-auto rounded-xl shadow-2xl"
                     loading="eager"
                   />
                 </div>
