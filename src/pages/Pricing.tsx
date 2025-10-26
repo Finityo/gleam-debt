@@ -176,33 +176,6 @@ const Pricing = () => {
             </p>
           </div>
 
-          {/* Discount Code Section */}
-          <div className="max-w-md mx-auto mb-12">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Have a Discount Code?</CardTitle>
-                <CardDescription>
-                  Enter your beta tester or special discount code
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Enter discount code"
-                    value={discountCode}
-                    onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                    disabled={applyingDiscount}
-                  />
-                </div>
-                {discountCode && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Code will be validated when you proceed to checkout
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {Object.entries(PRICING_TIERS).map(([key, tier]) => (
               <Card 
