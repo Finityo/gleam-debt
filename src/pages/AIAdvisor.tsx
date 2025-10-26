@@ -160,8 +160,8 @@ const AIAdvisor = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
-          <Card className="h-[calc(100vh-6rem)] flex flex-col">
-            <div className="p-6 border-b space-y-4">
+          <Card className="flex flex-col" style={{ height: 'calc(100vh - 6rem)' }}>
+            <div className="p-6 border-b space-y-4 flex-shrink-0">
               <div>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
                   <Bot className="h-8 w-8 text-primary" />
