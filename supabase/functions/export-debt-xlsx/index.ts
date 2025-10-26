@@ -247,119 +247,84 @@ async function exportXLSX(result: { rows: DebtPlanRow[], totals: any }): Promise
     day: 'numeric' 
   });
   
-  // Determine plan title based on strategy
-  const planTitle = result.totals.strategy === 'snowball' ? 'SNOWBALL PLAN' : 'AVALANCHE PLAN';
-
-  // Add title row
-  ws.mergeCells('A1:L1');
-  const titleCell = ws.getCell('A1');
-  titleCell.value = planTitle;
-  titleCell.font = { size: 18, bold: true };
-  titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-  titleCell.fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FFFFFFFF' }
-  };
-  
-  // Add date row
-  ws.mergeCells('A2:L2');
-  const dateCell = ws.getCell('A2');
+  // Add date row (row 1)
+  ws.mergeCells('A1:J1');
+  const dateCell = ws.getCell('A1');
   dateCell.value = `Exported: ${exportDate}`;
-  dateCell.font = { size: 11, italic: true };
-  dateCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  dateCell.alignment = { horizontal: 'left', vertical: 'middle' };
   
-  // Add empty row for spacing
+  // Add empty row for spacing (row 2)
+  ws.addRow([]);
+  
+  // Add empty row for spacing (row 3)
   ws.addRow([]);
 
-  // Define columns (starting from row 4)
+  // Define column headers (row 4) to match uploaded format exactly
+  const headerRow = ws.addRow([
+    'No.',
+    'Creditor',
+    'Last 4',
+    'Balance',
+    'min payment',
+    'APR',
+    '', // Monthly rate column (unlabeled)
+    '', // Total payment column (unlabeled)
+    '', // Empty column
+    'Due Date',
+    'Est. Months'
+  ]);
+  
+  // Set column widths
   ws.columns = [
-    { header: "Index", key: "index", width: 6 },
-    { header: "Debt", key: "label", width: 30 },
-    { header: "Name", key: "name", width: 24 },
-    { header: "Last4", key: "last4", width: 8 },
-    { header: "Balance", key: "balance", width: 14 },
-    { header: "MinPayment", key: "minPayment", width: 14 },
-    { header: "APR", key: "apr", width: 10 },
-    { header: "MonthlyRate", key: "monthlyRate", width: 12 },
-    { header: "TotalPayment", key: "totalPayment", width: 14 },
-    { header: "MonthsToPayoff", key: "monthsToPayoff", width: 16 },
-    { header: "CumulativeMonths", key: "cumulativeMonths", width: 18 },
-    { header: "DueDate", key: "dueDate", width: 14 }
+    { width: 6 },   // No.
+    { width: 30 },  // Creditor
+    { width: 8 },   // Last 4
+    { width: 12 },  // Balance
+    { width: 12 },  // min payment
+    { width: 10 },  // APR
+    { width: 14 },  // Monthly rate (unlabeled)
+    { width: 14 },  // Total payment (unlabeled)
+    { width: 8 },   // Empty
+    { width: 10 },  // Due Date
+    { width: 12 }   // Est. Months
   ];
 
-  // Style header row (row 4)
-  const headerRow = ws.getRow(4);
-  headerRow.font = { bold: true, color: { argb: 'FF000000' } };
-  headerRow.fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FFADD8E6' } // Baby blue
-  };
-  headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
-  
-  // Add borders to header row
-  headerRow.eachCell((cell) => {
-    cell.border = {
-      top: { style: 'thin' },
-      left: { style: 'thin' },
-      bottom: { style: 'thin' },
-      right: { style: 'thin' }
-    };
-  });
+  // Style header row
+  headerRow.font = { bold: false };
+  headerRow.alignment = { horizontal: 'left', vertical: 'middle' };
 
-  // Add data rows with borders
+  // Add data rows
   result.rows.forEach(r => {
-    const row = ws.addRow({
-      index: r.index,
-      label: r.label,
-      name: r.name,
-      last4: r.last4 ?? "",
-      balance: r.balance,
-      minPayment: r.minPayment,
-      apr: r.apr,
-      monthlyRate: r.monthlyRate,
-      totalPayment: r.totalPayment,
-      monthsToPayoff: r.monthsToPayoff,
-      cumulativeMonths: r.cumulativeMonths,
-      dueDate: r.dueDate ?? ""
-    });
-    
-    // Add borders to all cells in this row
-    row.eachCell((cell) => {
-      cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' }
-      };
-    });
+    ws.addRow([
+      r.index,
+      r.name,
+      r.last4 ?? "",
+      r.balance,
+      r.minPayment,
+      r.apr,
+      r.monthlyRate,
+      r.totalPayment,
+      "", // Empty column
+      r.dueDate ?? "",
+      r.monthsToPayoff
+    ]);
   });
 
-  // Add totals row with styling and borders
-  const totalsRow = ws.addRow({
-    index: "",
-    label: "TOTALS",
-    name: "",
-    last4: "",
-    balance: result.totals.sumBalance,
-    minPayment: result.totals.sumMinPayment,
-    apr: "",
-    monthlyRate: "",
-    totalPayment: "",
-    monthsToPayoff: result.totals.totalMonths,
-    cumulativeMonths: result.totals.totalMonths,
-    dueDate: ""
-  });
-  totalsRow.font = { bold: true };
-  totalsRow.eachCell((cell) => {
-    cell.border = {
-      top: { style: 'thin' },
-      left: { style: 'thin' },
-      bottom: { style: 'thin' },
-      right: { style: 'thin' }
-    };
-  });
+  // Add totals row
+  const totalsRow = ws.addRow([
+    "",
+    "",
+    "",
+    result.totals.sumBalance,
+    result.totals.sumMinPayment,
+    "",
+    "",
+    "",
+    "",
+    result.totals.totalMonths,
+    ""
+  ]);
+  totalsRow.font = { bold: false };
 
   const buf = await wb.xlsx.writeBuffer();
   return buf;
