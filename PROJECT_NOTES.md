@@ -41,3 +41,39 @@
 ---
 
 **Note:** SMS authentication gives users flexibility - they can choose email OR phone based on their preference, which is especially useful for a financial app where quick, secure access matters.
+
+---
+
+## TODO: Production Build for App Store Submission
+
+### Task: Generate Production Build for Capacitor/Xcode
+**Date Added:** October 26, 2025  
+**Priority:** High  
+**Status:** Pending
+
+#### Steps Required:
+1. **Clone repository from GitHub**
+   - Get repository URL from GitHub (green "Code" button)
+   - In Terminal: `cd ~`
+   - Clone: `git clone [ACTUAL_GITHUB_URL]`
+   
+2. **Install dependencies**
+   - Navigate to project: `cd [repo-name]`
+   - Install: `npm install`
+
+3. **Build production version**
+   - Run: `npm run build`
+   - Output will be in `dist/` folder
+
+4. **Sync with Capacitor for iOS**
+   - Run: `npx cap sync ios`
+   - Open in Xcode: `npx cap open ios`
+
+5. **Submit to App Store**
+   - Use production build from `dist/` folder
+   - Configure in Xcode for submission
+
+#### Notes:
+- Project already configured for Capacitor (see capacitor.config.ts)
+- Terminal error was due to using placeholder text instead of actual GitHub URL
+- Make sure to use the REAL repository URL without `<>` brackets
