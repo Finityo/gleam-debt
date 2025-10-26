@@ -11,6 +11,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { useAutoLogout } from "@/hooks/useAutoLogout";
 
 // ✅ Lazy-load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -69,18 +70,12 @@ const Loader = () => (
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <TooltipProvider>
-        {/* ✅ Toast Systems */}
-        <Toaster />
-        <Sonner />
-
-        <BrowserRouter>
-          {/* ✅ Suspense handles lazy page loading */}
-          <Suspense fallback={<Loader />}>
-            <Routes>
+const AppRoutes = () => {
+  useAutoLogout();
+  
+  return (
+    <Suspense fallback={<Loader />}>
+      <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/team-access" element={<TeamAccess />} />
@@ -109,6 +104,19 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <TooltipProvider>
+        {/* ✅ Toast Systems */}
+        <Toaster />
+        <Sonner />
+
+        <BrowserRouter>
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
