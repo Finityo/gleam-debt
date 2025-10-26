@@ -9,6 +9,7 @@ import { PlaidTokenMigration } from '@/components/PlaidTokenMigration';
 import { AccountsList } from '@/components/AccountsList';
 import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
 import { PlaidAnalytics } from '@/components/PlaidAnalytics';
+import { TrialSubscriptionDialog } from '@/components/TrialSubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
@@ -139,6 +140,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <TrialSubscriptionDialog />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
