@@ -1,12 +1,17 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.07b525ca75114d45b98857cd0fddb895',
-  appName: 'gleam-debt',
-  webDir: 'dist',
+  appId: 'com.finityo.debt',
+  appName: 'Finityo',
+  webDir: 'dist', // Vite builds to 'dist' folder
   server: {
-    url: 'https://finityo-debt.com',
-    cleartext: true
+    // For live reload during development:
+    // url: 'http://localhost:5173',
+    // cleartext: true
+  },
+  ios: {
+    contentInset: 'always',
+    backgroundColor: '#000000'
   }
 };
 
