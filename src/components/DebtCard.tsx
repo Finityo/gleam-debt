@@ -29,7 +29,7 @@ export function DebtCard({
   
   return (
     <Card className={cn(
-      "p-6 bg-gradient-card border-border/50 hover:shadow-accent transition-all duration-300",
+      "p-6 bg-gradient-card border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300",
       className
     )}>
       <div className="flex items-start justify-between mb-4">

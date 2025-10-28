@@ -227,7 +227,7 @@ const Index = () => {
 
           {/* 5-Item Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant transition-all duration-300">
+            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300">
               <div className="inline-flex p-4 rounded-xl bg-primary/10 mb-4">
                 <TrendingDown className="w-8 h-8 text-primary" />
               </div>
@@ -237,7 +237,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant transition-all duration-300">
+            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300">
               <div className="inline-flex p-4 rounded-xl bg-accent/10 mb-4">
                 <CheckCircle2 className="w-8 h-8 text-accent" />
               </div>
@@ -247,7 +247,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant transition-all duration-300">
+            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300">
               <div className="inline-flex p-4 rounded-xl bg-success/10 mb-4">
                 <Wallet className="w-8 h-8 text-success" />
               </div>
@@ -257,7 +257,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant transition-all duration-300">
+            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300">
               <div className="inline-flex p-4 rounded-xl bg-primary/10 mb-4">
                 <Download className="w-8 h-8 text-primary" />
               </div>
@@ -267,7 +267,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant transition-all duration-300 lg:col-span-1 md:col-span-2">
+            <div className="text-center p-8 rounded-2xl bg-gradient-card border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300 lg:col-span-1 md:col-span-2">
               <div className="inline-flex p-4 rounded-xl bg-accent/10 mb-4">
                 <Lock className="w-8 h-8 text-accent" />
               </div>
@@ -357,7 +357,7 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-gradient-card rounded-2xl p-8 border border-border/50">
+            <div className="bg-gradient-card rounded-2xl p-8 border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-warning text-warning" />)}
               </div>
@@ -375,7 +375,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-card rounded-2xl p-8 border border-border/50">
+            <div className="bg-gradient-card rounded-2xl p-8 border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-warning text-warning" />)}
               </div>
@@ -393,7 +393,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-card rounded-2xl p-8 border border-border/50">
+            <div className="bg-gradient-card rounded-2xl p-8 border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-warning text-warning" />)}
               </div>
@@ -427,7 +427,7 @@ const Index = () => {
             return (
               <div 
                 onClick={() => navigate(`/blog/${blogPosts[0].slug}`)}
-                className="cursor-pointer bg-gradient-card rounded-2xl p-8 border border-border/50 hover:shadow-vibrant transition-all duration-300"
+                className="cursor-pointer bg-gradient-card rounded-2xl p-8 border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="flex items-start gap-6">
                   <div className="flex-shrink-0">

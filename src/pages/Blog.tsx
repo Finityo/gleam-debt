@@ -47,7 +47,7 @@ const Blog = () => {
           {blogPosts.map((post) => (
             <article
               key={post.slug}
-              className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
+              className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
               onClick={() => navigate(`/blog/${post.slug}`)}
             >
               <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
