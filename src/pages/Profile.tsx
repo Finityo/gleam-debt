@@ -194,8 +194,8 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead 
-        title="My Profile | Finityo"
-        description="Manage your profile and subscription"
+        title="Profile & Data | Finityo Debt Payoff"
+        description="Manage your profile settings, connected data, and account information"
       />
       
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -208,7 +208,10 @@ const Profile = () => {
           Back to Dashboard
         </Button>
 
-        <h1 className="text-4xl font-bold text-foreground mb-8">My Profile</h1>
+        <h1 className="text-4xl font-bold text-foreground mb-2">Profile & Data</h1>
+        <p className="text-muted-foreground mb-8">
+          Manage your account information, connected accounts, and data access
+        </p>
 
         <div className="space-y-6">
           {/* Account Information */}
@@ -358,15 +361,8 @@ const Profile = () => {
                     immediately revoked from our secure vault.
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Before deleting, consider exporting your data from the{' '}
-                    <Button
-                      variant="link"
-                      className="h-auto p-0 text-primary"
-                      onClick={() => navigate('/my-data')}
-                    >
-                      My Data
-                    </Button>{' '}
-                    page.
+                    Before deleting, we recommend exporting your financial data and documents 
+                    for your records.
                   </p>
                 </div>
 

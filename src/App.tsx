@@ -36,7 +36,6 @@ const SecurityAudit = lazy(() => import("./pages/SecurityAudit"));
 const UserRoleManagement = lazy(() => import("./pages/UserRoleManagement"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
-const MyData = lazy(() => import("./pages/MyData"));
 const DocumentExport = lazy(() => import("./pages/DocumentExport"));
 const OAuthRedirect = lazy(() => import("./pages/OAuthRedirect"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -99,7 +98,6 @@ const AppRoutes = () => {
               <Route path="/admin/documents" element={<DocumentExport />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/my-data" element={<MyData />} />
               <Route path="/oauth-redirect" element={<OAuthRedirect />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

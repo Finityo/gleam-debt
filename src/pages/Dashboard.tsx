@@ -11,7 +11,7 @@ import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
 import { PlaidAnalytics } from '@/components/PlaidAnalytics';
 import { TrialSubscriptionDialog } from '@/components/TrialSubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
 
@@ -209,36 +209,93 @@ const Dashboard = () => {
             </Button>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button
-              onClick={() => navigate('/debts')}
-              size="lg"
-              variant="outline"
-              className="w-full"
-            >
-              <Calculator className="w-4 h-4 mr-2" />
-              Manage Debts & Payoff Strategy
-            </Button>
-            
-            <Button
-              onClick={() => navigate('/debt-chart')}
-              size="lg"
-              variant="outline"
-              className="w-full"
-            >
-              <PieChart className="w-4 h-4 mr-2" />
-              View Debt Visualization
-            </Button>
+          <div className="space-y-8">
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-6">
+              <h2 className="text-2xl font-bold mb-4">Guided Debt Freedom Flow</h2>
+              <p className="text-muted-foreground mb-6">
+                Follow this step-by-step process to take control of your finances
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Button
+                  onClick={() => navigate('/debts')}
+                  size="lg"
+                  variant="outline"
+                  className="w-full h-24 flex-col gap-2"
+                >
+                  <Calculator className="w-6 h-6" />
+                  <div className="text-center">
+                    <div className="font-bold">My Debts</div>
+                    <div className="text-xs text-muted-foreground">Step 1: Track & manage</div>
+                  </div>
+                </Button>
+                
+                <Button
+                  onClick={() => navigate('/debt-chart')}
+                  size="lg"
+                  variant="outline"
+                  className="w-full h-24 flex-col gap-2"
+                >
+                  <PieChart className="w-6 h-6" />
+                  <div className="text-center">
+                    <div className="font-bold">Debt Chart</div>
+                    <div className="text-xs text-muted-foreground">Step 2: Visualize data</div>
+                  </div>
+                </Button>
 
-            <Button
-              onClick={() => navigate('/ai-advisor')}
-              size="lg"
-              variant="outline"
-              className="w-full"
-            >
-              <Bot className="w-4 h-4 mr-2" />
-              AI Financial Advisor
-            </Button>
+                <Button
+                  onClick={() => navigate('/debt-plan')}
+                  size="lg"
+                  variant="outline"
+                  className="w-full h-24 flex-col gap-2"
+                >
+                  <Calendar className="w-6 h-6" />
+                  <div className="text-center">
+                    <div className="font-bold">Debt Plan</div>
+                    <div className="text-xs text-muted-foreground">Step 3: Create strategy</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => navigate('/ai-advisor')}
+                  size="lg"
+                  variant="outline"
+                  className="w-full h-24 flex-col gap-2"
+                >
+                  <Bot className="w-6 h-6" />
+                  <div className="text-center">
+                    <div className="font-bold">AI Advisor</div>
+                    <div className="text-xs text-muted-foreground">Step 4: Get guidance</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => navigate('/admin/documents')}
+                  size="lg"
+                  variant="outline"
+                  className="w-full h-24 flex-col gap-2"
+                >
+                  <FileText className="w-6 h-6" />
+                  <div className="text-center">
+                    <div className="font-bold">Reports</div>
+                    <div className="text-xs text-muted-foreground">Step 5: Export docs</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => navigate('/profile')}
+                  size="lg"
+                  variant="outline"
+                  className="w-full h-24 flex-col gap-2"
+                >
+                  <UserCircle className="w-6 h-6" />
+                  <div className="text-center">
+                    <div className="font-bold">Profile & Data</div>
+                    <div className="text-xs text-muted-foreground">Manage account</div>
+                  </div>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 

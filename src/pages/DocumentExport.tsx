@@ -152,8 +152,8 @@ export default function DocumentExport() {
   return (
     <>
       <SEOHead 
-        title="Document Export - Compliance & Legal Documents"
-        description="Export compliance reports, security checklists, and legal documents as PDFs"
+        title="Reports | Finityo Debt Payoff"
+        description="Export compliance reports, financial documents, and legal records"
       />
       
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -168,9 +168,9 @@ export default function DocumentExport() {
           </Button>
 
           <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Document Export Center</h1>
+            <h1 className="text-4xl font-bold mb-2">Reports</h1>
             <p className="text-muted-foreground">
-              Export compliance reports, security documentation, and legal documents as PDFs
+              Export compliance reports, financial documents, and legal records
             </p>
           </div>
 
