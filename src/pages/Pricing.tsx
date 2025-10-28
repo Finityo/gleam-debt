@@ -184,6 +184,32 @@ const Pricing = () => {
             </p>
           </div>
 
+          <div className="max-w-md mx-auto mb-8">
+            <Card className="glass">
+              <CardHeader>
+                <CardTitle className="text-center">Have a discount code?</CardTitle>
+                <CardDescription className="text-center">
+                  Enter it here to apply at checkout
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter code (e.g., FIRST5)"
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+                {discountCode && (
+                  <p className="text-sm text-muted-foreground mt-2 text-center">
+                    Valid codes: FIRST5, MILITARY, FIRSTRESPONDER, DEBTFREE
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {Object.entries(PRICING_TIERS).map(([key, tier]) => (
               <Card 
