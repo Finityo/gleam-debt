@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finityo Site Map Flowchart</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: white;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #1a1a1a;
+    }
+    
+    .flowchart {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    
+    .level {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .box {
+      background: #f0f9ff;
+      border: 2px solid #0ea5e9;
+      border-radius: 8px;
+      padding: 15px 25px;
+      min-width: 150px;
+      text-align: center;
+      font-weight: 600;
+      position: relative;
+    }
+    
+    .box.home {
+      background: #0ea5e9;
+      color: white;
+      font-size: 18px;
+    }
+    
+    .box.section {
+      background: #e0f2fe;
+      border-color: #0284c7;
+    }
+    
+    .box.page {
+      background: #f0f9ff;
+      border-color: #0ea5e9;
+      font-size: 14px;
+    }
+    
+    .connector {
+      text-align: center;
+      color: #64748b;
+      font-size: 24px;
+    }
+    
+    .group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .sub-level {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    @media print {
+      body {
+        padding: 20px;
+      }
+      .box {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Finityo Debt Management - Site Map</h1>
+    
+    <div class="flowchart">
+      <!-- Level 1: Home -->
+      <div class="level">
+        <div class="box home">Home Page<br/>(finityo-debt.com)</div>
+      </div>
+      
+      <div class="connector">↓</div>
+      
+      <!-- Level 2: Main Sections -->
+      <div class="level">
+        <div class="group">
+          <div class="box section">Public Pages</div>
+          <div class="connector">↓</div>
+          <div class="sub-level">
+            <div class="box page">About</div>
+            <div class="box page">Pricing</div>
+            <div class="box page">Blog</div>
+            <div class="box page">Privacy</div>
+            <div class="box page">Terms</div>
+            <div class="box page">Disclosures</div>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="box section">Authenticated Pages</div>
+          <div class="connector">↓</div>
+          <div class="box section">Dashboard</div>
+          <div class="connector">↓</div>
+          <div class="sub-level">
+            <div class="box page">Debts Manager</div>
+            <div class="box page">Debt Chart</div>
+            <div class="box page">Debt Plan</div>
+            <div class="box page">AI Advisor</div>
+            <div class="box page">Profile</div>
+            <div class="box page">Document Export</div>
+            <div class="box page">My Data</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Level 3: Blog Pages -->
+      <div class="level" style="margin-top: 30px;">
+        <div class="group">
+          <div class="box section">Blog Posts</div>
+          <div class="connector">↓</div>
+          <div class="sub-level">
+            <div class="box page">Snowball vs Avalanche</div>
+            <div class="box page">5-Step Payoff Plan</div>
+            <div class="box page">Understanding APR</div>
+            <div class="box page">Psychology of Debt</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Level 4: Special Pages -->
+      <div class="level" style="margin-top: 30px;">
+        <div class="box page">Admin Dashboard</div>
+        <div class="box page">Support Dashboard</div>
+        <div class="box page">Security Audit</div>
+        <div class="box page">Team Access</div>
+      </div>
+    </div>
+    
+    <div style="margin-top: 40px; padding: 20px; background: #f8fafc; border-radius: 8px;">
+      <h3 style="margin-bottom: 10px;">Instructions:</h3>
+      <p>To save as PDF: Press Ctrl+P (Windows) or Cmd+P (Mac), then select "Save as PDF" as the destination.</p>
+    </div>
+  </div>
+</body>
+</html>
