@@ -50,21 +50,25 @@ export const DebtCleanup = () => {
 
       if (error) throw error;
 
-      // Group debts by normalized name
+      // Group debts by normalized name AND last4 digits
       const groups = new Map<string, Debt[]>();
       
       debts?.forEach((debt) => {
         const normalized = normalizeName(debt.name);
-        if (!groups.has(normalized)) {
-          groups.set(normalized, []);
+        // Create a unique key combining normalized name and last4
+        // This ensures different accounts from the same institution aren't grouped
+        const groupKey = `${normalized}::${debt.last4 || 'no-last4'}`;
+        if (!groups.has(groupKey)) {
+          groups.set(groupKey, []);
         }
-        groups.get(normalized)!.push(debt);
+        groups.get(groupKey)!.push(debt);
       });
 
       // Filter to only groups with duplicates
       const duplicateGroups: DuplicateGroup[] = [];
-      groups.forEach((debts, baseName) => {
+      groups.forEach((debts, groupKey) => {
         if (debts.length > 1) {
+          const baseName = groupKey.split('::')[0];
           duplicateGroups.push({ baseName, debts });
         }
       });
