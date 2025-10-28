@@ -216,26 +216,28 @@ const AdminDashboard = () => {
       />
       <div className="min-h-screen bg-gradient-subtle">
         <header className="border-b bg-background/95 backdrop-blur">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Business Dashboard</h1>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => navigate('/admin/roles')}>
-                <Users className="mr-2 h-4 w-4" />
-                User Roles
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/security-audit')}>
-                <Activity className="mr-2 h-4 w-4" />
-                Security
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/support-dashboard')}>
-                <Headphones className="mr-2 h-4 w-4" />
-                Support
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/admin/documents')}>
-                <Activity className="mr-2 h-4 w-4" />
-                Documents
-              </Button>
-              <Button variant="outline" onClick={handleSignOut}>
+          <div className="container mx-auto px-4 py-4">
+            <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => navigate('/admin/roles')}>
+                  <Users className="mr-2 h-4 w-4" />
+                  User Roles
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/security-audit')}>
+                  <Activity className="mr-2 h-4 w-4" />
+                  Security
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/support-dashboard')}>
+                  <Headphones className="mr-2 h-4 w-4" />
+                  Support
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/admin/documents')}>
+                  <Activity className="mr-2 h-4 w-4" />
+                  Documents
+                </Button>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
               </Button>
