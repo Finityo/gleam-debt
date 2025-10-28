@@ -92,6 +92,7 @@ export type Database = {
           min_payment: number
           name: string
           notes: string | null
+          search_vector: unknown
           updated_at: string
           user_id: string
         }
@@ -106,6 +107,7 @@ export type Database = {
           min_payment: number
           name: string
           notes?: string | null
+          search_vector?: unknown
           updated_at?: string
           user_id: string
         }
@@ -120,6 +122,7 @@ export type Database = {
           min_payment?: number
           name?: string
           notes?: string | null
+          search_vector?: unknown
           updated_at?: string
           user_id?: string
         }
@@ -197,6 +200,7 @@ export type Database = {
           name: string
           official_name: string | null
           plaid_item_id: string
+          search_vector: unknown
           subtype: string | null
           type: string
           updated_at: string
@@ -213,6 +217,7 @@ export type Database = {
           name: string
           official_name?: string | null
           plaid_item_id: string
+          search_vector?: unknown
           subtype?: string | null
           type: string
           updated_at?: string
@@ -229,6 +234,7 @@ export type Database = {
           name?: string
           official_name?: string | null
           plaid_item_id?: string
+          search_vector?: unknown
           subtype?: string | null
           type?: string
           updated_at?: string
@@ -394,6 +400,7 @@ export type Database = {
           institution_name: string | null
           item_id: string
           link_session_id: string | null
+          search_vector: unknown
           token_created_at: string | null
           token_last_rotated_at: string | null
           token_rotation_reason: string | null
@@ -410,6 +417,7 @@ export type Database = {
           institution_name?: string | null
           item_id: string
           link_session_id?: string | null
+          search_vector?: unknown
           token_created_at?: string | null
           token_last_rotated_at?: string | null
           token_rotation_reason?: string | null
@@ -426,6 +434,7 @@ export type Database = {
           institution_name?: string | null
           item_id?: string
           link_session_id?: string | null
+          search_vector?: unknown
           token_created_at?: string | null
           token_last_rotated_at?: string | null
           token_rotation_reason?: string | null
@@ -808,6 +817,10 @@ export type Database = {
         Returns: string
       }
       migrate_single_plaid_token: { Args: { p_item_id: string }; Returns: Json }
+      search_all_tables: {
+        Args: { search_query: string; search_type?: string }
+        Returns: Json
+      }
       store_plaid_token_in_vault: {
         Args: { p_description?: string; p_secret_name: string; p_token: string }
         Returns: string
