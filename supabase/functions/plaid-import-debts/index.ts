@@ -1,10 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// SECURITY: Validation schemas for Plaid financial data
+const debtDataSchema = z.object({
+  balance: z.number().min(0).max(1_000_000_000).finite(),
+  apr: z.number().min(0).max(1).finite(), // Already normalized to decimal
+  min_payment: z.number().min(0).max(10_000_000).finite(),
+  due_date: z.union([z.string().regex(/^\d{1,2}$/).nullable(), z.null()]).optional()
+});
+
+const accountSchema = z.object({
+  account_id: z.string().regex(/^[a-zA-Z0-9_-]+$/),
+  name: z.string().min(1).max(200),
+  mask: z.string().max(4).nullable().optional(),
+  balances: z.object({
+    current: z.number().finite().nullable().optional()
+  }).optional()
+});
 
 const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
 const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
@@ -144,12 +162,15 @@ serve(async (req) => {
             .eq('last4', last4)
             .maybeSingle();
           
-          const debtData = {
+          const rawDebtData = {
             balance: matchingAccount?.balances?.current || 0,
             apr: (creditAccount.aprs?.[0]?.apr_percentage || 0) / 100,
             min_payment: creditAccount.minimum_payment_amount || creditAccount.last_payment_amount || matchingAccount?.balances?.current * 0.02,
             due_date: creditAccount.next_payment_due_date ? new Date(creditAccount.next_payment_due_date).getDate().toString() : null,
           };
+          
+          // SECURITY: Validate debt data before inserting
+          const debtData = debtDataSchema.parse(rawDebtData);
 
           if (existingDebt) {
             // Update existing debt
@@ -204,12 +225,15 @@ serve(async (req) => {
             .eq('last4', last4)
             .maybeSingle();
           
-          const debtData = {
+          const rawDebtData = {
             balance: studentLoan.balances?.current || 0,
             apr: (studentLoan.interest_rate_percentage || 0) / 100,
             min_payment: studentLoan.minimum_payment_amount || studentLoan.balances?.current * 0.01,
             due_date: studentLoan.next_payment_due_date ? new Date(studentLoan.next_payment_due_date).getDate().toString() : null,
           };
+          
+          // SECURITY: Validate debt data before inserting
+          const debtData = debtDataSchema.parse(rawDebtData);
 
           if (existingDebt) {
             const { data: debt, error: updateError } = await supabaseClient
@@ -260,12 +284,15 @@ serve(async (req) => {
             .eq('last4', last4)
             .maybeSingle();
           
-          const debtData = {
+          const rawDebtData = {
             balance: mortgage.balances?.current || 0,
             apr: (mortgage.interest_rate?.percentage || 0) / 100,
             min_payment: mortgage.last_payment_amount || mortgage.balances?.current * 0.005,
             due_date: mortgage.next_payment_due_date ? new Date(mortgage.next_payment_due_date).getDate().toString() : null,
           };
+          
+          // SECURITY: Validate debt data before inserting
+          const debtData = debtDataSchema.parse(rawDebtData);
 
           if (existingDebt) {
             const { data: debt, error: updateError } = await supabaseClient

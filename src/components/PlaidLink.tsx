@@ -271,16 +271,13 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleConnectClick = () => {
-    // Temporarily disabled consent dialog - open directly if ready
-    if (ready && open) {
+    // SECURITY: Always show consent dialog before connecting to financial institutions
+    // Required for GDPR, CCPA, and financial data sharing regulations
+    if (!consentGiven) {
+      setShowConsentDialog(true);
+    } else {
       open();
     }
-    // Show consent dialog first if not already given
-    // if (!consentGiven) {
-    //   setShowConsentDialog(true);
-    // } else {
-    //   open();
-    // }
   };
 
   const handleConsent = () => {
