@@ -77,15 +77,27 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      
+      // Safely handle subscription end date
+      if (subscription.current_period_end) {
+        try {
+          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        } catch (err) {
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          logStep("Error parsing subscription end date", { error: errorMsg, current_period_end: subscription.current_period_end });
+          subscriptionEnd = null;
+        }
+      }
+      
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      
       productId = subscription.items.data[0].price.product as string;
       priceId = subscription.items.data[0].price.id;
       const tier = PRODUCT_TIERS[productId] || 'unknown';
       logStep("Determined subscription tier", { productId, priceId, tier });
       
       // Update user profile with subscription info
-      await supabaseClient
+      const { error: updateError } = await supabaseClient
         .from('profiles')
         .update({
           subscription_tier: tier,
@@ -96,12 +108,16 @@ serve(async (req) => {
         })
         .eq('user_id', user.id);
       
-      logStep("Profile updated with subscription info");
+      if (updateError) {
+        logStep("Error updating profile", { error: updateError.message });
+      } else {
+        logStep("Profile updated with subscription info");
+      }
     } else {
       logStep("No active subscription found");
       
       // Clear subscription info from profile
-      await supabaseClient
+      const { error: updateError } = await supabaseClient
         .from('profiles')
         .update({
           subscription_tier: null,
@@ -111,6 +127,10 @@ serve(async (req) => {
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id);
+      
+      if (updateError) {
+        logStep("Error clearing profile subscription info", { error: updateError.message });
+      }
     }
 
     const tier = productId ? PRODUCT_TIERS[productId] || 'unknown' : null;
