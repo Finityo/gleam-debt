@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { BarChart, Users, Activity, TrendingUp, LogOut, Headphones, AlertCircle, CheckCircle } from 'lucide-react';
+import { BarChart, Users, Activity, TrendingUp, LogOut, Headphones, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { SEOHead } from '@/components/SEOHead';
 import { logError } from '@/utils/logger';
 
@@ -16,6 +17,8 @@ const AdminDashboard = () => {
     totalSignups: 0,
     totalPageViews: 0,
     recentEvents: [] as any[],
+    pageViewsChart: [] as { date: string; views: number }[],
+    engagementChart: [] as { date: string; engagement: number }[],
     plaidStats: {
       activeConnections: 0,
       tokensNeedingMigration: 0,
@@ -117,11 +120,58 @@ const AdminDashboard = () => {
         .eq('success', false)
         .gte('attempted_at', oneDayAgo);
 
+      // Get page views chart data (last 7 days)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const { data: pageViewsData } = await supabase
+        .from('analytics_events')
+        .select('created_at')
+        .eq('event_type', 'page_view')
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .order('created_at', { ascending: true });
+
+      // Group page views by date
+      const pageViewsByDate = (pageViewsData || []).reduce((acc, event) => {
+        const date = new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const pageViewsChart = Object.entries(pageViewsByDate).map(([date, views]) => ({
+        date,
+        views,
+      }));
+
+      // Calculate engagement over time (events per user per day)
+      const { data: allEventsData } = await supabase
+        .from('analytics_events')
+        .select('created_at, user_id')
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .order('created_at', { ascending: true });
+
+      const engagementByDate = (allEventsData || []).reduce((acc, event) => {
+        const date = new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (!acc[date]) {
+          acc[date] = { events: 0, users: new Set() };
+        }
+        acc[date].events += 1;
+        if (event.user_id) {
+          acc[date].users.add(event.user_id);
+        }
+        return acc;
+      }, {} as Record<string, { events: number; users: Set<string> }>);
+
+      const engagementChart = Object.entries(engagementByDate).map(([date, data]) => ({
+        date,
+        engagement: data.users.size > 0 ? Number((data.events / data.users.size).toFixed(1)) : 0,
+      }));
+
       setStats({
         totalUsers: userCount || 0,
         totalSignups: signupCount || 0,
         totalPageViews: pageViewCount || 0,
         recentEvents: recentEvents || [],
+        pageViewsChart,
+        engagementChart,
         plaidStats: {
           activeConnections: activeConnections || 0,
           tokensNeedingMigration: tokensNeedingMigration || 0,
@@ -223,43 +273,100 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            <Card 
-              className="cursor-pointer hover-scale transition-all duration-200 hover:shadow-lg hover:glass-intense"
-              onClick={() => {
-                // Scroll to Recent Activity section
-                const element = document.getElementById('recent-activity');
-                element?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
+            <Card className="md:col-span-2">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Page Views</CardTitle>
+                <div>
+                  <CardTitle className="text-sm font-medium">Page Views</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">Last 7 days</p>
+                </div>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalPageViews}</div>
-                <p className="text-xs text-muted-foreground">Total site visits</p>
+                <div className="text-2xl font-bold mb-4">{stats.totalPageViews} total</div>
+                <ResponsiveContainer width="100%" height={120}>
+                  <AreaChart data={stats.pageViewsChart}>
+                    <defs>
+                      <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickLine={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="views" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      fill="url(#colorViews)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card 
-              className="cursor-pointer hover-scale transition-all duration-200 hover:shadow-lg hover:glass-intense"
-              onClick={() => {
-                // Scroll to Recent Activity section
-                const element = document.getElementById('recent-activity');
-                element?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
+            <Card className="md:col-span-2">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Engagement</CardTitle>
+                <div>
+                  <CardTitle className="text-sm font-medium">User Engagement</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">Avg events per user per day</p>
+                </div>
                 <BarChart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold mb-4">
                   {stats.totalUsers > 0 
                     ? (stats.totalPageViews / stats.totalUsers).toFixed(1) 
-                    : '0'}
+                    : '0'} avg
                 </div>
-                <p className="text-xs text-muted-foreground">Avg pages per user</p>
+                <ResponsiveContainer width="100%" height={120}>
+                  <LineChart data={stats.engagementChart}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickLine={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="engagement" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
