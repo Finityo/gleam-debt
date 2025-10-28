@@ -234,7 +234,7 @@ const AdminDashboard = () => {
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate('/admin/documents')}>
                   <Activity className="mr-2 h-4 w-4" />
-                  Documents
+                  Reports
                 </Button>
               </div>
               <Button variant="outline" size="sm" onClick={handleSignOut}>

@@ -270,19 +270,6 @@ const Dashboard = () => {
                 </Button>
 
                 <Button
-                  onClick={() => navigate('/admin/documents')}
-                  size="lg"
-                  variant="outline"
-                  className="w-full h-24 flex-col gap-2"
-                >
-                  <FileText className="w-6 h-6" />
-                  <div className="text-center">
-                    <div className="font-bold">Reports</div>
-                    <div className="text-xs text-muted-foreground">Step 5: Export docs</div>
-                  </div>
-                </Button>
-
-                <Button
                   onClick={() => navigate('/profile')}
                   size="lg"
                   variant="outline"
@@ -291,7 +278,7 @@ const Dashboard = () => {
                   <UserCircle className="w-6 h-6" />
                   <div className="text-center">
                     <div className="font-bold">Profile & Data</div>
-                    <div className="text-xs text-muted-foreground">Manage account</div>
+                    <div className="text-xs text-muted-foreground">Step 5: Manage account</div>
                   </div>
                 </Button>
               </div>
