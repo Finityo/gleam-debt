@@ -861,7 +861,7 @@ export const blogPosts: BlogPost[] = [
       </p>
       <ul>
         <li>Adjust your plan, don't abandon it</li>
-        <li>Remember: some progress > no progress</li>
+        <li>Remember: some progress {'>'}  no progress</li>
         <li>Recalculate your debt-free date with the new reality</li>
       </ul>
 
