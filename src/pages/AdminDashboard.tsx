@@ -195,7 +195,10 @@ const AdminDashboard = () => {
 
         <main className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card>
+            <Card 
+              className="cursor-pointer hover-scale transition-all duration-200 hover:shadow-lg hover:glass-intense"
+              onClick={() => navigate('/support-dashboard')}
+            >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Total Users</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -206,7 +209,10 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card 
+              className="cursor-pointer hover-scale transition-all duration-200 hover:shadow-lg hover:glass-intense"
+              onClick={() => navigate('/admin/roles')}
+            >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Total Signups</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -217,7 +223,14 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card 
+              className="cursor-pointer hover-scale transition-all duration-200 hover:shadow-lg hover:glass-intense"
+              onClick={() => {
+                // Scroll to Recent Activity section
+                const element = document.getElementById('recent-activity');
+                element?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Page Views</CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
@@ -228,7 +241,14 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card 
+              className="cursor-pointer hover-scale transition-all duration-200 hover:shadow-lg hover:glass-intense"
+              onClick={() => {
+                // Scroll to Recent Activity section
+                const element = document.getElementById('recent-activity');
+                element?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Engagement</CardTitle>
                 <BarChart className="h-4 w-4 text-muted-foreground" />
@@ -365,7 +385,7 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="recent-activity">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
               <CardDescription>Latest events tracked on the platform</CardDescription>
