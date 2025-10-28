@@ -271,12 +271,14 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleConnectClick = () => {
+    // Temporarily disabled consent dialog
+    open();
     // Show consent dialog first if not already given
-    if (!consentGiven) {
-      setShowConsentDialog(true);
-    } else {
-      open();
-    }
+    // if (!consentGiven) {
+    //   setShowConsentDialog(true);
+    // } else {
+    //   open();
+    // }
   };
 
   const handleConsent = () => {
