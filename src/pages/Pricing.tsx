@@ -20,20 +20,6 @@ interface PricingTier {
 }
 
 const PRICING_TIERS: Record<string, PricingTier> = {
-  trial: {
-    name: "30-Day Free Trial",
-    price: 0,
-    interval: "month",
-    priceId: "price_1SKdm6IUysiSR1zweZc2qe5v",
-    description: "Try Finityo free for 30 days",
-    features: [
-      "Full access to all features",
-      "Unlimited debt tracking",
-      "All payoff strategies",
-      "Plaid bank integration",
-      "No credit card required",
-    ],
-  },
   essential: {
     name: "Essential",
     price: 4.99,
@@ -64,20 +50,20 @@ const PRICING_TIERS: Record<string, PricingTier> = {
     ],
     popular: true,
   },
-  annual: {
-    name: "Ultimate Annual",
-    price: 100,
+  ultimate_plus: {
+    name: "Ultimate Plus",
+    price: 49.99,
     interval: "year",
-    priceId: "price_1SKe6VIUysiSR1zwyNTXKh1K",
-    description: "Best value - save $19.88/year",
+    priceId: "price_1SN4VWIUysiSR1zwxbFHBX0K",
+    description: "Best value - save 58% annually",
     features: [
       "All Ultimate features",
       "Unlimited debt tracking",
       "All payoff strategies",
       "Plaid bank integration",
-      "Real-time progress visualization",
       "Priority support",
       "Export capabilities",
+      "Exclusive email blog content",
     ],
     badge: "Best Value",
   },
@@ -110,7 +96,7 @@ const Pricing = () => {
       let validatedCode = null;
       if (discountCode.trim()) {
         setApplyingDiscount(true);
-        const validCodes = ['FIRST5', 'MILITARY', 'FIRSTRESPONDER', 'DEBTFREE'];
+        const validCodes = ['DEBTFREE', 'DEBTFREE60', 'LEO10', 'MIL10'];
         if (validCodes.includes(discountCode.toUpperCase())) {
           validatedCode = discountCode.toUpperCase();
           toast({
@@ -163,7 +149,7 @@ const Pricing = () => {
     <>
       <SEOHead
         title="Pricing - Finityo"
-        description="Choose the perfect plan for your debt freedom journey. Start with a 30-day free trial or select from Essential ($4.99/mo) or Ultimate ($9.99/mo) plans."
+        description="Choose the perfect plan for your debt freedom journey. Essential ($4.99/mo), Ultimate ($9.99/mo), or Ultimate Plus ($49.99/year with 58% savings). Start today!"
       />
       <div className="min-h-screen bg-gradient-to-b from-background to-background/80 py-12 px-4">
         <div className="max-w-7xl mx-auto">
@@ -180,7 +166,7 @@ const Pricing = () => {
               Choose Your Path to Financial Freedom
             </h1>
             <p className="text-xl text-muted-foreground">
-              Start with a free trial, then select the plan that fits your needs
+              Select the plan that fits your needs - from basic tracking to complete debt freedom
             </p>
           </div>
 
@@ -195,7 +181,7 @@ const Pricing = () => {
               <CardContent>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Enter code (e.g., FIRST5)"
+                    placeholder="Enter discount code"
                     value={discountCode}
                     onChange={(e) => setDiscountCode(e.target.value)}
                     className="flex-1"
@@ -203,14 +189,14 @@ const Pricing = () => {
                 </div>
                 {discountCode && (
                   <p className="text-sm text-muted-foreground mt-2 text-center">
-                    Valid codes: FIRST5, MILITARY, FIRSTRESPONDER, DEBTFREE
+                    Valid codes: DEBTFREE, DEBTFREE60, LEO10, MIL10
                   </p>
                 )}
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {Object.entries(PRICING_TIERS).map(([key, tier]) => (
               <Card 
                 key={key} 
@@ -243,7 +229,7 @@ const Pricing = () => {
                       /{tier.interval}
                     </span>
                     {tier.interval === "year" && (
-                      <p className="text-sm text-accent mt-1">Save $19.88 vs monthly</p>
+                      <p className="text-sm text-accent mt-1">Save 58% vs monthly</p>
                     )}
                   </div>
                 </CardHeader>

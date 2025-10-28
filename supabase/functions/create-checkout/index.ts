@@ -57,16 +57,18 @@ serve(async (req) => {
     const discounts = [];
     if (discountCode) {
       const validCodes: Record<string, string> = {
-        'FIRST5': 'UkR6MwgX',
-        'MILITARY': 'UkR6MwgX',
-        'FIRSTRESPONDER': 'UkR6MwgX',
-        'DEBTFREE': 'UkR6MwgX'
+        'DEBTFREE': 'UkR6MwgX',      // 100% off lifetime
+        'DEBTFREE60': 'EejEaz3I',     // 100% off for 2 months (60 days)
+        'LEO10': '6GdwdeOp',          // 10% off first month for law enforcement
+        'MIL10': 'VAzBCMKU'           // 10% off first month for military
       };
       
       if (validCodes[discountCode]) {
         logStep("Valid discount code provided", { code: discountCode });
         const couponId = validCodes[discountCode];
         discounts.push({ coupon: couponId });
+      } else {
+        logStep("Invalid discount code provided", { code: discountCode });
       }
     }
 

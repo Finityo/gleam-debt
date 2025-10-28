@@ -561,6 +561,11 @@ export type Database = {
           id: string
           last_name: string
           phone: string | null
+          subscription_price_id: string | null
+          subscription_product_id: string | null
+          subscription_status: string | null
+          subscription_tier: string | null
+          trial_end_date: string | null
           updated_at: string
           user_id: string
           zip_code: string | null
@@ -572,6 +577,11 @@ export type Database = {
           id?: string
           last_name: string
           phone?: string | null
+          subscription_price_id?: string | null
+          subscription_product_id?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          trial_end_date?: string | null
           updated_at?: string
           user_id: string
           zip_code?: string | null
@@ -583,6 +593,11 @@ export type Database = {
           id?: string
           last_name?: string
           phone?: string | null
+          subscription_price_id?: string | null
+          subscription_product_id?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          trial_end_date?: string | null
           updated_at?: string
           user_id?: string
           zip_code?: string | null

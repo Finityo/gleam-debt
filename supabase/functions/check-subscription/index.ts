@@ -19,8 +19,17 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
+
+  // Map product IDs to tier names
+  const PRODUCT_TIERS: Record<string, string> = {
+    'prod_THCLpDCgCrrLRl': 'essential',      // Essential Plan - $4.99/month
+    'prod_THCVRchRdi2nyi': 'ultimate',       // Ultimate Plan - $9.99/month
+    'prod_TJhvfhr2lmbkqH': 'ultimate_plus',  // Ultimate Plus - $49.99/year
+    'prod_THCAK8cbwXL0uU': 'trial'           // 60 Day Trial
+  };
 
   try {
     logStep("Function started");
@@ -72,16 +81,46 @@ serve(async (req) => {
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       productId = subscription.items.data[0].price.product as string;
       priceId = subscription.items.data[0].price.id;
-      logStep("Determined subscription tier", { productId, priceId });
+      const tier = PRODUCT_TIERS[productId] || 'unknown';
+      logStep("Determined subscription tier", { productId, priceId, tier });
+      
+      // Update user profile with subscription info
+      await supabaseClient
+        .from('profiles')
+        .update({
+          subscription_tier: tier,
+          subscription_product_id: productId,
+          subscription_price_id: priceId,
+          subscription_status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+      
+      logStep("Profile updated with subscription info");
     } else {
       logStep("No active subscription found");
+      
+      // Clear subscription info from profile
+      await supabaseClient
+        .from('profiles')
+        .update({
+          subscription_tier: null,
+          subscription_product_id: null,
+          subscription_price_id: null,
+          subscription_status: 'inactive',
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
     }
+
+    const tier = productId ? PRODUCT_TIERS[productId] || 'unknown' : null;
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_id: productId,
       price_id: priceId,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      tier: tier
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

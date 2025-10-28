@@ -8,10 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 const PRODUCTS = {
-  "prod_THCAK8cbwXL0uU": { name: "30-Day Free Trial", tier: "trial" },
+  "prod_THCAK8cbwXL0uU": { name: "60-Day Trial", tier: "trial" },
   "prod_THCLpDCgCrrLRl": { name: "Essential", tier: "essential" },
   "prod_THCVRchRdi2nyi": { name: "Ultimate", tier: "ultimate" },
-  "prod_THCVNWQSE8tqHZ": { name: "Ultimate Annual", tier: "ultimate-annual" },
+  "prod_TJhvfhr2lmbkqH": { name: "Ultimate Plus", tier: "ultimate_plus" },
 };
 
 export const SubscriptionManager = () => {
