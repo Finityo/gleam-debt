@@ -137,6 +137,18 @@ export function DebtCalculator() {
       saveSettings();
     }
   }, [extra, oneTime, strategy]);
+  
+  // Re-sort debts when strategy changes
+  useEffect(() => {
+    if (debts.length > 0 && debts[0].name !== "") {
+      const sortedDebts = sortDebts(debts);
+      // Only update if order actually changed to avoid infinite loop
+      const orderChanged = debts.some((debt, idx) => debt.id !== sortedDebts[idx]?.id);
+      if (orderChanged) {
+        setDebts(sortedDebts);
+      }
+    }
+  }, [strategy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadSavedData = async () => {
     try {
@@ -149,7 +161,7 @@ export function DebtCalculator() {
       if (debtsError) throw debtsError;
 
       if (debtsData && debtsData.length > 0) {
-        setDebts(debtsData.map(d => ({
+        const mappedDebts = debtsData.map(d => ({
           id: d.id,
           name: d.name,
           last4: d.last4 || '',
@@ -159,7 +171,11 @@ export function DebtCalculator() {
           dueDate: d.due_date || '',
           debtType: d.debt_type || 'personal',
           notes: d.notes || ''
-        })));
+        }));
+        
+        // Sort loaded debts according to current strategy
+        const sortedDebts = sortDebts(mappedDebts);
+        setDebts(sortedDebts);
       }
 
       // Load settings
@@ -267,7 +283,7 @@ export function DebtCalculator() {
     if (newDebt.balance <= 0) {
       toast({ 
         title: "Error", 
-        description: "Please enter a valid balance", 
+        description: "Please enter a valid balance greater than $0", 
         variant: "destructive" 
       });
       return;
@@ -276,7 +292,16 @@ export function DebtCalculator() {
     if (newDebt.minPayment <= 0) {
       toast({ 
         title: "Error", 
-        description: "Please enter a valid minimum payment", 
+        description: "Please enter a valid minimum payment greater than $0", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    if (newDebt.apr < 0 || newDebt.apr > 100) {
+      toast({ 
+        title: "Error", 
+        description: "APR must be between 0% and 100%", 
         variant: "destructive" 
       });
       return;
