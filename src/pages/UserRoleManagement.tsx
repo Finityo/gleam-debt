@@ -179,18 +179,21 @@ const UserRoleManagement = () => {
       />
       <div className="min-h-screen bg-gradient-subtle">
         <header className="border-b bg-background/95 backdrop-blur">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/admin')}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <Shield className="h-6 w-6" />
-                  User Role Management
-                </h1>
-                <p className="text-sm text-muted-foreground">Manage user permissions and access levels</p>
-              </div>
+          <div className="container mx-auto px-4 py-4">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/admin')}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Admin Dashboard
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                <Shield className="h-6 w-6" />
+                User Role Management
+              </h1>
+              <p className="text-sm text-muted-foreground">Manage user permissions and access levels</p>
             </div>
           </div>
         </header>
