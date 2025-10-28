@@ -83,18 +83,20 @@ export const PlaidConsentDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Shield className="w-6 h-6 text-primary" />
-            Connect Your Financial Account
-          </DialogTitle>
-          <DialogDescription className="text-base mt-2">
-            Securely link your accounts for automatic debt tracking and personalized payoff plans
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col p-0">
+        <div className="p-6 pb-0">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-2xl">
+              <Shield className="w-6 h-6 text-primary" />
+              Connect Your Financial Account
+            </DialogTitle>
+            <DialogDescription className="text-base mt-2">
+              Securely link your accounts for automatic debt tracking and personalized payoff plans
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <div className="space-y-6 py-4 overflow-y-auto flex-1 min-h-0 pr-2">
+        <div className="space-y-6 py-4 overflow-y-auto flex-1 min-h-0 px-6">
           {/* Benefits Banner */}
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
             <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
@@ -304,7 +306,8 @@ export const PlaidConsentDialog = ({
           </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2 flex-shrink-0 pt-4 border-t mt-4">
+        <div className="p-6 pt-0">
+          <DialogFooter className="flex-col sm:flex-row gap-2 flex-shrink-0 pt-4 border-t">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -319,7 +322,8 @@ export const PlaidConsentDialog = ({
           >
             {loading ? "Processing..." : "Continue to Connect"}
           </Button>
-        </DialogFooter>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
