@@ -54,6 +54,20 @@ serve(async (req) => {
 
     // Parse and validate request
     const validated = eventSchema.parse(await req.json());
+    
+    // SECURITY: Limit metadata size to prevent abuse (max 10KB)
+    if (validated.metadata) {
+      const metadataStr = JSON.stringify(validated.metadata);
+      if (metadataStr.length > 10000) {
+        return new Response(
+          JSON.stringify({ error: 'Metadata too large' }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+    }
 
     // Server-side data collection (client can't manipulate)
     const ipAddress = req.headers.get('x-forwarded-for') || 

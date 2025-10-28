@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { handleError, getUserIdFromRequest } from '../_shared/error-handler.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -110,10 +111,12 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // SECURITY: Use centralized error handler to prevent information disclosure
+    const userId = await getUserIdFromRequest(req);
+    return handleError(error, {
+      functionName: 'register-team-member',
+      userId,
+      requestPath: '/register-team-member'
+    });
   }
 });

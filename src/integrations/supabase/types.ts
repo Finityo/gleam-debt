@@ -125,6 +125,39 @@ export type Database = {
         }
         Relationships: []
       }
+      error_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string
+          error_stack: string | null
+          error_type: string | null
+          function_name: string
+          id: string
+          request_path: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message: string
+          error_stack?: string | null
+          error_type?: string | null
+          function_name: string
+          id?: string
+          request_path?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string
+          error_stack?: string | null
+          error_type?: string | null
+          function_name?: string
+          id?: string
+          request_path?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       otp_verification_attempts: {
         Row: {
           attempted_at: string | null
@@ -717,6 +750,7 @@ export type Database = {
           wait_seconds: number
         }[]
       }
+      cleanup_old_analytics: { Args: never; Returns: undefined }
       get_plaid_token_from_vault: {
         Args: { p_function_name?: string; p_item_id: string }
         Returns: string
