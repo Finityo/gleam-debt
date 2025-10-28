@@ -384,24 +384,53 @@ serve(async (req) => {
           const account = accountsMap.get(creditLiability.account_id);
           if (!account) continue;
           
+          const debtName = account.name || account.official_name || 'Credit Card';
+          const last4 = account.mask || null;
+          
+          // Check for existing debt with same name and last4
+          const { data: existingDebt } = await supabaseClient
+            .from('debts')
+            .select('id, balance, apr, min_payment')
+            .eq('user_id', user.id)
+            .eq('name', debtName)
+            .eq('last4', last4)
+            .maybeSingle();
+          
           const debtData = {
-            user_id: user.id,
-            name: account.name || account.official_name || 'Credit Card',
             balance: account.balances?.current || 0,
             apr: (creditLiability.aprs?.[0]?.apr_percentage || 0) / 100,
             min_payment: creditLiability.minimum_payment_amount || creditLiability.last_payment_amount || account.balances?.current * 0.02,
-            last4: account.mask || null,
             due_date: creditLiability.next_payment_due_date?.split('-')[2] || null,
           };
 
-          const { error: debtError } = await supabaseClient
-            .from('debts')
-            .insert(debtData);
-
-          if (!debtError) {
-            importedDebtsCount++;
+          if (existingDebt) {
+            // Update existing debt
+            const { error: updateError } = await supabaseClient
+              .from('debts')
+              .update(debtData)
+              .eq('id', existingDebt.id);
+            
+            if (!updateError) {
+              console.log('Updated existing debt:', debtName);
+            } else {
+              console.error('Error updating debt:', updateError);
+            }
           } else {
-            console.error('Error inserting credit debt:', debtError);
+            // Insert new debt
+            const { error: insertError } = await supabaseClient
+              .from('debts')
+              .insert({
+                user_id: user.id,
+                name: debtName,
+                last4: last4,
+                ...debtData
+              });
+
+            if (!insertError) {
+              importedDebtsCount++;
+            } else {
+              console.error('Error inserting credit debt:', insertError);
+            }
           }
         }
       }
@@ -413,24 +442,46 @@ serve(async (req) => {
           const account = accountsMap.get(studentLiability.account_id);
           if (!account) continue;
           
+          const debtName = account.name || account.official_name || studentLiability.loan_name || 'Student Loan';
+          const last4 = account.mask || studentLiability.account_number?.slice(-4) || null;
+          
+          // Check for existing debt
+          const { data: existingDebt } = await supabaseClient
+            .from('debts')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('name', debtName)
+            .eq('last4', last4)
+            .maybeSingle();
+          
           const debtData = {
-            user_id: user.id,
-            name: account.name || account.official_name || studentLiability.loan_name || 'Student Loan',
             balance: account.balances?.current || 0,
             apr: (studentLiability.interest_rate_percentage || 0) / 100,
             min_payment: studentLiability.minimum_payment_amount || account.balances?.current * 0.01,
-            last4: account.mask || studentLiability.account_number?.slice(-4) || null,
             due_date: studentLiability.next_payment_due_date?.split('-')[2] || null,
           };
 
-          const { error: debtError } = await supabaseClient
-            .from('debts')
-            .insert(debtData);
-
-          if (!debtError) {
-            importedDebtsCount++;
+          if (existingDebt) {
+            await supabaseClient
+              .from('debts')
+              .update(debtData)
+              .eq('id', existingDebt.id);
+            console.log('Updated existing student loan:', debtName);
           } else {
-            console.error('Error inserting student loan:', debtError);
+            const { error: insertError } = await supabaseClient
+              .from('debts')
+              .insert({
+                user_id: user.id,
+                name: debtName,
+                last4: last4,
+                ...debtData
+              });
+
+            if (!insertError) {
+              importedDebtsCount++;
+            } else {
+              console.error('Error inserting student loan:', insertError);
+            }
           }
         }
       }
@@ -442,24 +493,46 @@ serve(async (req) => {
           const account = accountsMap.get(mortgageLiability.account_id);
           if (!account) continue;
           
+          const debtName = account.name || account.official_name || mortgageLiability.property_address || 'Mortgage';
+          const last4 = account.mask || mortgageLiability.account_number?.slice(-4) || null;
+          
+          // Check for existing debt
+          const { data: existingDebt } = await supabaseClient
+            .from('debts')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('name', debtName)
+            .eq('last4', last4)
+            .maybeSingle();
+          
           const debtData = {
-            user_id: user.id,
-            name: account.name || account.official_name || mortgageLiability.property_address || 'Mortgage',
             balance: account.balances?.current || 0,
             apr: (mortgageLiability.interest_rate?.percentage || 0) / 100,
             min_payment: mortgageLiability.last_payment_amount || account.balances?.current * 0.005,
-            last4: account.mask || mortgageLiability.account_number?.slice(-4) || null,
             due_date: mortgageLiability.next_payment_due_date?.split('-')[2] || null,
           };
 
-          const { error: debtError } = await supabaseClient
-            .from('debts')
-            .insert(debtData);
-
-          if (!debtError) {
-            importedDebtsCount++;
+          if (existingDebt) {
+            await supabaseClient
+              .from('debts')
+              .update(debtData)
+              .eq('id', existingDebt.id);
+            console.log('Updated existing mortgage:', debtName);
           } else {
-            console.error('Error inserting mortgage:', debtError);
+            const { error: insertError } = await supabaseClient
+              .from('debts')
+              .insert({
+                user_id: user.id,
+                name: debtName,
+                last4: last4,
+                ...debtData
+              });
+
+            if (!insertError) {
+              importedDebtsCount++;
+            } else {
+              console.error('Error inserting mortgage:', insertError);
+            }
           }
         }
       }
