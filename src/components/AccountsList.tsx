@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, Loader2 } from 'lucide-react';
+import { Trash2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logError } from '@/utils/logger';
@@ -41,6 +42,7 @@ interface AccountsListProps {
 
 export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) => {
   const [removingItemId, setRemovingItemId] = useState<string | null>(null);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const { toast } = useToast();
 
   const formatCurrency = (amount: number | null) => {
@@ -122,96 +124,166 @@ export const AccountsList = ({ accounts, onAccountsChange }: AccountsListProps) 
     return null;
   }
 
+  const allItemIds = Object.keys({ ...creditAccountsByItem, ...depositoryAccountsByItem });
+  const allExpanded = allItemIds.length > 0 && allItemIds.every(id => expandedItems.includes(id));
+
+  const toggleExpandAll = () => {
+    if (allExpanded) {
+      setExpandedItems([]);
+    } else {
+      setExpandedItems(allItemIds);
+    }
+  };
+
   const renderAccountsByItem = (accountsByItem: Record<string, { item: Account['plaid_items']; accounts: Account[] }>) => (
     <>
-      {Object.entries(accountsByItem).map(([itemId, { item, accounts: itemAccounts }]) => (
-        <div key={itemId} className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">
-              {item.institution_name || 'Bank Account'}
-            </h3>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  disabled={removingItemId === itemId}
-                >
-                  {removingItemId === itemId ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Disconnect
-                    </>
-                  )}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Disconnect Bank Account?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will disconnect {item.institution_name || 'this bank account'} and delete
-                    all associated data including account numbers and balances. This action cannot
-                    be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => handleRemoveItem(itemId, item.institution_name)}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Disconnect
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+      {Object.entries(accountsByItem).map(([itemId, { item, accounts: itemAccounts }]) => {
+        const hasMultipleAccounts = itemAccounts.length > 1;
+        const isExpanded = expandedItems.includes(itemId);
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {itemAccounts.map((account) => (
-              <Card key={account.id}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{account.name}</CardTitle>
-                  <CardDescription>
-                    {account.mask && `•••• ${account.mask}`}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Type</span>
-                      <span className="font-medium capitalize">
-                        {account.subtype || account.type}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Current Balance</span>
-                      <span className="font-medium">
-                        {formatCurrency(account.current_balance)}
-                      </span>
-                    </div>
-                    {account.available_balance !== null && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Available</span>
-                        <span className="font-medium">
-                          {formatCurrency(account.available_balance)}
-                        </span>
-                      </div>
+        const toggleItem = () => {
+          setExpandedItems(prev =>
+            prev.includes(itemId)
+              ? prev.filter(id => id !== itemId)
+              : [...prev, itemId]
+          );
+        };
+
+        return (
+          <div key={itemId} className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {hasMultipleAccounts && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleItem}
+                    className="h-8 w-8 p-0"
+                  >
+                    {isExpanded ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </Button>
+                )}
+                <h3 className="text-lg font-semibold">
+                  {item.institution_name || 'Bank Account'}
+                  {hasMultipleAccounts && (
+                    <span className="ml-2 text-sm text-muted-foreground font-normal">
+                      ({itemAccounts.length} accounts)
+                    </span>
+                  )}
+                </h3>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={removingItemId === itemId}
+                  >
+                    {removingItemId === itemId ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Disconnect
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Disconnect Bank Account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will disconnect {item.institution_name || 'this bank account'} and delete
+                      all associated data including account numbers and balances. This action cannot
+                      be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleRemoveItem(itemId, item.institution_name)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Disconnect
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+
+            {(!hasMultipleAccounts || isExpanded) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {itemAccounts.map((account) => (
+                  <Card key={account.id}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{account.name}</CardTitle>
+                      <CardDescription>
+                        {account.mask && `•••• ${account.mask}`}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Type</span>
+                          <span className="font-medium capitalize">
+                            {account.subtype || account.type}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Current Balance</span>
+                          <span className="font-medium">
+                            {formatCurrency(account.current_balance)}
+                          </span>
+                        </div>
+                        {account.available_balance !== null && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Available</span>
+                            <span className="font-medium">
+                              {formatCurrency(account.available_balance)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 
   return (
     <div className="space-y-8">
+      {allItemIds.length > 1 && (
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleExpandAll}
+            className="gap-2"
+          >
+            {allExpanded ? (
+              <>
+                <ChevronUp className="h-4 w-4" />
+                Collapse All
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4" />
+                Expand All
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
       {depositoryAccounts.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-foreground">Checking & Savings Accounts</h2>
