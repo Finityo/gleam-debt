@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, Plus, Upload } from "lucide-react";
@@ -105,6 +106,17 @@ export function DebtCalculator() {
   const [strategy, setStrategy] = useState<Strategy>("snowball");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDebtIndices, setSelectedDebtIndices] = useState<Set<number>>(new Set());
+  const [isAddDebtDialogOpen, setIsAddDebtDialogOpen] = useState(false);
+  const [newDebt, setNewDebt] = useState<DebtInput>({ 
+    name: "", 
+    last4: "", 
+    balance: 0, 
+    minPayment: 0, 
+    apr: 0, 
+    dueDate: "", 
+    debtType: "personal", 
+    notes: "" 
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load saved data on mount
@@ -229,8 +241,72 @@ export function DebtCalculator() {
     setDebts(newDebts);
   };
 
+  const sortDebts = (debtsToSort: DebtInput[]): DebtInput[] => {
+    const sorted = [...debtsToSort];
+    if (strategy === "snowball") {
+      // Snowball: Sort by balance (smallest first)
+      sorted.sort((a, b) => a.balance - b.balance);
+    } else {
+      // Avalanche: Sort by APR (highest first)
+      sorted.sort((a, b) => b.apr - a.apr);
+    }
+    return sorted;
+  };
+
   const addDebt = () => {
-    setDebts([...debts, { name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "", debtType: "personal", notes: "" }]);
+    // Validate the new debt
+    if (!newDebt.name.trim()) {
+      toast({ 
+        title: "Error", 
+        description: "Please enter a debt name", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    if (newDebt.balance <= 0) {
+      toast({ 
+        title: "Error", 
+        description: "Please enter a valid balance", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    if (newDebt.minPayment <= 0) {
+      toast({ 
+        title: "Error", 
+        description: "Please enter a valid minimum payment", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    // Add the new debt and sort all debts
+    const updatedDebts = sortDebts([...debts.filter(d => d.name.trim() !== ''), newDebt]);
+    setDebts(updatedDebts);
+    
+    // Close dialog and reset form
+    setIsAddDebtDialogOpen(false);
+    setNewDebt({ 
+      name: "", 
+      last4: "", 
+      balance: 0, 
+      minPayment: 0, 
+      apr: 0, 
+      dueDate: "", 
+      debtType: "personal", 
+      notes: "" 
+    });
+    
+    toast({ 
+      title: "Success", 
+      description: `Debt added and sorted by ${strategy === "snowball" ? "balance" : "APR"}` 
+    });
+  };
+  
+  const openAddDebtDialog = () => {
+    setIsAddDebtDialogOpen(true);
   };
 
   const removeDebt = (index: number) => {
@@ -575,7 +651,7 @@ export function DebtCalculator() {
                   style={{ display: 'none' }}
                 />
                 
-                <Button onClick={addDebt} size="sm" variant="outline">
+                <Button onClick={openAddDebtDialog} size="sm" variant="outline">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Debt
                 </Button>
@@ -789,6 +865,163 @@ export function DebtCalculator() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Add Debt Dialog */}
+      <Dialog open={isAddDebtDialogOpen} onOpenChange={setIsAddDebtDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Debt</DialogTitle>
+            <DialogDescription>
+              Enter your debt details. It will be automatically sorted by {strategy === "snowball" ? "balance (smallest first)" : "APR (highest first)"}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Name *</Label>
+              <Input
+                value={newDebt.name}
+                onChange={(e) => setNewDebt({...newDebt, name: e.target.value})}
+                placeholder="Credit Card"
+                className="placeholder:text-muted-foreground/50"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Debt Type</Label>
+              <Select 
+                value={newDebt.debtType || 'personal'} 
+                onValueChange={(value) => setNewDebt({...newDebt, debtType: value})}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50">
+                  <SelectItem value="personal">Personal</SelectItem>
+                  <SelectItem value="child">Child's Debt</SelectItem>
+                  <SelectItem value="parent">Parent's Debt</SelectItem>
+                  <SelectItem value="spouse">Spouse's Debt</SelectItem>
+                  <SelectItem value="other">Other Family</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Last 4</Label>
+              <Input
+                value={newDebt.last4 || ''}
+                onChange={(e) => setNewDebt({...newDebt, last4: e.target.value})}
+                maxLength={4}
+                placeholder="1234"
+                className="placeholder:text-muted-foreground/50"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Balance *</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  className="pl-7 placeholder:text-muted-foreground/50"
+                  value={newDebt.balance || ''}
+                  onChange={(e) => setNewDebt({...newDebt, balance: parseFloat(e.target.value) || 0})}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Min Payment *</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  className="pl-7 placeholder:text-muted-foreground/50"
+                  value={newDebt.minPayment || ''}
+                  onChange={(e) => setNewDebt({...newDebt, minPayment: parseFloat(e.target.value) || 0})}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>APR (%)</Label>
+              <Input
+                type="text"
+                inputMode="decimal"
+                placeholder="18.99"
+                className="placeholder:text-muted-foreground/50"
+                value={newDebt.apr || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                    const numValue = value === '' ? 0 : parseFloat(value);
+                    if (numValue <= 100) {
+                      setNewDebt({...newDebt, apr: numValue || 0});
+                    }
+                  }
+                }}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Due Date</Label>
+              <Input
+                type="text"
+                placeholder="Due by 15"
+                className="placeholder:text-muted-foreground/50"
+                value={newDebt.dueDate || ''}
+                onChange={(e) => {
+                  const value = e.target.value.trim();
+                  const dayMatch = value.match(/\d+/);
+                  const day = dayMatch ? parseInt(dayMatch[0]) : '';
+                  setNewDebt({...newDebt, dueDate: day.toString()});
+                }}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Notes (Optional)</Label>
+              <Input
+                value={newDebt.notes || ''}
+                onChange={(e) => setNewDebt({...newDebt, notes: e.target.value})}
+                placeholder="E.g., College tuition for Sarah"
+                className="placeholder:text-muted-foreground/50"
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-3 justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsAddDebtDialogOpen(false);
+                setNewDebt({ 
+                  name: "", 
+                  last4: "", 
+                  balance: 0, 
+                  minPayment: 0, 
+                  apr: 0, 
+                  dueDate: "", 
+                  debtType: "personal", 
+                  notes: "" 
+                });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={addDebt} className="animate-scale-in">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Debt
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
