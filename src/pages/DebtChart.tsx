@@ -66,11 +66,7 @@ const DebtChart = () => {
       
       setDebts(uniqueDebts);
       
-      // Calculate total debt from unique debts
-      const totalDebtAmount = uniqueDebts.reduce((sum, debt) => sum + debt.balance, 0);
-      setTotalDebt(totalDebtAmount);
-      
-      // Fetch Plaid accounts to get actual credit limits
+      // Fetch Plaid accounts to get actual credit data
       const { data: accounts, error: accountsError } = await supabase
         .from('plaid_accounts')
         .select('current_balance, available_balance, subtype')
@@ -79,20 +75,30 @@ const DebtChart = () => {
 
       if (accountsError) throw accountsError;
       
-      // Calculate total credit limit from Plaid accounts
-      // Credit limit = current balance + available balance
+      // Calculate from Plaid accounts for accurate credit utilization
+      let totalDebtAmount = 0;
       let creditLimit = 0;
+      
       if (accounts && accounts.length > 0) {
-        creditLimit = accounts.reduce((sum, account) => {
-          const balance = Math.abs(account.current_balance || 0);
-          const available = Math.max(0, account.available_balance || 0); // Don't allow negative available
-          // Credit limit is the sum of what's owed (balance) and what's available
-          return sum + balance + available;
-        }, 0);
+        accounts.forEach(account => {
+          // current_balance is negative for credit cards (amount owed)
+          const debt = Math.abs(account.current_balance || 0);
+          const available = Math.max(0, account.available_balance || 0);
+          
+          // Credit limit = what you owe + what's available
+          const accountLimit = debt + available;
+          
+          totalDebtAmount += debt;
+          creditLimit += accountLimit;
+        });
+      } else {
+        // Fallback to debts table if no Plaid accounts
+        totalDebtAmount = uniqueDebts.reduce((sum, debt) => sum + debt.balance, 0);
+        creditLimit = totalDebtAmount * 1.5; // Estimate
       }
       
-      // If no accounts found, estimate credit limit as 1.5x debt
-      setTotalLimit(creditLimit > 0 ? creditLimit : totalDebtAmount * 1.5);
+      setTotalDebt(totalDebtAmount);
+      setTotalLimit(creditLimit);
     } catch (error: any) {
       toast({
         title: 'Error',

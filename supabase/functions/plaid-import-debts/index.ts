@@ -164,9 +164,11 @@ serve(async (req) => {
             .maybeSingle();
           
           const rawDebtData = {
-            balance: matchingAccount?.balances?.current || 0,
+            balance: Math.abs(matchingAccount?.balances?.current || 0),
             apr: (creditAccount.aprs?.[0]?.apr_percentage || 0) / 100,
-            min_payment: creditAccount.minimum_payment_amount || creditAccount.last_payment_amount || matchingAccount?.balances?.current * 0.02,
+            min_payment: creditAccount.minimum_payment_amount || 
+                        creditAccount.last_payment_amount || 
+                        Math.abs(matchingAccount?.balances?.current || 0) * 0.02,
             due_date: creditAccount.next_payment_due_date ? new Date(creditAccount.next_payment_due_date).getDate().toString() : null,
           };
           
@@ -227,9 +229,10 @@ serve(async (req) => {
             .maybeSingle();
           
           const rawDebtData = {
-            balance: studentLoan.balances?.current || 0,
+            balance: Math.abs(studentLoan.balances?.current || 0),
             apr: (studentLoan.interest_rate_percentage || 0) / 100,
-            min_payment: studentLoan.minimum_payment_amount || studentLoan.balances?.current * 0.01,
+            min_payment: studentLoan.minimum_payment_amount || 
+                        Math.abs(studentLoan.balances?.current || 0) * 0.01,
             due_date: studentLoan.next_payment_due_date ? new Date(studentLoan.next_payment_due_date).getDate().toString() : null,
           };
           
@@ -286,9 +289,10 @@ serve(async (req) => {
             .maybeSingle();
           
           const rawDebtData = {
-            balance: mortgage.balances?.current || 0,
+            balance: Math.abs(mortgage.balances?.current || 0),
             apr: (mortgage.interest_rate?.percentage || 0) / 100,
-            min_payment: mortgage.last_payment_amount || mortgage.balances?.current * 0.005,
+            min_payment: mortgage.last_payment_amount || 
+                        Math.abs(mortgage.balances?.current || 0) * 0.005,
             due_date: mortgage.next_payment_due_date ? new Date(mortgage.next_payment_due_date).getDate().toString() : null,
           };
           

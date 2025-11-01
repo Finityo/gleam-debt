@@ -446,11 +446,26 @@ export function DebtCalculator() {
       setIsLoading(true);
       const computeStrategy = useStrategy || strategy;
       
-      // Only send valid debts to the compute function
-      const debtsToCompute = validDebts.map(d => ({ 
-        ...d, 
-        apr: d.apr > 1 ? d.apr / 100 : d.apr 
-      }));
+      // Prepare debts for computation - convert APR to percentage (0-100) for the API
+      const debtsToCompute = validDebts.map(d => {
+        // If APR is already in decimal form (< 1), convert to percentage
+        // If APR is already a percentage (>= 1), keep it
+        const aprForAPI = d.apr < 1 ? d.apr * 100 : d.apr;
+        
+        console.log(`Debt: ${d.name}, Balance: ${d.balance}, MinPayment: ${d.minPayment}, APR: ${d.apr} -> ${aprForAPI}`);
+        
+        return {
+          ...d,
+          apr: aprForAPI
+        };
+      });
+      
+      console.log('Sending to compute-debt-plan:', {
+        debts: debtsToCompute,
+        extraMonthly: Number(extra) || 0,
+        oneTime: Number(oneTime) || 0,
+        strategy: computeStrategy
+      });
       
       const { data, error } = await supabase.functions.invoke('compute-debt-plan', {
         body: {
@@ -461,7 +476,12 @@ export function DebtCalculator() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Compute error:', error);
+        throw error;
+      }
+      
+      console.log('Compute result:', data);
       
       toast({ title: "Success", description: "Debt plan calculated successfully" });
       
