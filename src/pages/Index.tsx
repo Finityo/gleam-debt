@@ -111,13 +111,13 @@ const Index = () => {
         <div className="relative container mx-auto px-4 py-20">
           <div className="max-w-2xl mx-auto text-center">
             {/* Glassmorphism Card */}
-            <div className="backdrop-blur-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-3xl p-10 shadow-[var(--shadow-glass)] animate-fade-in">
+            <div className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/30 border border-white/20 dark:border-gray-700/50 rounded-3xl p-10 shadow-2xl animate-fade-in">
               {/* Icon */}
               <div className="flex justify-center mb-6">
                 <img 
                   src="/finityo-icon-final.png" 
                   alt="Finityo Icon" 
-                  className="w-[110px] h-[110px] rounded-[24px] backdrop-blur-sm bg-white/10 border border-white/30 shadow-[0_8px_32px_rgba(255,255,255,0.15)] p-1"
+                  className="w-[110px] h-[110px] rounded-[24px] backdrop-blur-sm bg-white/10 border border-white/30 shadow-xl p-1"
                   loading="eager"
                 />
               </div>
