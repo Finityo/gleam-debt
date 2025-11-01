@@ -410,67 +410,80 @@ const DebtPlan = () => {
           </TabsContent>
 
           <TabsContent value="calendar">
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-4">Monthly Payoff Calendar</h2>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="sticky left-0 bg-background z-10">Month</TableHead>
-                        <TableHead className="text-center min-w-[120px]">Snowball Total</TableHead>
-                        {result.rows.map((debt) => (
-                          <TableHead key={debt.index} className="text-center min-w-[200px]">
-                            <div className="font-semibold">{debt.name}</div>
-                            {debt.last4 && <div className="text-xs text-muted-foreground">({debt.last4})</div>}
-                            {debt.dueDate && <div className="text-xs text-muted-foreground mt-1">{formatDueDate(debt.dueDate)}</div>}
-                            <div className="text-xs text-muted-foreground mt-1">
-                              Bal: ${debt.balance.toFixed(2)} | Min: ${debt.minPayment.toFixed(2)} | APR: {(debt.apr * 100).toFixed(1)}%
+            <div className="space-y-3">
+              <div className="mb-4">
+                <h2 className="text-2xl font-semibold mb-2">Monthly Payoff Calendar</h2>
+                <p className="text-sm text-muted-foreground">
+                  Click any month to expand and view detailed payment breakdown
+                </p>
+              </div>
+              
+              {result.schedule && result.schedule.map((snapshot) => (
+                <Collapsible key={snapshot.month}>
+                  <Card className="overflow-hidden">
+                    <CollapsibleTrigger className="w-full">
+                      <CardHeader className="flex flex-row items-center justify-between py-4 hover:bg-muted/50 transition-colors cursor-pointer">
+                        <div className="text-left flex-1">
+                          <div className="flex items-center gap-3">
+                            <CardTitle className="text-lg">Month {snapshot.month}</CardTitle>
+                            <div className="text-sm text-muted-foreground">
+                              Snowball: <span className="font-semibold text-foreground">${snapshot.snowballExtra.toFixed(2)}</span>
                             </div>
-                          </TableHead>
-                        ))}
-                        <TableHead className="text-center min-w-[120px]">Remaining</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {result.schedule && result.schedule.map((snapshot) => (
-                        <TableRow key={snapshot.month}>
-                          <TableCell className="sticky left-0 bg-background z-10 font-medium">
-                            Month {snapshot.month}
-                          </TableCell>
-                          <TableCell className="text-center font-medium">
-                            ${snapshot.snowballExtra.toFixed(2)}
-                          </TableCell>
+                            <div className="text-sm text-muted-foreground">
+                              Remaining: <span className="font-semibold text-foreground">${snapshot.totalRemaining.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-200 data-[state=open]:rotate-180" />
+                      </CardHeader>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <CardContent className="pt-0 pb-4">
+                        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                           {snapshot.debts.map((debt, idx) => (
-                            <TableCell key={idx} className="text-center">
+                            <div 
+                              key={idx} 
+                              className="p-4 bg-muted/50 rounded-lg border border-border/50"
+                            >
+                              <div className="font-semibold mb-3 text-sm">
+                                {debt.name}
+                                {debt.last4 && <span className="text-muted-foreground ml-1">({debt.last4})</span>}
+                              </div>
+                              
                               {debt.endBalance > 0 ? (
-                                <div className="space-y-1">
-                                  <div className="font-medium">${debt.payment.toFixed(2)}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Int: ${debt.interest.toFixed(2)}
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Payment:</span>
+                                    <span className="font-medium">${debt.payment.toFixed(2)}</span>
                                   </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Prin: ${debt.principal.toFixed(2)}
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Interest:</span>
+                                    <span className="text-orange-600 dark:text-orange-400">${debt.interest.toFixed(2)}</span>
                                   </div>
-                                  <div className="text-xs font-medium">
-                                    Bal: ${debt.endBalance.toFixed(2)}
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Principal:</span>
+                                    <span className="text-green-600 dark:text-green-400">${debt.principal.toFixed(2)}</span>
+                                  </div>
+                                  <div className="flex justify-between pt-2 border-t border-border/50">
+                                    <span className="text-muted-foreground font-medium">Balance:</span>
+                                    <span className="font-bold">${debt.endBalance.toFixed(2)}</span>
                                   </div>
                                 </div>
                               ) : (
-                                <div className="text-green-600 dark:text-green-400 font-semibold">PAID OFF ✓</div>
+                                <div className="text-green-600 dark:text-green-400 font-semibold text-center py-4">
+                                  ✓ PAID OFF
+                                </div>
                               )}
-                            </TableCell>
+                            </div>
                           ))}
-                          <TableCell className="text-center font-bold">
-                            ${snapshot.totalRemaining.toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+                        </div>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+              ))}
+            </div>
           </TabsContent>
 
           <TabsContent value="mobile">
