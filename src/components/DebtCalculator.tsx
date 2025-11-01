@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Plus, Upload, AlertCircle } from "lucide-react";
+import { Trash2, Plus, Upload, AlertCircle, Download } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from 'exceljs';
 import { logError } from '@/utils/logger';
@@ -577,6 +577,64 @@ export function DebtCalculator() {
 
 
 
+  const handleDownloadBlankTemplate = async () => {
+    try {
+      const workbook = new XLSX.Workbook();
+      const worksheet = workbook.addWorksheet('Debts');
+      
+      // Add header row with styling
+      const headerRow = worksheet.addRow(['Name', 'Last4', 'Balance', 'MinPayment', 'APR', 'DueDate']);
+      headerRow.font = { bold: true };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE0E0E0' }
+      };
+      
+      // Set column widths
+      worksheet.columns = [
+        { width: 25 },  // Name
+        { width: 10 },  // Last4
+        { width: 15 },  // Balance
+        { width: 15 },  // MinPayment
+        { width: 10 },  // APR
+        { width: 12 }   // DueDate
+      ];
+      
+      // Add example row with instructions
+      worksheet.addRow([
+        'Example Debt',
+        '1234',
+        '5000',
+        '150',
+        '18.5',
+        '15'
+      ]);
+      
+      // Generate and download
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Finityo_Debt_Template.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast({ 
+        title: "Success", 
+        description: "Blank debt template downloaded successfully" 
+      });
+    } catch (error) {
+      logError('DebtCalculator - Download Template', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to download template", 
+        variant: "destructive" 
+      });
+    }
+  };
+
   const handleImportClick = () => {
     fileInputRef.current?.click();
   };
@@ -791,6 +849,11 @@ export function DebtCalculator() {
                 <Button onClick={handleImportClick} size="sm" variant="outline">
                   <Upload className="h-4 w-4 mr-2" />
                   Import Excel
+                </Button>
+                
+                <Button onClick={handleDownloadBlankTemplate} size="sm" variant="outline">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Template
                 </Button>
                 <input
                   ref={fileInputRef}

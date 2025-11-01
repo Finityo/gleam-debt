@@ -11,7 +11,7 @@ import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
 import { PlaidAnalytics } from '@/components/PlaidAnalytics';
 import { TrialSubscriptionDialog } from '@/components/TrialSubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Printer } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Printer, AlertCircle } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
@@ -221,6 +221,20 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-6">
                 Follow this step-by-step process to take control of your finances
               </p>
+              
+              <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                <div className="flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Import Your Debts</p>
+                    <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
+                      <strong>Step 1:</strong> Use "Import from Bank" to connect your accounts via Plaid for automatic import.<br/>
+                      <strong>Step 2:</strong> For banks not supported by Plaid, download the blank Excel template and fill in your debt information manually, then upload it using "Import Excel".<br/>
+                      <strong>Step 3:</strong> Any remaining debts can be added manually using the form below.
+                    </p>
+                  </div>
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Button
