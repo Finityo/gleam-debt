@@ -80,6 +80,42 @@ export type Database = {
         }
         Relationships: []
       }
+      debt_plans: {
+        Row: {
+          created_at: string
+          debt_snapshot: Json
+          extra_monthly: number
+          id: string
+          one_time: number
+          plan_data: Json
+          strategy: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          debt_snapshot: Json
+          extra_monthly?: number
+          id?: string
+          one_time?: number
+          plan_data: Json
+          strategy: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          debt_snapshot?: Json
+          extra_monthly?: number
+          id?: string
+          one_time?: number
+          plan_data?: Json
+          strategy?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       debts: {
         Row: {
           apr: number

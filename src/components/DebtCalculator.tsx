@@ -192,8 +192,22 @@ export function DebtCalculator() {
       
       // Ensure strategy is always snowball on load
       setStrategy('snowball');
+      
+      // Trigger auto-computation of debt plans
+      await triggerAutoComputation();
     } catch (error: any) {
       logError('DebtCalculator - Load Data', error);
+    }
+  };
+
+  const triggerAutoComputation = async () => {
+    try {
+      const { error } = await supabase.functions.invoke('auto-compute-debt-plans');
+      if (error) {
+        console.error('Auto-compute error:', error);
+      }
+    } catch (error) {
+      console.error('Failed to trigger auto-computation:', error);
     }
   };
 
@@ -223,6 +237,9 @@ export function DebtCalculator() {
         );
 
         if (error) throw error;
+        
+        // Trigger auto-computation after saving debts
+        await triggerAutoComputation();
       }
     } catch (error: any) {
       logError('DebtCalculator - Save Debts', error);

@@ -93,40 +93,81 @@ const DebtPlan = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [result, setResult] = useState<ComputeResult | null>(location.state?.result || null);
-  const [strategy, setStrategy] = useState<Strategy>(location.state?.strategy || 'snowball');
+  const [strategy, setStrategy] = useState<Strategy>('snowball');
   const [debts, setDebts] = useState<DebtInput[]>(location.state?.debts || []);
   const [extra, setExtra] = useState<number>(location.state?.extra || 0);
   const [oneTime, setOneTime] = useState<number>(location.state?.oneTime || 0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handlePrint = () => {
     window.print();
   };
 
   useEffect(() => {
-    if (!result) {
+    loadPrecomputedPlan();
+  }, []);
+
+  const loadPrecomputedPlan = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch the pre-computed plan for the current strategy
+      const { data: plan, error } = await supabase
+        .from('debt_plans')
+        .select('*')
+        .eq('strategy', strategy)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      if (plan) {
+        setResult(plan.plan_data as unknown as ComputeResult);
+        setDebts(plan.debt_snapshot as unknown as DebtInput[]);
+        setExtra(parseFloat(plan.extra_monthly?.toString() || '0'));
+        setOneTime(parseFloat(plan.one_time?.toString() || '0'));
+      } else {
+        // No pre-computed plan found, redirect to debts page
+        toast({ 
+          title: "No Plan Available", 
+          description: "Please add your debts first to generate a payoff plan.",
+          variant: "default"
+        });
+        navigate('/debts');
+      }
+    } catch (error) {
+      logError('DebtPlan - Load Plan', error);
+      toast({ title: "Error", description: "Failed to load debt plan", variant: "destructive" });
       navigate('/debts');
+    } finally {
+      setIsLoading(false);
     }
-  }, [result, navigate]);
+  };
 
   const handleStrategyChange = async (newStrategy: Strategy) => {
     setStrategy(newStrategy);
     try {
       setIsLoading(true);
-      const { data, error } = await supabase.functions.invoke('compute-debt-plan', {
-        body: {
-          debts: debts.map(d => ({ ...d, apr: d.apr > 1 ? d.apr / 100 : d.apr })),
-          extraMonthly: extra,
-          oneTime: oneTime,
-          strategy: newStrategy
-        }
-      });
+      
+      // Fetch the pre-computed plan for the new strategy
+      const { data: plan, error } = await supabase
+        .from('debt_plans')
+        .select('*')
+        .eq('strategy', newStrategy)
+        .single();
 
       if (error) throw error;
-      setResult(data);
+      
+      if (plan) {
+        setResult(plan.plan_data as unknown as ComputeResult);
+        setDebts(plan.debt_snapshot as unknown as DebtInput[]);
+        setExtra(parseFloat(plan.extra_monthly?.toString() || '0'));
+        setOneTime(parseFloat(plan.one_time?.toString() || '0'));
+      }
     } catch (error) {
-      logError('DebtPlan - Compute Plan', error);
-      toast({ title: "Error", description: "Failed to compute debt plan", variant: "destructive" });
+      logError('DebtPlan - Switch Strategy', error);
+      toast({ title: "Error", description: "Failed to load debt plan for this strategy", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -167,6 +208,17 @@ const DebtPlan = () => {
       setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your debt payoff plan...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!result) {
     return null;
