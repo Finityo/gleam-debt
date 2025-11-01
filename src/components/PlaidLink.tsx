@@ -222,6 +222,7 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
           throw new Error('No link token received');
         }
         
+        console.log('PlaidLink: Link token received successfully');
         setLinkToken(response.data.link_token);
       } catch (error: any) {
         console.error('Create link token error:', error);
@@ -271,11 +272,15 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleConnectClick = () => {
+    console.log('PlaidLink: Connect button clicked', { ready, consentGiven, linkToken: !!linkToken });
+    
     // SECURITY: Always show consent dialog before connecting to financial institutions
     // Required for GDPR, CCPA, and financial data sharing regulations
     if (!consentGiven) {
+      console.log('PlaidLink: Showing consent dialog');
       setShowConsentDialog(true);
     } else {
+      console.log('PlaidLink: Opening Plaid Link');
       open();
     }
   };
