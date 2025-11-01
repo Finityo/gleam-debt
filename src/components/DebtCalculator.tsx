@@ -282,9 +282,17 @@ export function DebtCalculator() {
   };
 
   const updateDebt = (index: number, field: keyof DebtInput, value: any) => {
-    const newDebts = [...debts];
-    newDebts[index] = { ...newDebts[index], [field]: value };
-    setDebts(newDebts);
+    try {
+      if (index < 0 || index >= debts.length) {
+        console.error('Invalid debt index:', index);
+        return;
+      }
+      const newDebts = [...debts];
+      newDebts[index] = { ...newDebts[index], [field]: value };
+      setDebts(newDebts);
+    } catch (error) {
+      logError('DebtCalculator - Update Debt', error);
+    }
   };
 
   const sortDebts = (debtsToSort: DebtInput[]): DebtInput[] => {
@@ -843,7 +851,7 @@ export function DebtCalculator() {
             <Carousel className="w-full">
               <CarouselContent className="-ml-4">
                 {debts.map((debt, index) => (
-                  <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                  <CarouselItem key={debt.id || `debt-${index}`} className="pl-4 md:basis-1/2 lg:basis-1/3">
                     <Card className="h-full">
                       <CardContent className="pt-6">
                           <div className="flex gap-4">
@@ -923,22 +931,22 @@ export function DebtCalculator() {
                               </div>
                               <div className="space-y-2">
                                 <Label>APR (%)</Label>
-                                <Input
-                                  type="text"
-                                  inputMode="decimal"
-                                  placeholder="18.99"
-                                  className="placeholder:text-muted-foreground/50"
-                                  value={debt.apr || ''}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-                                      const numValue = value === '' ? 0 : parseFloat(value);
-                                      if (numValue <= 100) {
-                                        updateDebt(index, 'apr', numValue || 0);
-                                      }
-                                    }
-                                  }}
-                                />
+                                 <Input
+                                   type="text"
+                                   inputMode="decimal"
+                                   placeholder="18.99"
+                                   className="placeholder:text-muted-foreground/50"
+                                   value={debt.apr || ''}
+                                   onChange={(e) => {
+                                     const value = e.target.value;
+                                     if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                                       const numValue = value === '' ? 0 : parseFloat(value);
+                                       if (!isNaN(numValue) && numValue <= 100) {
+                                         updateDebt(index, 'apr', numValue);
+                                       }
+                                     }
+                                   }}
+                                 />
                               </div>
                               <div className="space-y-2">
                                 <Label>Due Date</Label>
@@ -947,11 +955,17 @@ export function DebtCalculator() {
                                   placeholder="Due by 15"
                                   className="placeholder:text-muted-foreground/50"
                                   value={debt.dueDate || ''}
-                                  onChange={(e) => {
+                                 onChange={(e) => {
                                     const value = e.target.value.trim();
                                     const dayMatch = value.match(/\d+/);
-                                    const day = dayMatch ? parseInt(dayMatch[0]) : '';
-                                    updateDebt(index, 'dueDate', day.toString());
+                                    if (dayMatch) {
+                                      const day = parseInt(dayMatch[0]);
+                                      if (!isNaN(day) && day >= 1 && day <= 31) {
+                                        updateDebt(index, 'dueDate', day.toString());
+                                      }
+                                    } else {
+                                      updateDebt(index, 'dueDate', '');
+                                    }
                                   }}
                                 />
                               </div>
@@ -1111,8 +1125,14 @@ export function DebtCalculator() {
                 onChange={(e) => {
                   const value = e.target.value.trim();
                   const dayMatch = value.match(/\d+/);
-                  const day = dayMatch ? parseInt(dayMatch[0]) : '';
-                  setNewDebt({...newDebt, dueDate: day.toString()});
+                  if (dayMatch) {
+                    const day = parseInt(dayMatch[0]);
+                    if (!isNaN(day) && day >= 1 && day <= 31) {
+                      setNewDebt({...newDebt, dueDate: day.toString()});
+                    }
+                  } else {
+                    setNewDebt({...newDebt, dueDate: ''});
+                  }
                 }}
               />
             </div>
