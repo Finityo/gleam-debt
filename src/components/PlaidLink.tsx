@@ -254,8 +254,26 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
 
     createLinkToken();
 
-    // Handle OAuth redirect from sessionStorage
-    const handleOAuthRedirect = (event?: CustomEvent) => {
+    // Handle OAuth redirect - both from postMessage (popup) and sessionStorage (same window)
+    const handleOAuthMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'plaid-oauth-complete') {
+        const { oauth_state_id, received_redirect_uri } = event.data;
+        
+        console.log('Received OAuth completion via postMessage:', {
+          oauth_state_id,
+          received_redirect_uri
+        });
+        
+        // Store for config to pick up
+        sessionStorage.setItem('plaid_oauth_redirect_uri', received_redirect_uri);
+        sessionStorage.setItem('plaid_oauth_state_id', oauth_state_id);
+        
+        // Trigger re-render to update config with receivedRedirectUri
+        setLinkToken(prev => prev);
+      }
+    };
+
+    const handleOAuthRedirect = () => {
       const redirectUri = sessionStorage.getItem('plaid_oauth_redirect_uri');
       const oauthStateId = sessionStorage.getItem('plaid_oauth_state_id');
       
@@ -274,7 +292,8 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
       }
     };
 
-    // Listen for OAuth redirect event
+    // Listen for both postMessage (popup flow) and check sessionStorage (same-window flow)
+    window.addEventListener('message', handleOAuthMessage);
     window.addEventListener('plaid-oauth-redirect', handleOAuthRedirect as EventListener);
     
     // Check immediately in case we just redirected
@@ -283,6 +302,7 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
     }
 
     return () => {
+      window.removeEventListener('message', handleOAuthMessage);
       window.removeEventListener('plaid-oauth-redirect', handleOAuthRedirect as EventListener);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

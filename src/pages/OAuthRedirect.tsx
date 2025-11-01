@@ -24,26 +24,35 @@ const OAuthRedirect = () => {
     });
 
     if (oauthStateId) {
-      // Store the full redirect URL - Plaid needs this to resume Link
-      sessionStorage.setItem('plaid_oauth_redirect_uri', fullUrl);
-      sessionStorage.setItem('plaid_oauth_state_id', oauthStateId);
-      
-      // Trigger Link reinitialization via event with full URL
-      window.dispatchEvent(new CustomEvent('plaid-oauth-redirect', {
-        detail: { 
+      // For mobile: Try to communicate with opener window first
+      if (window.opener && !window.opener.closed) {
+        console.log('Posting message to opener window');
+        window.opener.postMessage({
+          type: 'plaid-oauth-complete',
           oauth_state_id: oauthStateId,
           received_redirect_uri: fullUrl
-        }
-      }));
-
-      // Navigate back to dashboard where PlaidLink will resume
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 500);
+        }, '*');
+        
+        // Close the OAuth window after sending message
+        setTimeout(() => {
+          window.close();
+        }, 500);
+      } else {
+        // Fallback for same-window flow
+        sessionStorage.setItem('plaid_oauth_redirect_uri', fullUrl);
+        sessionStorage.setItem('plaid_oauth_state_id', oauthStateId);
+        
+        // Immediately redirect to dashboard
+        window.location.replace('/dashboard');
+      }
     } else {
       console.error('No oauth_state_id found in redirect URL');
-      // Navigate back to dashboard anyway
-      navigate('/dashboard', { replace: true });
+      // Try to close if popup, otherwise redirect
+      if (window.opener && !window.opener.closed) {
+        window.close();
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     }
   }, [navigate]);
 
@@ -52,7 +61,8 @@ const OAuthRedirect = () => {
       <div className="text-center space-y-4">
         <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
         <h2 className="text-xl font-semibold">Completing Bank Connection</h2>
-        <p className="text-muted-foreground">Please wait while we finalize your connection...</p>
+        <p className="text-muted-foreground">Returning to Finityo...</p>
+        <p className="text-xs text-muted-foreground">This window will close automatically</p>
       </div>
     </div>
   );
