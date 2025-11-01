@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { ArrowLeft, Download, Info, ChevronDown, Printer, Calendar, DollarSign, TrendingUp, CheckCircle2, Circle } from 'lucide-react';
+import { ArrowLeft, Download, Info, ChevronDown, Printer } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
