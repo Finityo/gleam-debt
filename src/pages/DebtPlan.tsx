@@ -7,11 +7,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { ArrowLeft, Download, Info, ChevronDown, Printer } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ArrowLeft, Download, Info, ChevronDown, Printer, CheckCircle2, XCircle } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/logger';
+import { validateDebtSnowballLogic } from '@/utils/debtSnowballValidator';
 
 type Strategy = "snowball" | "avalanche";
 
@@ -98,6 +100,7 @@ const DebtPlan = () => {
   const [extra, setExtra] = useState<number>(location.state?.extra || 0);
   const [oneTime, setOneTime] = useState<number>(location.state?.oneTime || 0);
   const [isLoading, setIsLoading] = useState(true);
+  const [validationResult, setValidationResult] = useState<any>(null);
 
   const handlePrint = () => {
     window.print();
@@ -127,6 +130,19 @@ const DebtPlan = () => {
         setDebts(plan.debt_snapshot as unknown as DebtInput[]);
         setExtra(parseFloat(plan.extra_monthly?.toString() || '0'));
         setOneTime(parseFloat(plan.one_time?.toString() || '0'));
+        
+        // Validate snowball logic if strategy is snowball
+        if (strategy === 'snowball' && plan.debt_snapshot) {
+          const debtInputs = (plan.debt_snapshot as unknown as DebtInput[]).map((d: any) => ({
+            name: d.name,
+            balance: d.balance,
+            minPayment: d.minPayment
+          }));
+          const validation = validateDebtSnowballLogic(debtInputs);
+          setValidationResult(validation);
+        } else {
+          setValidationResult(null);
+        }
       } else {
         // No pre-computed plan found, redirect to debts page
         toast({ 
@@ -164,6 +180,19 @@ const DebtPlan = () => {
         setDebts(plan.debt_snapshot as unknown as DebtInput[]);
         setExtra(parseFloat(plan.extra_monthly?.toString() || '0'));
         setOneTime(parseFloat(plan.one_time?.toString() || '0'));
+        
+        // Validate snowball logic if new strategy is snowball
+        if (newStrategy === 'snowball' && plan.debt_snapshot) {
+          const debtInputs = (plan.debt_snapshot as unknown as DebtInput[]).map((d: any) => ({
+            name: d.name,
+            balance: d.balance,
+            minPayment: d.minPayment
+          }));
+          const validation = validateDebtSnowballLogic(debtInputs);
+          setValidationResult(validation);
+        } else {
+          setValidationResult(null);
+        }
       }
     } catch (error) {
       logError('DebtPlan - Switch Strategy', error);
@@ -392,6 +421,27 @@ const DebtPlan = () => {
                 </div>
               </CardHeader>
               <CardContent>
+                {validationResult && strategy === 'snowball' && (
+                  <Alert className={`mb-6 ${validationResult.isValid ? 'border-green-500 bg-green-50 dark:bg-green-950/20' : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20'}`}>
+                    <div className="flex items-start gap-3">
+                      {validationResult.isValid ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <AlertTitle className="text-sm font-semibold mb-2">
+                          Snowball Method Validation
+                        </AlertTitle>
+                        <AlertDescription className="text-sm space-y-1">
+                          {validationResult.messages.map((msg: string, idx: number) => (
+                            <div key={idx} className="leading-relaxed">{msg}</div>
+                          ))}
+                        </AlertDescription>
+                      </div>
+                    </div>
+                  </Alert>
+                )}
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
