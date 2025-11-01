@@ -109,14 +109,14 @@ export const PlaidUpdateBanner = () => {
     }, 1500);
   };
 
-  const config = {
+  const config = linkToken ? {
     token: linkToken,
     onSuccess: onSuccessCallback,
     onExit: () => {
       setLinkToken(null);
       setSelectedItem(null);
     },
-  };
+  } : null;
 
   const { open, ready } = usePlaidLink(config);
 
