@@ -449,12 +449,12 @@ const DebtPlan = () => {
                             ? 'border-success/50 bg-gradient-to-br from-success/10 to-green-500/10' 
                             : 'border-primary/20 hover:border-primary/40'
                         }`}>
-                          <CollapsibleTrigger className="w-full">
+                          <CollapsibleTrigger asChild>
                             <CardHeader className="pb-3 hover:bg-muted/30 transition-colors cursor-pointer">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                   <CardTitle className="text-xl flex items-center gap-2">
-                                    <ChevronDown className="h-5 w-5 transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
+                                    <ChevronDown className="h-5 w-5 transition-transform duration-200" />
                                     Month {snapshot.month}
                                     {isDebtFreeMonth && (
                                       <span className="text-success text-base font-semibold px-3 py-1 rounded-full bg-success/20 border border-success/30">
