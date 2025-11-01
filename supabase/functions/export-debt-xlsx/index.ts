@@ -247,18 +247,22 @@ async function exportXLSX(
   // Title based on strategy
   const title = strategy === 'snowball' ? 'Snowball Debt Planner' : 'Avalanche Debt Planner';
   
-  // A1: Title
+  // A1:H1 - Title (merged and centered)
+  worksheet.mergeCells('A1:H1');
   worksheet.getCell('A1').value = title;
   worksheet.getCell('A1').font = { bold: true, size: 14 };
+  worksheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
   
-  // A2: Export date
+  // A2:H2 - Export date (merged and centered)
   const exportDate = new Date().toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long', 
     day: 'numeric' 
   });
+  worksheet.mergeCells('A2:H2');
   worksheet.getCell('A2').value = `Exported: ${exportDate}`;
   worksheet.getCell('A2').font = { size: 11 };
+  worksheet.getCell('A2').alignment = { horizontal: 'center', vertical: 'middle' };
 
   // A5-H5: Column headers
   const headers = ['No.', 'Creditor', 'Last 4', 'Balance', 'Min Payment', 'APR', 'Due Date', 'Est. Month to Payoff'];
