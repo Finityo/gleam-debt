@@ -236,98 +236,99 @@ function computePlan(req: ComputeRequest) {
   return { rows, totals };
 }
 
-async function exportXLSX(result: { rows: DebtPlanRow[], totals: any }): Promise<ArrayBuffer> {
-  const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet("Debt Plan");
+async function exportXLSX(
+  result: { rows: DebtPlanRow[], totals: any }, 
+  strategy: Strategy,
+  debts: DebtInput[]
+): Promise<ArrayBuffer> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Debt Plan');
+
+  // Title based on strategy
+  const title = strategy === 'snowball' ? 'Snowball Debt Planner' : 'Avalanche Debt Planner';
   
-  // Get current date for export
+  // A1: Title
+  worksheet.getCell('A1').value = title;
+  worksheet.getCell('A1').font = { bold: true, size: 14 };
+  
+  // A2: Export date
   const exportDate = new Date().toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long', 
     day: 'numeric' 
   });
-  
-  // Add date row (row 1)
-  ws.mergeCells('A1:J1');
-  const dateCell = ws.getCell('A1');
-  dateCell.value = `Exported: ${exportDate}`;
-  dateCell.alignment = { horizontal: 'left', vertical: 'middle' };
-  
-  // Add empty row for spacing (row 2)
-  ws.addRow([]);
-  
-  // Add empty row for spacing (row 3)
-  ws.addRow([]);
+  worksheet.getCell('A2').value = `Exported: ${exportDate}`;
+  worksheet.getCell('A2').font = { size: 11 };
 
-  // Define column headers (row 4) to match uploaded format exactly
-  const headerRow = ws.addRow([
-    'No.',
-    'Creditor',
-    'Last 4',
-    'Balance',
-    'min payment',
-    'APR',
-    '', // Monthly rate column (unlabeled)
-    '', // Total payment column (unlabeled)
-    '', // Empty column
-    'Due Date',
-    'Est. Months'
-  ]);
-  
+  // A5-H5: Column headers
+  const headers = ['No.', 'Creditor', 'Last 4', 'Balance', 'Min Payment', 'APR', 'Due Date', 'Est. Month to Payoff'];
+  worksheet.getRow(5).values = headers;
+  worksheet.getRow(5).font = { bold: true };
+  worksheet.getRow(5).alignment = { horizontal: 'center', vertical: 'middle' };
+
   // Set column widths
-  ws.columns = [
-    { width: 6 },   // No.
-    { width: 30 },  // Creditor
-    { width: 8 },   // Last 4
-    { width: 12 },  // Balance
-    { width: 12 },  // min payment
-    { width: 10 },  // APR
-    { width: 14 },  // Monthly rate (unlabeled)
-    { width: 14 },  // Total payment (unlabeled)
-    { width: 8 },   // Empty
-    { width: 10 },  // Due Date
-    { width: 12 }   // Est. Months
+  worksheet.columns = [
+    { width: 6 },  // No.
+    { width: 35 }, // Creditor
+    { width: 10 }, // Last 4
+    { width: 12 }, // Balance
+    { width: 13 }, // Min Payment
+    { width: 6 },  // APR
+    { width: 10 }, // Due Date
+    { width: 20 }  // Est. Month to Payoff
   ];
 
-  // Style header row
-  headerRow.font = { bold: false };
-  headerRow.alignment = { horizontal: 'left', vertical: 'middle' };
+  // Sort debts based on strategy
+  const sortedDebts = sortDebts(debts, strategy);
 
-  // Add data rows
-  result.rows.forEach(r => {
-    ws.addRow([
-      r.index,
-      r.name,
-      r.last4 ?? "",
-      r.balance,
-      r.minPayment,
-      r.apr,
-      r.monthlyRate,
-      r.totalPayment,
-      "", // Empty column
-      r.dueDate ?? "",
-      r.monthsToPayoff
-    ]);
+  // Add debt rows starting at row 6
+  sortedDebts.forEach((debt, index) => {
+    const rowNum = 6 + index;
+    const row = worksheet.getRow(rowNum);
+    
+    // Calculate estimated months to payoff for this debt
+    const monthlyRate = debt.apr / 100 / 12;
+    const estimatedMonths = monthsToPayoff(debt.balance, debt.minPayment, monthlyRate);
+    
+    row.values = [
+      index + 1,
+      debt.name,
+      debt.last4 || '',
+      debt.balance,
+      debt.minPayment,
+      `${debt.apr}%`,
+      debt.dueDate || '',
+      Math.ceil(estimatedMonths)
+    ];
+
+    // Format numbers
+    row.getCell(4).numFmt = '$#,##0.00'; // Balance
+    row.getCell(5).numFmt = '$#,##0.00'; // Min Payment
+    row.getCell(8).numFmt = '0'; // Months
+
+    // Add borders to all debt cells
+    for (let col = 1; col <= 8; col++) {
+      row.getCell(col).border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    }
   });
 
-  // Add totals row
-  const totalsRow = ws.addRow([
-    "",
-    "",
-    "",
-    result.totals.sumBalance,
-    result.totals.sumMinPayment,
-    "",
-    "",
-    "",
-    "",
-    result.totals.totalMonths,
-    ""
-  ]);
-  totalsRow.font = { bold: false };
+  // Add borders to header row
+  for (let col = 1; col <= 8; col++) {
+    worksheet.getRow(5).getCell(col).border = {
+      top: { style: 'medium' },
+      left: { style: 'thin' },
+      bottom: { style: 'medium' },
+      right: { style: 'thin' }
+    };
+  }
 
-  const buf = await wb.xlsx.writeBuffer();
-  return buf;
+  const buffer = await workbook.xlsx.writeBuffer();
+  return buffer;
 }
 
 serve(async (req) => {
@@ -343,9 +344,9 @@ serve(async (req) => {
     validated.debts.forEach(d => (d.apr = d.apr > 1 ? d.apr / 100 : d.apr));
     
     const result = computePlan(validated);
-    const xlsx = await exportXLSX(result);
+    const xlsx = await exportXLSX(result, validated.strategy, validated.debts);
     
-    const filename = validated.strategy === 'snowball' ? 'Snowball.xlsx' : 'Avalanche.xlsx';
+    const filename = validated.strategy === 'snowball' ? 'snowball-debt-planner.xlsx' : 'avalanche-debt-planner.xlsx';
 
     return new Response(xlsx, {
       headers: { 
