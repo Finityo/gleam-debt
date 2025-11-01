@@ -406,7 +406,93 @@ serve(async (req) => {
       }
     }
 
-    console.log('Successfully imported', importedDebts.length, 'debts');
+    // Also import credit cards and loans from plaid_accounts that weren't in liabilities
+    const { data: allPlaidAccounts, error: allAccountsError } = await supabaseClient
+      .from('plaid_accounts')
+      .select('*')
+      .eq('user_id', user.id)
+      .in('type', ['credit', 'loan']);
+
+    if (!allAccountsError && allPlaidAccounts) {
+      console.log('Checking', allPlaidAccounts.length, 'accounts from plaid_accounts table');
+      
+      for (const account of allPlaidAccounts) {
+        // Skip if already imported
+        const alreadyImported = importedDebts.some(debt => {
+          const debtLast4 = debt.last4;
+          const accountLast4 = account.mask || account.account_id.slice(-4);
+          return debt.name === account.name && debtLast4 === accountLast4;
+        });
+
+        if (alreadyImported) {
+          console.log('Skipping already imported account:', account.name);
+          continue;
+        }
+
+        const balance = Math.abs(account.current_balance || 0);
+        
+        // Skip accounts with zero or negative balance
+        if (balance <= 0) {
+          console.log('Skipping account with zero/negative balance:', account.name);
+          continue;
+        }
+
+        const last4 = account.mask || account.account_id.slice(-4);
+        
+        // Check for existing debt
+        const { data: existingDebt } = await supabaseClient
+          .from('debts')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('name', account.name)
+          .eq('last4', last4)
+          .maybeSingle();
+
+        // Use defaults since we don't have full liability data
+        const rawDebtData = {
+          balance: balance,
+          apr: account.type === 'credit' ? 0.18 : 0.05, // 18% for credit, 5% for loans
+          min_payment: balance * (account.type === 'credit' ? 0.02 : 0.01), // 2% for credit, 1% for loans
+          due_date: null,
+        };
+
+        const debtData = debtDataSchema.parse(rawDebtData);
+
+        if (existingDebt) {
+          const { data: debt, error: updateError } = await supabaseClient
+            .from('debts')
+            .update(debtData)
+            .eq('id', existingDebt.id)
+            .select()
+            .single();
+          
+          if (!updateError && debt) {
+            console.log('Updated existing account from plaid_accounts:', account.name);
+            importedDebts.push(debt);
+          }
+        } else {
+          const { data: debt, error: insertError } = await supabaseClient
+            .from('debts')
+            .insert({
+              user_id: user.id,
+              name: account.name,
+              last4: last4,
+              ...debtData
+            })
+            .select()
+            .single();
+
+          if (!insertError && debt) {
+            console.log('Imported new account from plaid_accounts:', account.name);
+            importedDebts.push(debt);
+          } else {
+            console.error('Error inserting account from plaid_accounts:', insertError);
+          }
+        }
+      }
+    }
+
+    console.log('Successfully imported', importedDebts.length, 'total debts');
 
     return new Response(
       JSON.stringify({ 
