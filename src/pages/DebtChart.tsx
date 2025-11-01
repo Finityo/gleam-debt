@@ -53,7 +53,7 @@ const DebtChart = () => {
         return;
       }
 
-      // Fetch all debts from debts table
+      // Fetch ALL debts (both Plaid-imported and Excel-imported)
       const { data: debtData, error: debtError } = await supabase
         .from('debts')
         .select('*')
@@ -65,16 +65,20 @@ const DebtChart = () => {
       const allDebts = debtData || [];
       setDebts(allDebts);
       
-      // Fetch Plaid credit accounts for accurate credit utilization data
+      // Calculate total debt from ALL sources
+      const totalDebtAmount = allDebts.reduce((sum, debt) => sum + debt.balance, 0);
+      
+      // Fetch Plaid credit accounts for accurate credit utilization
       const { data: accounts, error: accountsError } = await supabase
         .from('plaid_accounts')
-        .select('current_balance, available_balance, subtype')
+        .select('current_balance, available_balance, subtype, name, mask')
         .eq('user_id', session.user.id)
         .in('subtype', ['credit card', 'credit']);
 
       if (accountsError) throw accountsError;
       
-      // Calculate credit utilization from Plaid accounts only
+      // Calculate credit utilization from Plaid accounts ONLY
+      // (Excel imports don't have credit limit data)
       let plaidDebtAmount = 0;
       let creditLimit = 0;
       
@@ -92,12 +96,17 @@ const DebtChart = () => {
         });
       }
       
-      // Total debt shown = sum of ALL debts (Plaid + manual entries)
-      const totalDebtAmount = allDebts.reduce((sum, debt) => sum + debt.balance, 0);
-      
       setTotalDebt(totalDebtAmount);
       setTotalLimit(creditLimit);
       setPlaidDebt(plaidDebtAmount);
+      
+      console.log('Chart Data:', {
+        totalDebts: allDebts.length,
+        totalDebtAmount,
+        plaidAccounts: accounts?.length || 0,
+        plaidDebtAmount,
+        creditLimit
+      });
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -152,6 +161,7 @@ const DebtChart = () => {
           <StatCard
             title="Total Debt"
             value={`$${totalDebt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subtitle={`${debts.length} ${debts.length === 1 ? 'debt' : 'debts'} total`}
             icon={CreditCard}
             className="border-destructive/20"
           />
@@ -159,7 +169,7 @@ const DebtChart = () => {
           <StatCard
             title="Available Credit"
             value={totalLimit > 0 ? `$${availableCredit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}
-            subtitle={totalLimit === 0 ? 'Connect Plaid accounts for credit data' : undefined}
+            subtitle={totalLimit === 0 ? 'Connect bank accounts for credit data' : `From ${totalLimit > 0 ? 'Plaid' : 'connected'} accounts`}
             icon={DollarSign}
             className="border-success/20"
           />
@@ -167,9 +177,9 @@ const DebtChart = () => {
           <StatCard
             title="Credit Utilization"
             value={totalLimit > 0 ? `${utilizationPercentage}%` : 'N/A'}
-            subtitle={totalLimit === 0 ? 'Connect Plaid accounts for utilization data' : (parseFloat(utilizationPercentage) > 30 ? 'Above recommended 30%' : 'Good standing')}
+            subtitle={totalLimit === 0 ? 'Connect bank accounts' : (parseFloat(utilizationPercentage) > 30 ? 'Above recommended 30%' : 'Good standing')}
             icon={TrendingDown}
-            className={parseFloat(utilizationPercentage) > 30 ? 'border-destructive/20' : 'border-success/20'}
+            className={parseFloat(utilizationPercentage) > 30 && totalLimit > 0 ? 'border-destructive/20' : 'border-success/20'}
           />
         </div>
 
@@ -198,7 +208,7 @@ const DebtChart = () => {
                   Debt Distribution
                 </CardTitle>
                 <CardDescription>
-                  Visual breakdown of your {debts.length} active {debts.length === 1 ? 'debt' : 'debts'}
+                  All your debts: {debts.length} {debts.length === 1 ? 'account' : 'accounts'} • Total: ${totalDebt.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -212,6 +222,7 @@ const DebtChart = () => {
                       outerRadius={120}
                       fill="#8884d8"
                       dataKey="value"
+                      label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
                     >
                       {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -225,7 +236,7 @@ const DebtChart = () => {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="mt-4 text-sm text-muted-foreground text-center">
-                  Use the color-coded list below to identify each debt on the chart
+                  Includes both bank-connected and manually entered debts
                 </div>
               </CardContent>
             </Card>
@@ -238,7 +249,7 @@ const DebtChart = () => {
                   Credit Utilization
                 </CardTitle>
                 <CardDescription>
-                  {totalLimit > 0 ? 'Your debt vs. available credit (Plaid accounts only)' : 'Connect Plaid accounts to see credit utilization'}
+                  {totalLimit > 0 ? `From bank-connected accounts only` : 'Connect bank accounts to see utilization'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -251,7 +262,7 @@ const DebtChart = () => {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                          label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(0)}%`}
                           outerRadius={120}
                           fill="#8884d8"
                           dataKey="value"
@@ -268,10 +279,12 @@ const DebtChart = () => {
                         <Legend />
                       </PieChart>
                     </ResponsiveContainer>
-                    <div className="mt-4 p-4 bg-primary/5 border border-primary/10 rounded-lg">
+                    <div className="mt-4 p-4 bg-primary/5 border border-primary/10 rounded-lg space-y-2">
                       <p className="text-sm text-muted-foreground">
-                        <strong className="text-foreground">Tip:</strong> Credit bureaus recommend keeping utilization below 30% for optimal credit scores. 
-                        As you pay down debts, watch the green "Available Credit" section grow!
+                        <strong className="text-foreground">Calculation:</strong> ${plaidDebt.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} used / ${totalLimit.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} limit = {utilizationPercentage}%
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        <strong className="text-foreground">Tip:</strong> Keep utilization below 30% for optimal credit scores. Excel-imported debts aren't included (no credit limit data).
                       </p>
                     </div>
                   </>
@@ -279,10 +292,10 @@ const DebtChart = () => {
                   <div className="h-[400px] flex items-center justify-center text-center p-8">
                     <div>
                       <p className="text-muted-foreground mb-4">
-                        Credit utilization requires Plaid-connected accounts with credit limits.
+                        Credit utilization requires bank-connected accounts with credit limits.
                       </p>
                       <Button onClick={() => navigate('/dashboard')}>
-                        Connect Plaid Account
+                        Connect Bank Account
                       </Button>
                     </div>
                   </div>
