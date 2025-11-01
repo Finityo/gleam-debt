@@ -13,28 +13,33 @@ const OAuthRedirect = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get OAuth parameters from URL
+    // Get the full redirect URL with all parameters
+    const fullUrl = window.location.href;
     const urlParams = new URLSearchParams(window.location.search);
     const oauthStateId = urlParams.get('oauth_state_id');
 
     console.log('OAuth redirect received:', {
       oauthStateId,
-      fullUrl: window.location.href,
+      fullUrl,
     });
 
     if (oauthStateId) {
-      // Store OAuth state in sessionStorage for Link to retrieve
+      // Store the full redirect URL - Plaid needs this to resume Link
+      sessionStorage.setItem('plaid_oauth_redirect_uri', fullUrl);
       sessionStorage.setItem('plaid_oauth_state_id', oauthStateId);
       
-      // Trigger Link reinitialization via event
+      // Trigger Link reinitialization via event with full URL
       window.dispatchEvent(new CustomEvent('plaid-oauth-redirect', {
-        detail: { oauth_state_id: oauthStateId }
+        detail: { 
+          oauth_state_id: oauthStateId,
+          received_redirect_uri: fullUrl
+        }
       }));
 
-      // Navigate back to dashboard after a brief delay
+      // Navigate back to dashboard where PlaidLink will resume
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
-      }, 1000);
+      }, 500);
     } else {
       console.error('No oauth_state_id found in redirect URL');
       // Navigate back to dashboard anyway

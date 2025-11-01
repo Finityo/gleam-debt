@@ -72,8 +72,12 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
     }
   };
 
+  // Check for OAuth redirect URI in sessionStorage
+  const receivedRedirectUri = sessionStorage.getItem('plaid_oauth_redirect_uri');
+  
   const config = {
     token: linkToken,
+    receivedRedirectUri: receivedRedirectUri || undefined,
     onSuccess: onSuccessCallback,
     onEvent: (eventName: string, metadata: any) => {
       // Track all Link events for conversion analytics
@@ -251,23 +255,35 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
     createLinkToken();
 
     // Handle OAuth redirect from sessionStorage
-    const handleOAuthRedirect = () => {
+    const handleOAuthRedirect = (event?: CustomEvent) => {
+      const redirectUri = sessionStorage.getItem('plaid_oauth_redirect_uri');
       const oauthStateId = sessionStorage.getItem('plaid_oauth_state_id');
-      if (oauthStateId && ready) {
-        console.log('Resuming Link with OAuth state:', oauthStateId);
+      
+      if (redirectUri && oauthStateId && ready) {
+        console.log('Resuming Link after OAuth:', {
+          oauth_state_id: oauthStateId,
+          received_redirect_uri: redirectUri
+        });
+        
+        // Clear the stored values
+        sessionStorage.removeItem('plaid_oauth_redirect_uri');
         sessionStorage.removeItem('plaid_oauth_state_id');
+        
+        // Plaid Link will automatically resume with the receivedRedirectUri in config
         open();
       }
     };
 
     // Listen for OAuth redirect event
-    window.addEventListener('plaid-oauth-redirect', handleOAuthRedirect);
+    window.addEventListener('plaid-oauth-redirect', handleOAuthRedirect as EventListener);
     
     // Check immediately in case we just redirected
-    handleOAuthRedirect();
+    if (sessionStorage.getItem('plaid_oauth_redirect_uri')) {
+      handleOAuthRedirect();
+    }
 
     return () => {
-      window.removeEventListener('plaid-oauth-redirect', handleOAuthRedirect);
+      window.removeEventListener('plaid-oauth-redirect', handleOAuthRedirect as EventListener);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
