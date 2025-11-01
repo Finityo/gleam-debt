@@ -1218,7 +1218,14 @@ export function DebtCalculator() {
                         }}
                       />
                       <div className="flex-1 text-sm">
-                        <div className="font-medium">{debt.name}</div>
+                        <div className="font-medium flex items-center gap-2">
+                          {debt.name}
+                          {debt.last4 && (
+                            <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-md font-mono">
+                              •••• {debt.last4}
+                            </span>
+                          )}
+                        </div>
                         <div className="text-muted-foreground mt-1 space-y-0.5">
                           <div>Balance: <span className="font-semibold">${debt.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>
                           <div>APR: {debt.apr}% • Min Payment: ${debt.minPayment.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
