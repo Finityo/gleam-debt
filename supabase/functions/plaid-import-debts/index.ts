@@ -332,6 +332,78 @@ serve(async (req) => {
           }
         }
       }
+
+      // Process personal/auto loans from accounts that aren't in liabilities
+      const loanAccounts = liabilitiesData.accounts.filter((acc: any) => 
+        acc.type === 'loan' && acc.subtype === 'loan'
+      );
+      
+      if (loanAccounts.length > 0) {
+        console.log('Processing', loanAccounts.length, 'personal/auto loans');
+        for (const loanAccount of loanAccounts) {
+          let last4 = loanAccount.mask;
+          
+          // Fallback to account_id last 4 if no mask
+          if (!last4 || last4.trim() === '') {
+            last4 = loanAccount.account_id?.slice(-4) || null;
+            console.log(`No mask for ${loanAccount.name}, using account_id last4: ${last4}`);
+          }
+          
+          const debtName = loanAccount.name || loanAccount.official_name || 'Personal Loan';
+          
+          // Check for existing debt
+          const { data: existingDebt } = await supabaseClient
+            .from('debts')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('name', debtName)
+            .eq('last4', last4)
+            .maybeSingle();
+          
+          // Use 5% as default APR for loans without rate info, 1% of balance for min payment
+          const rawDebtData = {
+            balance: Math.abs(loanAccount.balances?.current || 0),
+            apr: 0.05, // Default 5% APR since loan accounts don't have APR in accounts data
+            min_payment: Math.abs(loanAccount.balances?.current || 0) * 0.01,
+            due_date: null,
+          };
+          
+          // SECURITY: Validate debt data before inserting
+          const debtData = debtDataSchema.parse(rawDebtData);
+
+          if (existingDebt) {
+            const { data: debt, error: updateError } = await supabaseClient
+              .from('debts')
+              .update(debtData)
+              .eq('id', existingDebt.id)
+              .select()
+              .single();
+            
+            if (!updateError && debt) {
+              console.log('Updated existing loan:', debtName);
+              importedDebts.push(debt);
+            }
+          } else {
+            const { data: debt, error: insertError } = await supabaseClient
+              .from('debts')
+              .insert({
+                user_id: user.id,
+                name: debtName,
+                last4: last4,
+                ...debtData
+              })
+              .select()
+              .single();
+
+            if (!insertError && debt) {
+              console.log('Imported new loan:', debtName);
+              importedDebts.push(debt);
+            } else {
+              console.error('Error inserting loan:', insertError);
+            }
+          }
+        }
+      }
     }
 
     console.log('Successfully imported', importedDebts.length, 'debts');
