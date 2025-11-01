@@ -13,7 +13,6 @@ import { PrintExportButton } from '@/components/PrintExportButton';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/logger';
-import { validateDebtSnowballLogic } from '@/utils/debtSnowballValidator';
 
 type Strategy = "snowball" | "avalanche";
 
@@ -91,6 +90,70 @@ const formatDueDate = (dueDate?: string | null): string => {
   return `Due ${day}${suffix(day)} of Every Month`;
 };
 
+const validateDebtSnowball = (schedule: MonthlySnapshot[]) => {
+  const debtOrder: string[] = [];
+  const debtBalances: Record<string, number[]> = {};
+  const debtPayments: Record<string, number[]> = {};
+
+  schedule.forEach(month => {
+    month.debts.forEach(debt => {
+      if (!debtBalances[debt.name]) {
+        debtBalances[debt.name] = [];
+        debtPayments[debt.name] = [];
+      }
+      debtBalances[debt.name].push(debt.endBalance);
+      debtPayments[debt.name].push(debt.payment);
+    });
+  });
+
+  // Sort debts by starting balance
+  const orderedDebts = Object.entries(debtBalances)
+    .map(([name, balances]) => ({ name, start: balances[0] }))
+    .sort((a, b) => a.start - b.start)
+    .map(d => d.name);
+
+  const issues: string[] = [];
+  let isValid = true;
+  let previousPaymentSum = 0;
+
+  orderedDebts.forEach((debtName, i) => {
+    const payments = debtPayments[debtName];
+    const startPayment = payments[0];
+    const endPayment = payments[payments.length - 1];
+
+    // Check if debt was actually paid off
+    const lastBalance = debtBalances[debtName][debtBalances[debtName].length - 1];
+    const paidOff = lastBalance <= 0.01;
+
+    if (!paidOff) {
+      issues.push(`⚠️ ${debtName} not fully paid off`);
+      isValid = false;
+    }
+
+    // Verify snowball progression
+    if (i > 0 && startPayment < previousPaymentSum) {
+      issues.push(`❌ ${debtName} payment did not include rolled-over amount (${
+        startPayment
+      } vs ${previousPaymentSum})`);
+      isValid = false;
+    }
+
+    previousPaymentSum = startPayment;
+  });
+
+  return {
+    isValid,
+    issues,
+    orderedDebts,
+    details: orderedDebts.map(name => ({
+      name,
+      startBalance: debtBalances[name][0],
+      endBalance: debtBalances[name].at(-1),
+      payments: debtPayments[name].slice(0, 6),
+    })),
+  };
+};
+
 const DebtPlan = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -136,14 +199,9 @@ const DebtPlan = () => {
         setExtra(parseFloat(plan.extra_monthly?.toString() || '0'));
         setOneTime(parseFloat(plan.one_time?.toString() || '0'));
         
-        // Validate snowball logic if strategy is snowball
-        if (strategy === 'snowball' && plan.debt_snapshot) {
-          const debtInputs = (plan.debt_snapshot as unknown as DebtInput[]).map((d: any) => ({
-            name: d.name,
-            balance: d.balance,
-            minPayment: d.minPayment
-          }));
-          const validation = validateDebtSnowballLogic(debtInputs);
+        // Validate snowball logic if strategy is snowball and schedule exists
+        if (strategy === 'snowball' && (plan.plan_data as any)?.schedule) {
+          const validation = validateDebtSnowball((plan.plan_data as any).schedule);
           setValidationResult(validation);
         } else {
           setValidationResult(null);
@@ -191,14 +249,9 @@ const DebtPlan = () => {
         setExtra(parseFloat(plan.extra_monthly?.toString() || '0'));
         setOneTime(parseFloat(plan.one_time?.toString() || '0'));
         
-        // Validate snowball logic if new strategy is snowball
-        if (newStrategy === 'snowball' && plan.debt_snapshot) {
-          const debtInputs = (plan.debt_snapshot as unknown as DebtInput[]).map((d: any) => ({
-            name: d.name,
-            balance: d.balance,
-            minPayment: d.minPayment
-          }));
-          const validation = validateDebtSnowballLogic(debtInputs);
+        // Validate snowball logic if new strategy is snowball and schedule exists
+        if (newStrategy === 'snowball' && (plan.plan_data as any)?.schedule) {
+          const validation = validateDebtSnowball((plan.plan_data as any).schedule);
           setValidationResult(validation);
         } else {
           setValidationResult(null);
@@ -445,9 +498,16 @@ const DebtPlan = () => {
                           Snowball Method Validation
                         </AlertTitle>
                         <AlertDescription className="text-sm space-y-1">
-                          {validationResult.messages.map((msg: string, idx: number) => (
-                            <div key={idx} className="leading-relaxed">{msg}</div>
-                          ))}
+                          {validationResult.isValid ? (
+                            <div className="leading-relaxed">✅ Snowball validation passed! All debts follow the correct payoff order and payment progression.</div>
+                          ) : (
+                            <>
+                              <div className="leading-relaxed mb-2">⚠️ Issues detected in snowball progression:</div>
+                              {validationResult.issues.map((issue: string, idx: number) => (
+                                <div key={idx} className="leading-relaxed ml-4">{issue}</div>
+                              ))}
+                            </>
+                          )}
                         </AlertDescription>
                       </div>
                     </div>
