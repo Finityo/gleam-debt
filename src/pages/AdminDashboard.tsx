@@ -4,10 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { BarChart, Users, Activity, TrendingUp, LogOut, Headphones, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
+import { BarChart, Users, Activity, TrendingUp, LogOut, Headphones, AlertCircle, CheckCircle, Calendar, ChevronDown } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { SEOHead } from '@/components/SEOHead';
 import { logError } from '@/utils/logger';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -500,23 +501,35 @@ const AdminDashboard = () => {
               <CardDescription>Latest events tracked on the platform</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {stats.recentEvents.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No events tracked yet</p>
-                ) : (
-                  stats.recentEvents.map((event) => (
-                    <div key={event.id} className="flex items-center justify-between border-b pb-3 last:border-0">
-                      <div>
-                        <p className="font-medium">{event.event_type}</p>
-                        <p className="text-sm text-muted-foreground">{event.page_path}</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(event.created_at).toLocaleString()}
-                      </p>
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="recent-activity">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-4 w-4" />
+                      <span>View {stats.recentEvents.length} Recent Events</span>
                     </div>
-                  ))
-                )}
-              </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-4 pt-4">
+                      {stats.recentEvents.length === 0 ? (
+                        <p className="text-muted-foreground text-center py-8">No events tracked yet</p>
+                      ) : (
+                        stats.recentEvents.map((event) => (
+                          <div key={event.id} className="flex items-center justify-between border-b pb-3 last:border-0">
+                            <div>
+                              <p className="font-medium">{event.event_type}</p>
+                              <p className="text-sm text-muted-foreground">{event.page_path}</p>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(event.created_at).toLocaleString()}
+                            </p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </CardContent>
           </Card>
         </main>
