@@ -486,7 +486,7 @@ const DebtPlan = () => {
                             Total paid: ${snapshot.totalPaidThisMonth.toFixed(2)} | Snowball: ${snapshot.snowballExtra.toFixed(2)}
                           </p>
                         </div>
-                        <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
+                        <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-200" />
                       </CardHeader>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
