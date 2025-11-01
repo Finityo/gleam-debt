@@ -385,7 +385,13 @@ serve(async (req) => {
           if (!account) continue;
           
           const debtName = account.name || account.official_name || 'Credit Card';
-          const last4 = account.mask || null;
+          let last4 = account.mask;
+          
+          // If no mask available, use last 4 of account_id as fallback
+          if (!last4 || last4.trim() === '') {
+            last4 = creditLiability.account_id?.slice(-4) || null;
+            console.log(`No mask for ${debtName}, using account_id last4: ${last4}`);
+          }
           
           // Check for existing debt with same name and last4
           const { data: existingDebt } = await supabaseClient
@@ -443,7 +449,12 @@ serve(async (req) => {
           if (!account) continue;
           
           const debtName = account.name || account.official_name || studentLiability.loan_name || 'Student Loan';
-          const last4 = account.mask || studentLiability.account_number?.slice(-4) || null;
+          let last4 = account.mask || studentLiability.account_number?.slice(-4) || null;
+          
+          // If no mask or account number, use account_id last 4 as fallback
+          if (!last4 || last4.trim() === '') {
+            last4 = studentLiability.account_id?.slice(-4) || null;
+          }
           
           // Check for existing debt
           const { data: existingDebt } = await supabaseClient
@@ -494,7 +505,12 @@ serve(async (req) => {
           if (!account) continue;
           
           const debtName = account.name || account.official_name || mortgageLiability.property_address || 'Mortgage';
-          const last4 = account.mask || mortgageLiability.account_number?.slice(-4) || null;
+          let last4 = account.mask || mortgageLiability.account_number?.slice(-4) || null;
+          
+          // If no mask or account number, use account_id last 4 as fallback
+          if (!last4 || last4.trim() === '') {
+            last4 = mortgageLiability.account_id?.slice(-4) || null;
+          }
           
           // Check for existing debt
           const { data: existingDebt } = await supabaseClient

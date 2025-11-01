@@ -147,7 +147,8 @@ serve(async (req) => {
           // If not there, try our database, then fall back to account_id last 4
           let last4 = matchingAccount?.mask || accountMaskMap.get(creditAccount.account_id);
           
-          if (!last4 && creditAccount.account_id) {
+          // Handle empty strings and null/undefined - fall back to account_id last 4
+          if ((!last4 || last4.trim() === '') && creditAccount.account_id) {
             last4 = creditAccount.account_id.slice(-4);
             console.log(`No mask for account ${creditAccount.account_id}, using account_id last4: ${last4}`);
           }
