@@ -118,14 +118,20 @@ export function DebtCalculator() {
     notes: "" 
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isInitialLoadRef = useRef(true);
+  const isSortingRef = useRef(false);
 
   // Load saved data on mount
   useEffect(() => {
     loadSavedData();
   }, []);
 
-  // Auto-save debts when they change
+  // Auto-save debts when they change (but not during initial load or sorting)
   useEffect(() => {
+    if (isInitialLoadRef.current || isSortingRef.current) {
+      return;
+    }
+    
     if (debts.length > 0 && debts[0].name !== "") {
       saveDebts();
     }
@@ -145,7 +151,12 @@ export function DebtCalculator() {
       // Only update if order actually changed to avoid infinite loop
       const orderChanged = debts.some((debt, idx) => debt.id !== sortedDebts[idx]?.id);
       if (orderChanged) {
+        isSortingRef.current = true;
         setDebts(sortedDebts);
+        // Reset sorting flag after state update
+        setTimeout(() => {
+          isSortingRef.current = false;
+        }, 0);
       }
     }
   }, [strategy]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -192,6 +203,11 @@ export function DebtCalculator() {
       
       // Ensure strategy is always snowball on load
       setStrategy('snowball');
+      
+      // Mark initial load as complete after a brief delay
+      setTimeout(() => {
+        isInitialLoadRef.current = false;
+      }, 100);
     } catch (error: any) {
       logError('DebtCalculator - Load Data', error);
     }
