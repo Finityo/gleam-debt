@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Plus, Upload } from "lucide-react";
+import { Trash2, Plus, Upload, AlertCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from 'exceljs';
 import { logError } from '@/utils/logger';
@@ -107,6 +107,9 @@ export function DebtCalculator() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDebtIndices, setSelectedDebtIndices] = useState<Set<number>>(new Set());
   const [isAddDebtDialogOpen, setIsAddDebtDialogOpen] = useState(false);
+  const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false);
+  const [duplicateGroups, setDuplicateGroups] = useState<Array<{baseName: string; debts: DebtInput[]}>>([]);
+  const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [newDebt, setNewDebt] = useState<DebtInput>({ 
     name: "", 
     last4: "", 
@@ -409,6 +412,79 @@ export function DebtCalculator() {
     setSelectedDebtIndices(newSelected);
   };
 
+  const normalizeName = (name: string): string => {
+    return name
+      .replace(/\s*[-•]\s*\d{4}$/i, '')
+      .replace(/\s*\(.*?\d{4}.*?\)$/i, '')
+      .replace(/\s*x+\d{4}$/i, '')
+      .toLowerCase()
+      .trim();
+  };
+
+  const checkForDuplicates = (debtsToCheck: DebtInput[]): Array<{baseName: string; debts: DebtInput[]}> => {
+    const groups = new Map<string, DebtInput[]>();
+    
+    debtsToCheck.forEach((debt) => {
+      if (!debt.last4 || debt.last4.trim() === '') return;
+      
+      const normalized = normalizeName(debt.name);
+      const groupKey = `${normalized}::${debt.last4}`;
+      
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, []);
+      }
+      groups.get(groupKey)!.push(debt);
+    });
+
+    const duplicateGroups: Array<{baseName: string; debts: DebtInput[]}> = [];
+    groups.forEach((debts, groupKey) => {
+      if (debts.length > 1) {
+        const baseName = groupKey.split('::')[0];
+        duplicateGroups.push({ baseName, debts });
+      }
+    });
+
+    return duplicateGroups;
+  };
+
+  const handleDuplicateCleanup = async () => {
+    if (selectedForDeletion.size === 0) {
+      toast({
+        title: 'No Selection',
+        description: 'Please select debts to remove',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const idsToDelete = Array.from(selectedForDeletion).filter(id => id); // Only IDs that exist in DB
+      
+      if (idsToDelete.length > 0) {
+        await supabase.from('debts').delete().in('id', idsToDelete);
+      }
+
+      toast({
+        title: 'Cleanup Complete',
+        description: `Removed ${selectedForDeletion.size} duplicate entries`,
+      });
+
+      setSelectedForDeletion(new Set());
+      setIsDuplicateDialogOpen(false);
+      await loadSavedData();
+    } catch (error: any) {
+      logError('DebtCalculator - Cleanup Duplicates', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to clean up duplicates',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const compute = async (useStrategy?: Strategy) => {
     try {
       // Validate that we have at least one valid debt
@@ -425,19 +501,15 @@ export function DebtCalculator() {
         return;
       }
 
-      // Check for duplicate "last 4" values (only among valid debts with last4)
-      const last4Values = validDebts
-        .filter(d => d.last4 && d.last4.trim() !== '')
-        .map(d => d.last4?.trim());
+      // Check for duplicates (matching last4 + similar name)
+      const foundDuplicates = checkForDuplicates(validDebts);
       
-      const duplicates = last4Values.filter((value, index) => 
-        last4Values.indexOf(value) !== index
-      );
-      
-      if (duplicates.length > 0) {
+      if (foundDuplicates.length > 0) {
+        setDuplicateGroups(foundDuplicates);
+        setIsDuplicateDialogOpen(true);
         toast({ 
-          title: "Duplicate Detected", 
-          description: `Duplicate "Last 4" found: ${[...new Set(duplicates)].join(', ')}. Please check your debts.`,
+          title: "Duplicates Found", 
+          description: `Found ${foundDuplicates.length} duplicate group(s). Please resolve them before computing.`,
           variant: "destructive" 
         });
         return;
@@ -653,11 +725,43 @@ export function DebtCalculator() {
                       if (error) throw error;
                       
                       if (data && data.debts && data.debts.length > 0) {
-                        toast({ 
-                          title: "Success", 
-                          description: `Imported ${data.debts.length} debt(s) from your connected accounts` 
-                        });
-                        await loadSavedData();
+                        await loadSavedData(); // Reload to get all debts
+                        
+                        // Check for duplicates after import
+                        const { data: allDebts } = await supabase
+                          .from('debts')
+                          .select('*');
+                        
+                        if (allDebts) {
+                          const mappedDebts = allDebts.map(d => ({
+                            id: d.id,
+                            name: d.name,
+                            last4: d.last4 || '',
+                            balance: Number(d.balance),
+                            minPayment: Number(d.min_payment),
+                            apr: Number(d.apr),
+                            dueDate: d.due_date || '',
+                            debtType: d.debt_type || 'personal',
+                            notes: d.notes || ''
+                          }));
+                          
+                          const foundDuplicates = checkForDuplicates(mappedDebts);
+                          
+                          if (foundDuplicates.length > 0) {
+                            setDuplicateGroups(foundDuplicates);
+                            setIsDuplicateDialogOpen(true);
+                            toast({ 
+                              title: "Import Complete with Duplicates", 
+                              description: `Imported ${data.debts.length} debt(s). Found ${foundDuplicates.length} duplicate group(s) - please resolve them.`,
+                              variant: "default"
+                            });
+                          } else {
+                            toast({ 
+                              title: "Success", 
+                              description: `Imported ${data.debts.length} debt(s) from your connected accounts` 
+                            });
+                          }
+                        }
                       } else {
                         toast({ 
                           title: "No Debts Found", 
@@ -675,7 +779,7 @@ export function DebtCalculator() {
                     } finally {
                       setIsLoading(false);
                     }
-                  }} 
+                  }}
                   size="sm" 
                   variant="outline"
                   disabled={isLoading}
@@ -1063,6 +1167,89 @@ export function DebtCalculator() {
             <Button onClick={addDebt} className="animate-scale-in">
               <Plus className="h-4 w-4 mr-2" />
               Add Debt
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Duplicate Resolution Dialog */}
+      <Dialog open={isDuplicateDialogOpen} onOpenChange={setIsDuplicateDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              Duplicate Debts Detected
+            </DialogTitle>
+            <DialogDescription>
+              Found debts with matching last 4 digits and similar names. Select which ones to remove before computing your plan.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {duplicateGroups.map((group, idx) => (
+              <div key={idx} className="border rounded-lg p-4 space-y-2 bg-muted/30">
+                <h4 className="font-semibold capitalize text-base">
+                  {group.baseName} (Last 4: {group.debts[0]?.last4})
+                </h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Select which version(s) to <strong>remove</strong>:
+                </p>
+                <div className="space-y-2">
+                  {group.debts.map((debt) => (
+                    <div 
+                      key={debt.id || debt.name} 
+                      className={`flex items-start gap-3 p-3 rounded-lg border-2 transition-colors ${
+                        selectedForDeletion.has(debt.id || '') 
+                          ? 'border-destructive bg-destructive/5' 
+                          : 'border-border bg-background hover:bg-muted/50'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={selectedForDeletion.has(debt.id || '')}
+                        onCheckedChange={() => {
+                          const newSet = new Set(selectedForDeletion);
+                          const debtKey = debt.id || '';
+                          if (newSet.has(debtKey)) {
+                            newSet.delete(debtKey);
+                          } else {
+                            newSet.add(debtKey);
+                          }
+                          setSelectedForDeletion(newSet);
+                        }}
+                      />
+                      <div className="flex-1 text-sm">
+                        <div className="font-medium">{debt.name}</div>
+                        <div className="text-muted-foreground mt-1 space-y-0.5">
+                          <div>Balance: <span className="font-semibold">${debt.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>
+                          <div>APR: {debt.apr}% • Min Payment: ${debt.minPayment.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                          {debt.dueDate && <div>Due: {formatDueDate(debt.dueDate)}</div>}
+                          {debt.notes && <div className="text-xs italic">Note: {debt.notes}</div>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-3 justify-end border-t pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsDuplicateDialogOpen(false);
+                setSelectedForDeletion(new Set());
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDuplicateCleanup}
+              disabled={selectedForDeletion.size === 0}
+              variant="destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Remove {selectedForDeletion.size} Selected
             </Button>
           </div>
         </DialogContent>
