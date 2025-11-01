@@ -425,8 +425,19 @@ const DebtPlan = () => {
                   const isDebtFreeMonth = snapshot.totalRemaining === 0;
                   const previousRemaining = monthIndex > 0 ? result.schedule![monthIndex - 1].totalRemaining : result.totals.sumBalance;
                   const paidOffThisMonth = previousRemaining - snapshot.totalRemaining;
-                  const progressPercent = ((result.totals.sumBalance - snapshot.totalRemaining) / result.totals.sumBalance) * 100;
-                  const hasPayoff = snapshot.debts.some(d => d.endBalance <= 0 && monthIndex > 0 && result.schedule![monthIndex - 1].debts.find((pd, i) => i === snapshot.debts.indexOf(d))?.endBalance! > 0);
+                  const progressPercent = result.totals.sumBalance > 0 
+                    ? ((result.totals.sumBalance - snapshot.totalRemaining) / result.totals.sumBalance) * 100 
+                    : 0;
+                  
+                  // Safely check if any debt was paid off this month
+                  let hasPayoff = false;
+                  if (monthIndex > 0 && result.schedule) {
+                    const prevMonth = result.schedule[monthIndex - 1];
+                    hasPayoff = snapshot.debts.some((debt, idx) => {
+                      const prevDebt = prevMonth.debts[idx];
+                      return debt.endBalance <= 0 && prevDebt && prevDebt.endBalance > 0;
+                    });
+                  }
 
                   return (
                     <Collapsible key={snapshot.month} defaultOpen={monthIndex === 0 || hasPayoff || isDebtFreeMonth}>
@@ -449,11 +460,11 @@ const DebtPlan = () => {
                             ? 'border-success/50 bg-gradient-to-br from-success/10 to-green-500/10' 
                             : 'border-primary/20 hover:border-primary/40'
                         }`}>
-                          <CollapsibleTrigger asChild>
-                            <CardHeader className="pb-3 hover:bg-muted/30 transition-colors cursor-pointer">
+                          <CollapsibleTrigger className="w-full text-left">
+                            <div className="p-6 pb-3 hover:bg-muted/30 transition-colors cursor-pointer">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <CardTitle className="text-xl flex items-center gap-2">
+                                  <div className="text-xl font-semibold flex items-center gap-2 mb-2">
                                     <ChevronDown className="h-5 w-5 transition-transform duration-200" />
                                     Month {snapshot.month}
                                     {isDebtFreeMonth && (
@@ -466,7 +477,7 @@ const DebtPlan = () => {
                                         Debt Paid Off
                                       </span>
                                     )}
-                                  </CardTitle>
+                                  </div>
                                   <div className="flex flex-wrap gap-4 mt-2 text-sm text-left">
                                     <div className="flex items-center gap-1.5">
                                       <DollarSign className="h-4 w-4 text-primary" />
@@ -503,7 +514,7 @@ const DebtPlan = () => {
                                   />
                                 </div>
                               </div>
-                            </CardHeader>
+                            </div>
                           </CollapsibleTrigger>
 
                           <CollapsibleContent>
