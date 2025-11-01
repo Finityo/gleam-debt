@@ -9,8 +9,9 @@ import heroImage from "@/assets/hero-financial-freedom.jpg";
 import finityoLogo from "@/assets/finityo-logo.png";
 import heroPreview from "@/assets/hero-preview.png";
 import plaidBadge from "@/assets/plaid-badge.png";
-import { blogPosts } from "@/data/blogPosts";
+
 const Index = () => {
+  console.log("[Index] Component rendering started");
   const navigate = useNavigate();
   const {
     trackEvent
@@ -414,60 +415,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured Blog Post */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-2">Featured Insight</h2>
-            <p className="text-muted-foreground">Learn proven strategies for debt freedom</p>
-          </div>
-          
-          {blogPosts.length > 0 && (() => {
-            const FeaturedIcon = blogPosts[0].icon;
-            return (
-              <div 
-                onClick={() => navigate(`/blog/${blogPosts[0].slug}`)}
-                className="cursor-pointer bg-gradient-card rounded-2xl p-8 border border-border/50 hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300"
-              >
-                <div className="flex items-start gap-6">
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <FeaturedIcon className="w-8 h-8 text-primary" />
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-sm text-muted-foreground">{blogPosts[0].date}</span>
-                      <span className="text-sm text-muted-foreground">•</span>
-                      <span className="text-sm text-muted-foreground">{blogPosts[0].readTime}</span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-foreground mb-3">
-                      {blogPosts[0].title}
-                    </h3>
-                    <p className="text-muted-foreground mb-4 leading-relaxed">
-                      {blogPosts[0].excerpt}
-                    </p>
-                    <Button variant="link" className="p-0 h-auto text-primary">
-                      Read full article <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-          
-          <div className="text-center mt-6">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/blog')}
-              className="gap-2"
-            >
-              View All Articles
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Featured Blog Post - TEMPORARILY REMOVED TO TEST IF blogPosts.tsx CAUSES CRASH */}
 
       {/* How It Works Section */}
       <section className="bg-muted/30 py-20">
