@@ -120,15 +120,16 @@ export function DebtCalculator() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isInitialLoadRef = useRef(true);
   const isSortingRef = useRef(false);
+  const isDeletingRef = useRef(false);
 
   // Load saved data on mount
   useEffect(() => {
     loadSavedData();
   }, []);
 
-  // Auto-save debts when they change (but not during initial load or sorting)
+  // Auto-save debts when they change (but not during initial load, sorting, or deletion)
   useEffect(() => {
-    if (isInitialLoadRef.current || isSortingRef.current) {
+    if (isInitialLoadRef.current || isSortingRef.current || isDeletingRef.current) {
       return;
     }
     
@@ -378,15 +379,17 @@ export function DebtCalculator() {
 
   const deleteAllDebts = async () => {
     try {
+      isDeletingRef.current = true;
       setIsLoading(true);
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Delete all debts from database
-      await supabase.from('debts').delete().eq('user_id', user.id);
-      
       // Clear selections first to avoid stale references
       setSelectedDebtIndices(new Set());
+      
+      // Delete all debts from database
+      await supabase.from('debts').delete().eq('user_id', user.id);
       
       // Reset to single empty debt with all required properties
       setDebts([{ 
@@ -400,10 +403,16 @@ export function DebtCalculator() {
         notes: "" 
       }]);
       
+      // Reset deletion flag after state update completes
+      setTimeout(() => {
+        isDeletingRef.current = false;
+      }, 100);
+      
       toast({ title: "Success", description: "All debts deleted" });
     } catch (error: any) {
       logError('DebtCalculator - Delete All Debts', error);
       toast({ title: "Error", description: "Failed to delete debts", variant: "destructive" });
+      isDeletingRef.current = false;
     } finally {
       setIsLoading(false);
     }
