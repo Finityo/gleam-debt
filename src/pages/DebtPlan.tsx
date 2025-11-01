@@ -101,6 +101,7 @@ const DebtPlan = () => {
   const [oneTime, setOneTime] = useState<number>(location.state?.oneTime || 0);
   const [isLoading, setIsLoading] = useState(true);
   const [validationResult, setValidationResult] = useState<any>(null);
+  const isLoadingRef = useState(false);
 
   const handlePrint = () => {
     window.print();
@@ -111,7 +112,11 @@ const DebtPlan = () => {
   }, []);
 
   const loadPrecomputedPlan = async () => {
+    // Prevent duplicate loads
+    if (isLoadingRef[0]) return;
+    
     try {
+      isLoadingRef[1](true);
       setIsLoading(true);
       
       // Fetch the pre-computed plan for the current strategy
@@ -158,12 +163,17 @@ const DebtPlan = () => {
       navigate('/debts');
     } finally {
       setIsLoading(false);
+      isLoadingRef[1](false);
     }
   };
 
   const handleStrategyChange = async (newStrategy: Strategy) => {
+    // Prevent duplicate loads
+    if (isLoadingRef[0]) return;
+    
     setStrategy(newStrategy);
     try {
+      isLoadingRef[1](true);
       setIsLoading(true);
       
       // Fetch the pre-computed plan for the new strategy
@@ -199,6 +209,7 @@ const DebtPlan = () => {
       toast({ title: "Error", description: "Failed to load debt plan for this strategy", variant: "destructive" });
     } finally {
       setIsLoading(false);
+      isLoadingRef[1](false);
     }
   };
 
