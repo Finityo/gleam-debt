@@ -12,6 +12,31 @@ interface ItemNeedingUpdate {
   institution_name?: string;
 }
 
+// Separate component that uses the Plaid hook
+const PlaidLinkHandler = ({ 
+  linkToken, 
+  onSuccess, 
+  onExit 
+}: { 
+  linkToken: string; 
+  onSuccess: () => void; 
+  onExit: () => void;
+}) => {
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess,
+    onExit,
+  });
+
+  useEffect(() => {
+    if (ready) {
+      open();
+    }
+  }, [ready, open]);
+
+  return null;
+};
+
 export const PlaidUpdateBanner = () => {
   const [itemsNeedingUpdate, setItemsNeedingUpdate] = useState<ItemNeedingUpdate[]>([]);
   const [linkToken, setLinkToken] = useState<string | null>(null);
@@ -109,22 +134,10 @@ export const PlaidUpdateBanner = () => {
     }, 1500);
   };
 
-  const config = linkToken ? {
-    token: linkToken,
-    onSuccess: onSuccessCallback,
-    onExit: () => {
-      setLinkToken(null);
-      setSelectedItem(null);
-    },
-  } : null;
-
-  const { open, ready } = usePlaidLink(config);
-
-  useEffect(() => {
-    if (ready && linkToken) {
-      open();
-    }
-  }, [ready, linkToken, open]);
+  const onExitCallback = () => {
+    setLinkToken(null);
+    setSelectedItem(null);
+  };
 
   const dismissItem = async (itemId: string) => {
     const { error } = await supabase
@@ -157,37 +170,47 @@ export const PlaidUpdateBanner = () => {
   if (itemsNeedingUpdate.length === 0) return null;
 
   return (
-    <div className="space-y-2 mb-6">
-      {itemsNeedingUpdate.map((item) => (
-        <Alert key={item.item_id} variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="flex items-center justify-between">
-            <span>
-              {item.institution_name || 'Bank Account'} - {getReasonMessage(item.update_reason)}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => dismissItem(item.item_id)}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </AlertTitle>
-          <AlertDescription className="flex items-center justify-between mt-2">
-            <span>Please update your connection to continue syncing your accounts.</span>
-            <Button
-              onClick={() => createUpdateLinkToken(item.item_id, item.update_reason)}
-              size="sm"
-              className="ml-4"
-              disabled={selectedItem === item.item_id}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Update Connection
-            </Button>
-          </AlertDescription>
-        </Alert>
-      ))}
-    </div>
+    <>
+      {linkToken && (
+        <PlaidLinkHandler 
+          linkToken={linkToken}
+          onSuccess={onSuccessCallback}
+          onExit={onExitCallback}
+        />
+      )}
+      
+      <div className="space-y-2 mb-6">
+        {itemsNeedingUpdate.map((item) => (
+          <Alert key={item.item_id} variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle className="flex items-center justify-between">
+              <span>
+                {item.institution_name || 'Bank Account'} - {getReasonMessage(item.update_reason)}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => dismissItem(item.item_id)}
+                className="h-6 w-6 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </AlertTitle>
+            <AlertDescription className="flex items-center justify-between mt-2">
+              <span>Please update your connection to continue syncing your accounts.</span>
+              <Button
+                onClick={() => createUpdateLinkToken(item.item_id, item.update_reason)}
+                size="sm"
+                className="ml-4"
+                disabled={selectedItem === item.item_id}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Update Connection
+              </Button>
+            </AlertDescription>
+          </Alert>
+        ))}
+      </div>
+    </>
   );
 };
