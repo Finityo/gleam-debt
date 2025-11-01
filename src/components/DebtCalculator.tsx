@@ -192,9 +192,6 @@ export function DebtCalculator() {
       
       // Ensure strategy is always snowball on load
       setStrategy('snowball');
-      
-      // Trigger auto-computation of debt plans
-      await triggerAutoComputation();
     } catch (error: any) {
       logError('DebtCalculator - Load Data', error);
     }
