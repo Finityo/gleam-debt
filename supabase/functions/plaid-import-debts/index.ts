@@ -97,6 +97,7 @@ serve(async (req) => {
     }
 
     const importedDebts = [];
+    const seenAccountNames = new Map<string, boolean>(); // Track accounts without masks to prevent duplicates
 
     // Fetch liabilities for each item
     for (const item of items) {
@@ -147,13 +148,22 @@ serve(async (req) => {
           // If not there, try our database, then fall back to account_id last 4
           let last4 = matchingAccount?.mask || accountMaskMap.get(creditAccount.account_id);
           
-          // Handle empty strings and null/undefined - fall back to account_id last 4
-          if ((!last4 || last4.trim() === '') && creditAccount.account_id) {
-            last4 = creditAccount.account_id.slice(-4);
+          const debtName = matchingAccount?.name || creditAccount.name || 'Credit Card';
+          
+          // Handle empty strings and null/undefined
+          if (!last4 || last4.trim() === '') {
+            // Check if we've already imported an account with this exact name and no mask
+            const nameKey = `${debtName}_nomask`;
+            if (seenAccountNames.has(nameKey)) {
+              console.log(`Skipping duplicate account with no mask: ${debtName}`);
+              continue;
+            }
+            seenAccountNames.set(nameKey, true);
+            
+            // Use account_id last 4 as fallback
+            last4 = creditAccount.account_id?.slice(-4) || null;
             console.log(`No mask for account ${creditAccount.account_id}, using account_id last4: ${last4}`);
           }
-          
-          const debtName = matchingAccount?.name || creditAccount.name || 'Credit Card';
           
           // Check for existing debt with same name and last4
           const { data: existingDebt } = await supabaseClient
@@ -341,15 +351,22 @@ serve(async (req) => {
       if (loanAccounts.length > 0) {
         console.log('Processing', loanAccounts.length, 'personal/auto loans');
         for (const loanAccount of loanAccounts) {
+          const debtName = loanAccount.name || loanAccount.official_name || 'Personal Loan';
           let last4 = loanAccount.mask;
           
           // Fallback to account_id last 4 if no mask
           if (!last4 || last4.trim() === '') {
+            // Check if we've already imported an account with this exact name and no mask
+            const nameKey = `${debtName}_nomask`;
+            if (seenAccountNames.has(nameKey)) {
+              console.log(`Skipping duplicate loan account with no mask: ${debtName}`);
+              continue;
+            }
+            seenAccountNames.set(nameKey, true);
+            
             last4 = loanAccount.account_id?.slice(-4) || null;
-            console.log(`No mask for ${loanAccount.name}, using account_id last4: ${last4}`);
+            console.log(`No mask for ${debtName}, using account_id last4: ${last4}`);
           }
-          
-          const debtName = loanAccount.name || loanAccount.official_name || 'Personal Loan';
           
           // Check for existing debt
           const { data: existingDebt } = await supabaseClient
