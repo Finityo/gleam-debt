@@ -115,9 +115,19 @@ function computePlan(req: ComputeRequest) {
   const userExtraBudget = Math.max(0, req.extraMonthly || 0);
   const oneTimePayment = Math.max(0, req.oneTime || 0);
 
-  // Filter: only debts with balance > 0 and valid name
+  // Filter: only debts with balance > 0, minPayment > 0, and valid name
   const cleaned = req.debts
-    .filter(d => d.name?.trim() && d.balance > 0)
+    .filter(d => {
+      const hasName = d.name?.trim();
+      const hasBalance = d.balance > 0;
+      const hasMinPayment = (d.minPayment || 0) > 0;
+      
+      if (!hasName || !hasBalance || !hasMinPayment) {
+        console.log(`Filtering out debt: ${d.name} - hasName:${hasName}, hasBalance:${hasBalance}, hasMinPayment:${hasMinPayment}`);
+      }
+      
+      return hasName && hasBalance && hasMinPayment;
+    })
     .map(d => ({
       ...d,
       apr: normalizeAPR(d.apr),
