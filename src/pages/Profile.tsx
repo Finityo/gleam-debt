@@ -330,55 +330,16 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          {/* Danger Zone - Account Deletion */}
-          <Card className="border-destructive">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-destructive">
-                <AlertTriangle className="w-5 h-5" />
-                Danger Zone
-              </CardTitle>
-              <CardDescription>
-                Permanently delete your account and all associated data
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-                  <h4 className="font-semibold mb-2 text-destructive">Warning: This action cannot be undone</h4>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Deleting your account will:
-                  </p>
-                  <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-                    <li>• Immediately disconnect all Plaid connections</li>
-                    <li>• Permanently delete all your financial data within 30 days</li>
-                    <li>• Remove all debt records and payment plans</li>
-                    <li>• Delete your profile and account settings</li>
-                    <li>• Cancel any active subscriptions</li>
-                  </ul>
-                  <p className="text-sm text-muted-foreground mt-3">
-                    <strong>Data Retention:</strong> All Plaid-sourced data and personal information 
-                    will be permanently deleted within 30 days. Encrypted access tokens will be 
-                    immediately revoked from our secure vault.
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Before deleting, we recommend exporting your financial data and documents 
-                    for your records.
-                  </p>
-                </div>
-
-                <Separator />
-
-                <Button
-                  variant="destructive"
-                  onClick={() => setDeleteDialog(true)}
-                  className="w-full"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete My Account
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Account Deletion */}
+          <div className="pt-6">
+            <Button
+              variant="ghost"
+              onClick={() => setDeleteDialog(true)}
+              className="text-muted-foreground hover:text-destructive"
+            >
+              Delete Account
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -388,27 +349,32 @@ const Profile = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-destructive text-xl">
               <AlertTriangle className="w-6 h-6" />
-              Are you absolutely sure?
+              Delete Your Account?
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-4 text-base">
-              <p>
-                This action <strong>cannot be undone</strong>. This will permanently delete your account 
-                and remove all your data from our servers.
+              <p className="font-semibold text-destructive">
+                Warning: This action cannot be undone
               </p>
-              <div className="bg-destructive/10 border border-destructive/20 rounded p-3">
-                <p className="font-semibold mb-2">The following will be deleted:</p>
+              <p>
+                Deleting your account will permanently remove all your data from our servers.
+              </p>
+              <div className="bg-muted/50 border rounded-lg p-4">
+                <p className="font-semibold mb-2">What will be deleted:</p>
                 <ul className="text-sm space-y-1 ml-4">
-                  <li>✗ All Plaid connections (immediate disconnection)</li>
-                  <li>✗ All financial account data</li>
-                  <li>✗ All debt records and payment plans</li>
-                  <li>✗ Your profile and personal information</li>
-                  <li>✗ Access logs and consent history</li>
-                  <li>✗ Any subscriptions or billing information</li>
+                  <li>• All Plaid connections will be immediately disconnected</li>
+                  <li>• All financial account data will be permanently deleted within 30 days</li>
+                  <li>• All debt records and payment plans</li>
+                  <li>• Your profile and account settings</li>
+                  <li>• Any active subscriptions</li>
                 </ul>
               </div>
-              <p className="text-sm">
-                <strong>Timeline:</strong> Plaid connections will be terminated immediately. 
-                All data will be permanently deleted within 30 days.
+              <p className="text-sm text-muted-foreground">
+                <strong>Data Retention:</strong> All Plaid-sourced data and personal information 
+                will be permanently deleted within 30 days. Encrypted access tokens will be 
+                immediately revoked from our secure vault.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                We recommend exporting your financial data and documents before proceeding.
               </p>
               <div className="pt-4">
                 <Label htmlFor="deleteConfirm" className="text-base">
