@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { z } from 'zod';
 import { Smartphone, Mail } from 'lucide-react';
+import { PasswordStrengthIndicator, validatePasswordStrength } from '@/components/PasswordStrengthIndicator';
 const emailSchema = z.string().email('Invalid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const phoneSchema = z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format (use international format, e.g., +1234567890)');
@@ -98,6 +99,18 @@ const Auth = () => {
       });
       return;
     }
+
+    // Validate password strength
+    const strengthCheck = validatePasswordStrength(password);
+    if (!strengthCheck.isValid) {
+      toast({
+        title: 'Weak Password',
+        description: strengthCheck.message,
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const {
@@ -477,7 +490,8 @@ const Auth = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+                    <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={12} />
+                    <PasswordStrengthIndicator password={password} />
                   </div>
                   
                   <div className="space-y-3 pt-2">
