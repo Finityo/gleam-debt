@@ -2,8 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
+import { useSmartNavigation } from '@/hooks/useSmartNavigation';
 
 const Terms = () => {
+  const { goBack } = useSmartNavigation();
   const navigate = useNavigate();
 
   return (

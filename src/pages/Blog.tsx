@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
 import { ArrowLeft, Calendar, Clock, ArrowRight } from "lucide-react";
 import { blogPosts } from "@/data/blogPosts";
+import { useSmartNavigation } from '@/hooks/useSmartNavigation';
 
 const Blog = () => {
+  const { goToHome } = useSmartNavigation();
   const navigate = useNavigate();
 
   const structuredData = {
@@ -27,7 +29,7 @@ const Blog = () => {
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         <Button
           variant="ghost"
-          onClick={() => navigate('/')}
+          onClick={goToHome}
           className="mb-8"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

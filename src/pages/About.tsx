@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Target, Shield, Users, Zap } from 'lucide-react';
 import finityoLogo from '@/assets/finityo-logo.png';
+import { useSmartNavigation } from '@/hooks/useSmartNavigation';
 
 const About = () => {
+  const { goToHome } = useSmartNavigation();
   const navigate = useNavigate();
 
   return (
@@ -12,7 +14,7 @@ const About = () => {
       <div className="container mx-auto px-4 py-12 max-w-5xl">
         <Button
           variant="ghost"
-          onClick={() => navigate('/')}
+          onClick={goToHome}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 w-4 h-4" />
