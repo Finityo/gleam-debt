@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, UserX, UserCheck, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Shield, UserX, UserCheck, AlertTriangle, ArrowLeft, ChevronDown } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { logError } from '@/utils/logger';
 import {
@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface UserWithRole {
   user_id: string;
@@ -216,15 +217,34 @@ const UserRoleManagement = () => {
             </CardContent>
           </Card>
 
-          {/* Role Statistics */}
+          {/* Role Statistics with Expandable Lists */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium">Total Users</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{users.length}</div>
-                <p className="text-xs text-muted-foreground">All registered users</p>
+                <div className="text-2xl font-bold mb-2">{users.length}</div>
+                <p className="text-xs text-muted-foreground mb-4">All registered users</p>
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="all-users" className="border-0">
+                    <AccordionTrigger className="py-2 hover:no-underline">
+                      <span className="text-xs">View All Users</span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2 mt-2 max-h-60 overflow-y-auto">
+                        {users.map((user) => (
+                          <div key={user.user_id} className="text-xs p-2 bg-muted/50 rounded">
+                            <p className="font-medium truncate">{user.email}</p>
+                            <p className="text-muted-foreground">
+                              {user.user_id.slice(0, 8)}... • <Badge variant={getRoleBadgeVariant(user.role)} className="text-[10px] h-4">{user.role}</Badge>
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </CardContent>
             </Card>
 
@@ -233,10 +253,33 @@ const UserRoleManagement = () => {
                 <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold mb-2">
                   {users.filter(u => u.role === 'admin').length}
                 </div>
-                <p className="text-xs text-muted-foreground">Full system access</p>
+                <p className="text-xs text-muted-foreground mb-4">Full system access</p>
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="admin-users" className="border-0">
+                    <AccordionTrigger className="py-2 hover:no-underline">
+                      <span className="text-xs">View Admins</span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2 mt-2 max-h-60 overflow-y-auto">
+                        {users.filter(u => u.role === 'admin').length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-4">No admin users</p>
+                        ) : (
+                          users.filter(u => u.role === 'admin').map((user) => (
+                            <div key={user.user_id} className="text-xs p-2 bg-muted/50 rounded">
+                              <p className="font-medium truncate">{user.email}</p>
+                              <p className="text-muted-foreground">
+                                {user.user_id.slice(0, 8)}...
+                              </p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </CardContent>
             </Card>
 
@@ -245,10 +288,33 @@ const UserRoleManagement = () => {
                 <CardTitle className="text-sm font-medium">Support Users</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold mb-2">
                   {users.filter(u => u.role === 'support').length}
                 </div>
-                <p className="text-xs text-muted-foreground">Customer support access</p>
+                <p className="text-xs text-muted-foreground mb-4">Customer support access</p>
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="support-users" className="border-0">
+                    <AccordionTrigger className="py-2 hover:no-underline">
+                      <span className="text-xs">View Support</span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2 mt-2 max-h-60 overflow-y-auto">
+                        {users.filter(u => u.role === 'support').length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-4">No support users</p>
+                        ) : (
+                          users.filter(u => u.role === 'support').map((user) => (
+                            <div key={user.user_id} className="text-xs p-2 bg-muted/50 rounded">
+                              <p className="font-medium truncate">{user.email}</p>
+                              <p className="text-muted-foreground">
+                                {user.user_id.slice(0, 8)}...
+                              </p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </CardContent>
             </Card>
           </div>
