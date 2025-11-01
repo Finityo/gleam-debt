@@ -39,6 +39,7 @@ const DebtChart = () => {
   const [loading, setLoading] = useState(true);
   const [totalDebt, setTotalDebt] = useState(0);
   const [totalLimit, setTotalLimit] = useState(0);
+  const [plaidDebt, setPlaidDebt] = useState(0);
 
   useEffect(() => {
     loadDebts();
@@ -52,7 +53,7 @@ const DebtChart = () => {
         return;
       }
 
-      // Fetch debts
+      // Fetch all debts from debts table
       const { data: debtData, error: debtError } = await supabase
         .from('debts')
         .select('*')
@@ -61,12 +62,10 @@ const DebtChart = () => {
 
       if (debtError) throw debtError;
 
-      // Use debt ID for uniqueness - each debt record should be unique
-      const uniqueDebts = debtData || [];
+      const allDebts = debtData || [];
+      setDebts(allDebts);
       
-      setDebts(uniqueDebts);
-      
-      // Fetch Plaid accounts to get actual credit data
+      // Fetch Plaid credit accounts for accurate credit utilization data
       const { data: accounts, error: accountsError } = await supabase
         .from('plaid_accounts')
         .select('current_balance, available_balance, subtype')
@@ -75,8 +74,8 @@ const DebtChart = () => {
 
       if (accountsError) throw accountsError;
       
-      // Calculate from Plaid accounts for accurate credit utilization
-      let totalDebtAmount = 0;
+      // Calculate credit utilization from Plaid accounts only
+      let plaidDebtAmount = 0;
       let creditLimit = 0;
       
       if (accounts && accounts.length > 0) {
@@ -88,17 +87,17 @@ const DebtChart = () => {
           // Credit limit = what you owe + what's available
           const accountLimit = debt + available;
           
-          totalDebtAmount += debt;
+          plaidDebtAmount += debt;
           creditLimit += accountLimit;
         });
-      } else {
-        // Fallback to debts table if no Plaid accounts
-        totalDebtAmount = uniqueDebts.reduce((sum, debt) => sum + debt.balance, 0);
-        creditLimit = totalDebtAmount * 1.5; // Estimate
       }
+      
+      // Total debt shown = sum of ALL debts (Plaid + manual entries)
+      const totalDebtAmount = allDebts.reduce((sum, debt) => sum + debt.balance, 0);
       
       setTotalDebt(totalDebtAmount);
       setTotalLimit(creditLimit);
+      setPlaidDebt(plaidDebtAmount);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -116,14 +115,16 @@ const DebtChart = () => {
     color: CHART_COLORS[index % CHART_COLORS.length]
   }));
 
-  const availableCredit = Math.max(0, totalLimit - totalDebt);
+  const availableCredit = Math.max(0, totalLimit - plaidDebt);
   
-  const creditUtilizationData = [
-    { name: 'Debt', value: totalDebt, color: 'hsl(0 85% 60%)' },
+  // Credit utilization chart shows only Plaid credit accounts
+  // (manual entries don't have credit limits so can't be included in utilization)
+  const creditUtilizationData = totalLimit > 0 ? [
+    { name: 'Used Credit', value: plaidDebt, color: 'hsl(0 85% 60%)' },
     { name: 'Available Credit', value: availableCredit, color: 'hsl(145 75% 50%)' }
-  ];
+  ] : [];
 
-  const utilizationPercentage = totalLimit > 0 ? ((totalDebt / totalLimit) * 100).toFixed(1) : '0';
+  const utilizationPercentage = totalLimit > 0 ? ((plaidDebt / totalLimit) * 100).toFixed(1) : '0';
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -157,15 +158,16 @@ const DebtChart = () => {
           
           <StatCard
             title="Available Credit"
-            value={`$${availableCredit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            value={totalLimit > 0 ? `$${availableCredit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}
+            subtitle={totalLimit === 0 ? 'Connect Plaid accounts for credit data' : undefined}
             icon={DollarSign}
             className="border-success/20"
           />
           
           <StatCard
             title="Credit Utilization"
-            value={`${utilizationPercentage}%`}
-            subtitle={parseFloat(utilizationPercentage) > 30 ? 'Above recommended 30%' : 'Good standing'}
+            value={totalLimit > 0 ? `${utilizationPercentage}%` : 'N/A'}
+            subtitle={totalLimit === 0 ? 'Connect Plaid accounts for utilization data' : (parseFloat(utilizationPercentage) > 30 ? 'Above recommended 30%' : 'Good standing')}
             icon={TrendingDown}
             className={parseFloat(utilizationPercentage) > 30 ? 'border-destructive/20' : 'border-success/20'}
           />
@@ -236,40 +238,55 @@ const DebtChart = () => {
                   Credit Utilization
                 </CardTitle>
                 <CardDescription>
-                  Your debt vs. available credit
+                  {totalLimit > 0 ? 'Your debt vs. available credit (Plaid accounts only)' : 'Connect Plaid accounts to see credit utilization'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <PieChart>
-                    <Pie
-                      data={creditUtilizationData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                      outerRadius={120}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {creditUtilizationData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => 
-                        `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                      }
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="mt-4 p-4 bg-primary/5 border border-primary/10 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    <strong className="text-foreground">Tip:</strong> Credit bureaus recommend keeping utilization below 30% for optimal credit scores. 
-                    As you pay down debts, watch the green "Available Credit" section grow!
-                  </p>
-                </div>
+                {totalLimit > 0 ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={400}>
+                      <PieChart>
+                        <Pie
+                          data={creditUtilizationData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                          outerRadius={120}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {creditUtilizationData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number) => 
+                            `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          }
+                        />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="mt-4 p-4 bg-primary/5 border border-primary/10 rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        <strong className="text-foreground">Tip:</strong> Credit bureaus recommend keeping utilization below 30% for optimal credit scores. 
+                        As you pay down debts, watch the green "Available Credit" section grow!
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-[400px] flex items-center justify-center text-center p-8">
+                    <div>
+                      <p className="text-muted-foreground mb-4">
+                        Credit utilization requires Plaid-connected accounts with credit limits.
+                      </p>
+                      <Button onClick={() => navigate('/dashboard')}>
+                        Connect Plaid Account
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
