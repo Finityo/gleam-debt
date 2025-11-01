@@ -411,124 +411,64 @@ const DebtPlan = () => {
 
           <TabsContent value="calendar">
             <Card>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-6 w-6 text-primary" />
-                  <CardTitle>Monthly Payoff Calendar</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {result.schedule && result.schedule.map((snapshot, monthIndex) => {
-                  const isDebtFreeMonth = snapshot.totalRemaining === 0;
-                  const previousRemaining = monthIndex > 0 && result.schedule 
-                    ? result.schedule[monthIndex - 1].totalRemaining 
-                    : result.totals.sumBalance;
-                  const paidOffThisMonth = previousRemaining - snapshot.totalRemaining;
-                  const progressPercent = result.totals.sumBalance > 0 
-                    ? ((result.totals.sumBalance - snapshot.totalRemaining) / result.totals.sumBalance) * 100 
-                    : 0;
-
-                  return (
-                    <div 
-                      key={snapshot.month}
-                      className={`p-4 rounded-lg border-2 ${
-                        isDebtFreeMonth 
-                          ? 'border-success bg-success/5' 
-                          : 'border-border bg-card'
-                      }`}
-                    >
-                      {/* Month Header */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold flex items-center gap-2">
-                            Month {snapshot.month}
-                            {isDebtFreeMonth && (
-                              <span className="text-success text-sm font-semibold px-2 py-1 rounded-full bg-success/20">
-                                🎉 DEBT FREE!
-                              </span>
-                            )}
-                          </h3>
-                          <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
-                            <span>Snowball: ${snapshot.snowballExtra.toFixed(2)}</span>
-                            <span>Total Paid: ${snapshot.totalPaidThisMonth.toFixed(2)}</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xl font-bold text-primary">{progressPercent.toFixed(0)}%</div>
-                          <div className="text-xs text-muted-foreground">Complete</div>
-                        </div>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="mb-4">
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-primary to-success transition-all duration-300"
-                            style={{ width: `${progressPercent}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Debts Grid */}
-                      <div className="grid gap-3">
-                        {snapshot.debts.map((debt, idx) => (
-                          <div 
-                            key={idx}
-                            className={`p-3 rounded border ${
-                              debt.endBalance <= 0 
-                                ? 'border-success/30 bg-success/10' 
-                                : 'border-border bg-muted/50'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-semibold">
-                                {debt.name} {debt.last4 && `(${debt.last4})`}
-                              </span>
-                              {debt.endBalance <= 0 && (
-                                <CheckCircle2 className="h-4 w-4 text-success" />
-                              )}
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4">Monthly Payoff Calendar</h2>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="sticky left-0 bg-background z-10">Month</TableHead>
+                        <TableHead className="text-center min-w-[120px]">Snowball Total</TableHead>
+                        {result.rows.map((debt) => (
+                          <TableHead key={debt.index} className="text-center min-w-[200px]">
+                            <div className="font-semibold">{debt.name}</div>
+                            {debt.last4 && <div className="text-xs text-muted-foreground">({debt.last4})</div>}
+                            {debt.dueDate && <div className="text-xs text-muted-foreground mt-1">{formatDueDate(debt.dueDate)}</div>}
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Bal: ${debt.balance.toFixed(2)} | Min: ${debt.minPayment.toFixed(2)} | APR: {(debt.apr * 100).toFixed(1)}%
                             </div>
-                            
-                            {debt.endBalance > 0 ? (
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                                <div>
-                                  <div className="text-xs text-muted-foreground">Payment</div>
-                                  <div className="font-semibold">${debt.payment.toFixed(2)}</div>
-                                </div>
-                                <div>
-                                  <div className="text-xs text-muted-foreground">Interest</div>
-                                  <div className="font-semibold text-destructive">${debt.interest.toFixed(2)}</div>
-                                </div>
-                                <div>
-                                  <div className="text-xs text-muted-foreground">Principal</div>
-                                  <div className="font-semibold text-success">${debt.principal.toFixed(2)}</div>
-                                </div>
-                                <div>
-                                  <div className="text-xs text-muted-foreground">Balance</div>
-                                  <div className="font-semibold">${debt.endBalance.toFixed(2)}</div>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-success font-bold text-center py-1">✓ PAID OFF</div>
-                            )}
-                          </div>
+                          </TableHead>
                         ))}
-                      </div>
-
-                      {/* Month Summary */}
-                      <div className="mt-3 pt-3 border-t flex items-center justify-between">
-                        <div>
-                          <div className="text-sm text-muted-foreground">Total Remaining</div>
-                          <div className="text-lg font-bold">${snapshot.totalRemaining.toFixed(2)}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm text-muted-foreground">Paid This Month</div>
-                          <div className="text-lg font-bold text-success">-${paidOffThisMonth.toFixed(2)}</div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                        <TableHead className="text-center min-w-[120px]">Remaining</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {result.schedule && result.schedule.map((snapshot) => (
+                        <TableRow key={snapshot.month}>
+                          <TableCell className="sticky left-0 bg-background z-10 font-medium">
+                            Month {snapshot.month}
+                          </TableCell>
+                          <TableCell className="text-center font-medium">
+                            ${snapshot.snowballExtra.toFixed(2)}
+                          </TableCell>
+                          {snapshot.debts.map((debt, idx) => (
+                            <TableCell key={idx} className="text-center">
+                              {debt.endBalance > 0 ? (
+                                <div className="space-y-1">
+                                  <div className="font-medium">${debt.payment.toFixed(2)}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Int: ${debt.interest.toFixed(2)}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Prin: ${debt.principal.toFixed(2)}
+                                  </div>
+                                  <div className="text-xs font-medium">
+                                    Bal: ${debt.endBalance.toFixed(2)}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-green-600 dark:text-green-400 font-semibold">PAID OFF ✓</div>
+                              )}
+                            </TableCell>
+                          ))}
+                          <TableCell className="text-center font-bold">
+                            ${snapshot.totalRemaining.toFixed(2)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
