@@ -410,209 +410,127 @@ const DebtPlan = () => {
           </TabsContent>
 
           <TabsContent value="calendar">
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Calendar className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold">Monthly Payoff Timeline</h2>
-              </div>
-
-              {/* Timeline Container */}
-              <div className="relative space-y-6 pl-8">
-                {/* Timeline Line */}
-                <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-accent to-success" />
-
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-6 w-6 text-primary" />
+                  <CardTitle>Monthly Payoff Calendar</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {result.schedule && result.schedule.map((snapshot, monthIndex) => {
                   const isDebtFreeMonth = snapshot.totalRemaining === 0;
-                  const previousRemaining = monthIndex > 0 ? result.schedule![monthIndex - 1].totalRemaining : result.totals.sumBalance;
+                  const previousRemaining = monthIndex > 0 && result.schedule 
+                    ? result.schedule[monthIndex - 1].totalRemaining 
+                    : result.totals.sumBalance;
                   const paidOffThisMonth = previousRemaining - snapshot.totalRemaining;
                   const progressPercent = result.totals.sumBalance > 0 
                     ? ((result.totals.sumBalance - snapshot.totalRemaining) / result.totals.sumBalance) * 100 
                     : 0;
-                  
-                  // Safely check if any debt was paid off this month
-                  let hasPayoff = false;
-                  if (monthIndex > 0 && result.schedule) {
-                    const prevMonth = result.schedule[monthIndex - 1];
-                    hasPayoff = snapshot.debts.some((debt, idx) => {
-                      const prevDebt = prevMonth.debts[idx];
-                      return debt.endBalance <= 0 && prevDebt && prevDebt.endBalance > 0;
-                    });
-                  }
 
                   return (
-                    <Collapsible key={snapshot.month} defaultOpen={monthIndex === 0 || hasPayoff || isDebtFreeMonth}>
-                      <div className="relative">
-                        {/* Timeline Marker */}
-                        <div className={`absolute -left-8 top-6 w-6 h-6 rounded-full border-4 border-background shadow-lg flex items-center justify-center transition-all ${
-                          isDebtFreeMonth 
-                            ? 'bg-gradient-to-br from-success to-green-600 scale-125' 
-                            : 'bg-gradient-to-br from-primary to-accent'
-                        }`}>
-                          {isDebtFreeMonth ? (
-                            <CheckCircle2 className="h-3 w-3 text-white" />
-                          ) : (
-                            <Circle className="h-2 w-2 text-white fill-white" />
-                          )}
+                    <div 
+                      key={snapshot.month}
+                      className={`p-4 rounded-lg border-2 ${
+                        isDebtFreeMonth 
+                          ? 'border-success bg-success/5' 
+                          : 'border-border bg-card'
+                      }`}
+                    >
+                      {/* Month Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold flex items-center gap-2">
+                            Month {snapshot.month}
+                            {isDebtFreeMonth && (
+                              <span className="text-success text-sm font-semibold px-2 py-1 rounded-full bg-success/20">
+                                🎉 DEBT FREE!
+                              </span>
+                            )}
+                          </h3>
+                          <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
+                            <span>Snowball: ${snapshot.snowballExtra.toFixed(2)}</span>
+                            <span>Total Paid: ${snapshot.totalPaidThisMonth.toFixed(2)}</span>
+                          </div>
                         </div>
-
-                        <Card className={`transition-all duration-300 hover:shadow-xl border-2 ${
-                          isDebtFreeMonth 
-                            ? 'border-success/50 bg-gradient-to-br from-success/10 to-green-500/10' 
-                            : 'border-primary/20 hover:border-primary/40'
-                        }`}>
-                          <CollapsibleTrigger className="w-full text-left">
-                            <div className="p-6 pb-3 hover:bg-muted/30 transition-colors cursor-pointer">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="text-xl font-semibold flex items-center gap-2 mb-2">
-                                    <ChevronDown className="h-5 w-5 transition-transform duration-200" />
-                                    Month {snapshot.month}
-                                    {isDebtFreeMonth && (
-                                      <span className="text-success text-base font-semibold px-3 py-1 rounded-full bg-success/20 border border-success/30">
-                                        🎉 DEBT FREE!
-                                      </span>
-                                    )}
-                                    {hasPayoff && !isDebtFreeMonth && (
-                                      <span className="text-sm font-medium px-2 py-1 rounded-full bg-primary/20 border border-primary/30">
-                                        Debt Paid Off
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="flex flex-wrap gap-4 mt-2 text-sm text-left">
-                                    <div className="flex items-center gap-1.5">
-                                      <DollarSign className="h-4 w-4 text-primary" />
-                                      <span className="text-muted-foreground">Snowball:</span>
-                                      <span className="font-semibold">${snapshot.snowballExtra.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                      <TrendingUp className="h-4 w-4 text-accent" />
-                                      <span className="text-muted-foreground">Total Paid:</span>
-                                      <span className="font-semibold">${snapshot.totalPaidThisMonth.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-muted-foreground">Remaining:</span>
-                                      <span className="font-semibold">${snapshot.totalRemaining.toFixed(2)}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                {/* Progress Badge */}
-                                <div className="text-right">
-                                  <div className="text-2xl font-bold text-primary">
-                                    {progressPercent.toFixed(0)}%
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">Complete</div>
-                                </div>
-                              </div>
-
-                              {/* Progress Bar */}
-                              <div className="mt-4">
-                                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                  <div 
-                                    className="h-full bg-gradient-to-r from-primary via-accent to-success transition-all duration-500 rounded-full"
-                                    style={{ width: `${progressPercent}%` }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </CollapsibleTrigger>
-
-                          <CollapsibleContent>
-                            <CardContent className="space-y-3">
-                              {/* Debt Cards */}
-                              <div className="grid gap-3">
-                                {snapshot.debts.map((debt, idx) => {
-                                  const debtProgress = debt.endBalance > 0 
-                                    ? ((result.rows[idx].balance - debt.endBalance) / result.rows[idx].balance) * 100
-                                    : 100;
-                                  
-                                  return (
-                                    <div 
-                                      key={idx} 
-                                      className={`p-4 rounded-lg border-2 transition-all ${
-                                        debt.endBalance <= 0 
-                                          ? 'border-success/30 bg-gradient-to-r from-success/10 to-green-500/10' 
-                                          : 'border-border bg-card hover:bg-accent/5'
-                                      }`}
-                                    >
-                                      <div className="flex items-start justify-between mb-3">
-                                        <div>
-                                          <div className="font-semibold text-base">
-                                            {debt.name} {debt.last4 && <span className="text-muted-foreground text-sm">({debt.last4})</span>}
-                                          </div>
-                                        </div>
-                                        {debt.endBalance <= 0 && (
-                                          <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-                                        )}
-                                      </div>
-
-                                      {debt.endBalance > 0 ? (
-                                        <>
-                                          {/* Debt Progress Bar */}
-                                          <div className="mb-3">
-                                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                              <div 
-                                                className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300"
-                                                style={{ width: `${debtProgress}%` }}
-                                              />
-                                            </div>
-                                          </div>
-
-                                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                            <div className="bg-muted/50 p-2 rounded">
-                                              <div className="text-xs text-muted-foreground mb-0.5">Payment</div>
-                                              <div className="font-semibold">${debt.payment.toFixed(2)}</div>
-                                            </div>
-                                            <div className="bg-destructive/10 p-2 rounded">
-                                              <div className="text-xs text-muted-foreground mb-0.5">Interest</div>
-                                              <div className="font-semibold text-destructive">${debt.interest.toFixed(2)}</div>
-                                            </div>
-                                            <div className="bg-success/10 p-2 rounded">
-                                              <div className="text-xs text-muted-foreground mb-0.5">Principal</div>
-                                              <div className="font-semibold text-success">${debt.principal.toFixed(2)}</div>
-                                            </div>
-                                            <div className="bg-primary/10 p-2 rounded">
-                                              <div className="text-xs text-muted-foreground mb-0.5">Balance</div>
-                                              <div className="font-semibold text-primary">${debt.endBalance.toFixed(2)}</div>
-                                            </div>
-                                          </div>
-                                        </>
-                                      ) : (
-                                        <div className="flex items-center justify-center py-2">
-                                          <span className="text-success font-bold text-lg">✓ PAID OFF</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-
-                              {/* Month Summary */}
-                              <div className="pt-3 border-t-2 border-dashed">
-                                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
-                                  <div>
-                                    <div className="text-sm text-muted-foreground">Total Remaining</div>
-                                    <div className="text-2xl font-bold text-foreground">
-                                      ${snapshot.totalRemaining.toFixed(2)}
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-sm text-muted-foreground">Paid This Month</div>
-                                    <div className="text-xl font-bold text-success">
-                                      -${paidOffThisMonth.toFixed(2)}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </CollapsibleContent>
-                        </Card>
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-primary">{progressPercent.toFixed(0)}%</div>
+                          <div className="text-xs text-muted-foreground">Complete</div>
+                        </div>
                       </div>
-                    </Collapsible>
+
+                      {/* Progress Bar */}
+                      <div className="mb-4">
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-primary to-success transition-all duration-300"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Debts Grid */}
+                      <div className="grid gap-3">
+                        {snapshot.debts.map((debt, idx) => (
+                          <div 
+                            key={idx}
+                            className={`p-3 rounded border ${
+                              debt.endBalance <= 0 
+                                ? 'border-success/30 bg-success/10' 
+                                : 'border-border bg-muted/50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-semibold">
+                                {debt.name} {debt.last4 && `(${debt.last4})`}
+                              </span>
+                              {debt.endBalance <= 0 && (
+                                <CheckCircle2 className="h-4 w-4 text-success" />
+                              )}
+                            </div>
+                            
+                            {debt.endBalance > 0 ? (
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div>
+                                  <div className="text-xs text-muted-foreground">Payment</div>
+                                  <div className="font-semibold">${debt.payment.toFixed(2)}</div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-muted-foreground">Interest</div>
+                                  <div className="font-semibold text-destructive">${debt.interest.toFixed(2)}</div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-muted-foreground">Principal</div>
+                                  <div className="font-semibold text-success">${debt.principal.toFixed(2)}</div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-muted-foreground">Balance</div>
+                                  <div className="font-semibold">${debt.endBalance.toFixed(2)}</div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-success font-bold text-center py-1">✓ PAID OFF</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Month Summary */}
+                      <div className="mt-3 pt-3 border-t flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Total Remaining</div>
+                          <div className="text-lg font-bold">${snapshot.totalRemaining.toFixed(2)}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-muted-foreground">Paid This Month</div>
+                          <div className="text-lg font-bold text-success">-${paidOffThisMonth.toFixed(2)}</div>
+                        </div>
+                      </div>
+                    </div>
                   );
                 })}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="mobile">
