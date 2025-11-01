@@ -120,6 +120,14 @@ export const PlaidUpdateBanner = () => {
   };
 
   const onSuccessCallback = async () => {
+    // Clear the needs_update flag in the database
+    if (selectedItem) {
+      await supabase
+        .from('plaid_item_status')
+        .update({ needs_update: false })
+        .eq('item_id', selectedItem);
+    }
+
     toast({
       title: 'Success!',
       description: 'Your bank connection has been updated.',
