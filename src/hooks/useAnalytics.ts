@@ -1,8 +1,20 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+type EventType = 
+  | 'page_view'
+  | 'signup'
+  | 'login'
+  | 'debt_added'
+  | 'debt_deleted'
+  | 'debt_imported'
+  | 'plan_calculated'
+  | 'bank_connected'
+  | 'bank_disconnected'
+  | 'hero_cta_click';
+
 export const useAnalytics = () => {
-  const trackEvent = async (eventType: string, metadata?: Record<string, any>) => {
+  const trackEvent = async (eventType: EventType, metadata?: Record<string, any>) => {
     try {
       // Call server-side analytics endpoint
       await supabase.functions.invoke('track-event', {
