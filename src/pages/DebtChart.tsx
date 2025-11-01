@@ -61,16 +61,8 @@ const DebtChart = () => {
 
       if (debtError) throw debtError;
 
-      // Deduplicate debts by creating a unique key from name, balance, and apr
-      const uniqueDebtsMap = new Map<string, Debt>();
-      (debtData || []).forEach(debt => {
-        const key = `${debt.name}-${debt.balance}-${debt.apr}`;
-        // Keep the first occurrence of each unique debt
-        if (!uniqueDebtsMap.has(key)) {
-          uniqueDebtsMap.set(key, debt);
-        }
-      });
-      const uniqueDebts = Array.from(uniqueDebtsMap.values());
+      // Use debt ID for uniqueness - each debt record should be unique
+      const uniqueDebts = debtData || [];
       
       setDebts(uniqueDebts);
       
