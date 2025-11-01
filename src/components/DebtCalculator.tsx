@@ -378,22 +378,34 @@ export function DebtCalculator() {
 
   const deleteAllDebts = async () => {
     try {
+      setIsLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       // Delete all debts from database
       await supabase.from('debts').delete().eq('user_id', user.id);
       
-      // Reset to single empty debt
-      setDebts([{ name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "", debtType: "personal", notes: "" }]);
-      
-      // Clear selections
+      // Clear selections first to avoid stale references
       setSelectedDebtIndices(new Set());
+      
+      // Reset to single empty debt with all required properties
+      setDebts([{ 
+        name: "", 
+        last4: "", 
+        balance: 0, 
+        minPayment: 0, 
+        apr: 0, 
+        dueDate: "", 
+        debtType: "personal", 
+        notes: "" 
+      }]);
       
       toast({ title: "Success", description: "All debts deleted" });
     } catch (error: any) {
       logError('DebtCalculator - Delete All Debts', error);
       toast({ title: "Error", description: "Failed to delete debts", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
   };
 
