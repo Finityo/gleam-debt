@@ -8,343 +8,335 @@ const corsHeaders = {
 };
 
 const debtSchema = z.object({
-  name: z.string().trim().min(1).max(100),
-  last4: z.string().max(4).optional(),
-  balance: z.number().min(0).max(100000000),
-  minPayment: z.number().min(0).max(1000000),
-  apr: z.number().min(0).max(100),
-  dueDate: z.string().optional()
+  id: z.string().optional(),
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  balance: z.number().min(0, "Balance must be positive").max(100000000, "Balance is too large"),
+  apr: z.number().min(0, "APR must be positive").max(100, "APR must be 100 or less"),
+  min_payment: z.number().min(0, "Minimum payment must be positive").max(1000000, "Minimum payment is too large"),
 });
 
 const requestSchema = z.object({
-  debts: z.array(debtSchema).min(1).max(100),
-  extraMonthly: z.number().min(0).max(1000000),
-  oneTime: z.number().min(0).max(10000000).optional(),
-  strategy: z.enum(['snowball', 'avalanche'])
+  debts: z.array(debtSchema).min(1, "At least one debt is required").max(100, "Too many debts"),
+  extra_monthly: z.number().min(0, "Extra monthly must be positive").max(1000000, "Extra monthly is too large").default(0),
+  one_time_payment: z.number().min(0, "One-time payment must be positive").max(10000000, "One-time payment is too large").default(0),
 });
 
-type Strategy = "snowball" | "avalanche";
+type Strategy = "snowball" | "avalanche" | "highest_balance";
 
-interface DebtInput {
+interface Debt {
   id?: string;
   name: string;
-  last4?: string;
   balance: number;
-  minPayment: number;
   apr: number;
-  dueDate?: string | null;
+  min_payment: number;
 }
 
-interface ComputeRequest {
-  debts: DebtInput[];
-  extraMonthly: number;
-  oneTime?: number;
-  strategy: Strategy;
-}
-
-interface DebtPlanRow {
-  index: number;
-  label: string;
-  name: string;
-  last4?: string;
-  balance: number;
-  minPayment: number;
-  apr: number;
-  monthlyRate: number;
-  totalPayment: number;
-  monthsToPayoff: number;
-  cumulativeMonths: number;
-  dueDate?: string | null;
-}
-
-function normalizeAPR(apr: number): number {
-  return apr > 1 ? apr / 100 : apr;
-}
-
-function sortDebts(debts: DebtInput[], strategy: Strategy): DebtInput[] {
-  const copy = debts.slice();
-  if (strategy === "avalanche") {
-    copy.sort((a, b) => {
-      const aAPR = normalizeAPR(a.apr);
-      const bAPR = normalizeAPR(b.apr);
-      if (bAPR !== aAPR) return bAPR - aAPR;
-      if (a.balance !== b.balance) return a.balance - b.balance;
-      return (b.minPayment || 0) - (a.minPayment || 0);
-    });
-  } else {
-    // Snowball: sort by balance ascending
-    // If within $5, break ties by higher APR first
-    copy.sort((a, b) => {
-      const balanceDiff = Math.abs(a.balance - b.balance);
-      if (balanceDiff <= 5) {
-        // Within $5, prioritize higher APR
-        const aAPR = normalizeAPR(a.apr);
-        const bAPR = normalizeAPR(b.apr);
-        return bAPR - aAPR;
-      }
-      return a.balance - b.balance;
-    });
-  }
-  return copy;
-}
-
-function monthsToPayoff(balance: number, payment: number, monthlyRate: number): number {
-  if (balance <= 0 || payment <= 0) return 0;
-  if (monthlyRate <= 0) return Math.ceil(balance / payment);
-  if (payment <= monthlyRate * balance) return 0;
-  const months = Math.log(payment / (payment - monthlyRate * balance)) / Math.log(1 + monthlyRate);
-  return Math.ceil(months);
-}
-
-interface MonthlySnapshot {
+interface PaymentScheduleItem {
   month: number;
+  date: string;
   debts: Array<{
     name: string;
-    last4?: string;
     payment: number;
-    interest: number;
-    principal: number;
-    endBalance: number;
+    remaining_balance: number;
+    is_paid_off?: boolean;
   }>;
-  snowballExtra: number;
-  totalPaidThisMonth: number;
-  totalRemaining: number;
+  total_payment: number;
+  total_remaining: number;
 }
 
-function computePlan(req: ComputeRequest) {
-  const userExtraBudget = Math.max(0, req.extraMonthly || 0);
-  const oneTimePayment = Math.max(0, req.oneTime || 0);
+interface DebtPlanData {
+  payoff_months: number;
+  total_interest: number;
+  monthly_schedule: PaymentScheduleItem[];
+  summary: {
+    total_debt: number;
+    total_minimum_payment: number;
+    strategy: string;
+    extra_monthly: number;
+    one_time_payment: number;
+  };
+}
 
-  // Filter: only debts with balance > 0, minPayment > 0, and valid name
-  const cleaned = req.debts
-    .filter(d => {
-      const hasName = d.name?.trim();
-      const hasBalance = d.balance > 0;
-      const hasMinPayment = (d.minPayment || 0) > 0;
-      
-      if (!hasName || !hasBalance || !hasMinPayment) {
-        console.log(`Filtering out debt: ${d.name} - hasName:${hasName}, hasBalance:${hasBalance}, hasMinPayment:${hasMinPayment}`);
-      }
-      
-      return hasName && hasBalance && hasMinPayment;
-    })
-    .map(d => ({
-      ...d,
-      apr: normalizeAPR(d.apr),
-      minPayment: Math.max(0, d.minPayment || 0),
-      balance: Math.max(0, d.balance || 0)
-    }));
+function applyPayment(balance: number, apr: number, payment: number) {
+  const monthlyRate = apr / 100 / 12;
+  const interest = balance * monthlyRate;
+  let newBalance = balance + interest - payment;
+  if (newBalance < 0) newBalance = 0;
+  return { newBalance, interestPaid: interest };
+}
 
-  // Sort according to strategy
-  const ordered = sortDebts(cleaned, req.strategy);
-
-  // Initialize tracking for each debt
-  const debtsTracking = ordered.map(d => ({
-    ...d,
-    currentBalance: d.balance,
-    totalInterest: 0,
-    totalPaid: 0,
-    paidOffMonth: 0
-  }));
-
-  // Apply one-time payment cascading through debts in order
-  if (oneTimePayment > 0) {
-    let remainingOneTime = oneTimePayment;
-    for (let i = 0; i < debtsTracking.length && remainingOneTime > 0; i++) {
-      const amountToApply = Math.min(remainingOneTime, debtsTracking[i].currentBalance);
-      debtsTracking[i].currentBalance -= amountToApply;
-      remainingOneTime -= amountToApply;
-    }
-  }
-
-  let snowballExtra = userExtraBudget;
-  const schedule: MonthlySnapshot[] = [];
-  const payoffOrder: string[] = [];
-  let month = 1;
-  const maxMonths = 360; // safety limit
-
-  // Monthly loop
-  while (month <= maxMonths) {
-    const monthSnapshot: MonthlySnapshot = {
-      month,
-      debts: [],
-      snowballExtra,
-      totalPaidThisMonth: 0,
-      totalRemaining: 0
-    };
-
-    let anyDebtRemaining = false;
-    let currentSmallestIndex = -1;
-
-    // Find the current smallest unpaid debt
-    for (let i = 0; i < debtsTracking.length; i++) {
-      if (debtsTracking[i].currentBalance > 0) {
-        currentSmallestIndex = i;
-        anyDebtRemaining = true;
-        break;
-      }
-    }
-
-    if (!anyDebtRemaining) break;
-
-    // Process each debt
-    for (let i = 0; i < debtsTracking.length; i++) {
-      const debt = debtsTracking[i];
-      
-      if (debt.currentBalance <= 0) {
-        monthSnapshot.debts.push({
-          name: debt.name,
-          last4: debt.last4,
-          payment: 0,
-          interest: 0,
-          principal: 0,
-          endBalance: 0
-        });
-        continue;
-      }
-
-      const monthlyRate = debt.apr / 12;
-      const interest = debt.currentBalance * monthlyRate;
-      
-      // Determine target payment
-      const targetPayment = i === currentSmallestIndex 
-        ? debt.minPayment + snowballExtra 
-        : debt.minPayment;
-
-      // Calculate actual payment (can't exceed balance + interest)
-      const actualPayment = Math.min(targetPayment, debt.currentBalance + interest);
-      const principal = actualPayment - interest;
-
-      // Update balance
-      const newBalance = Math.max(0, debt.currentBalance - principal);
-      
-      monthSnapshot.debts.push({
-        name: debt.name,
-        last4: debt.last4,
-        payment: actualPayment,
-        interest,
-        principal,
-        endBalance: newBalance
-      });
-
-      debt.currentBalance = newBalance;
-      debt.totalInterest += interest;
-      debt.totalPaid += actualPayment;
-      monthSnapshot.totalPaidThisMonth += actualPayment;
-
-      // Check if debt was paid off this month
-      if (debt.currentBalance === 0 && debt.paidOffMonth === 0) {
-        debt.paidOffMonth = month;
-        payoffOrder.push(debt.name);
-        // Roll this debt's minimum payment into snowballExtra
-        snowballExtra += debt.minPayment;
-      }
-    }
-
-    // Calculate total remaining
-    monthSnapshot.totalRemaining = debtsTracking.reduce((sum, d) => sum + d.currentBalance, 0);
-    schedule.push(monthSnapshot);
-
-    if (monthSnapshot.totalRemaining === 0) break;
-    month++;
-  }
-
-  // Build output rows for compatibility
-  const rows: DebtPlanRow[] = ordered.map((d, i) => {
-    const tracked = debtsTracking[i];
-    const label = d.last4 ? `${d.name} (${d.last4})` : d.name;
-    
-    // Calculate the starting balance after one-time payment was applied
-    let startingBalance = d.balance;
-    let remainingOneTime = oneTimePayment;
-    
-    // Simulate the one-time payment application to determine this debt's starting balance
-    for (let j = 0; j < i && remainingOneTime > 0; j++) {
-      const amountToApply = Math.min(remainingOneTime, ordered[j].balance);
-      remainingOneTime -= amountToApply;
-    }
-    
-    if (remainingOneTime > 0) {
-      startingBalance = Math.max(0, startingBalance - remainingOneTime);
-    }
-    
-    return {
-      index: i + 1,
-      label,
-      name: d.name,
-      last4: d.last4,
-      balance: startingBalance,
-      minPayment: startingBalance === 0 ? 0 : d.minPayment,
-      apr: d.apr,
-      monthlyRate: d.apr / 12,
-      totalPayment: 0, // legacy field
-      monthsToPayoff: tracked.paidOffMonth,
-      cumulativeMonths: tracked.paidOffMonth,
-      dueDate: d.dueDate ?? null
-    };
+function computePlan(
+  debts: Debt[],
+  strategy: Strategy,
+  extraMonthly = 0,
+  oneTimePayment = 0
+): DebtPlanData {
+  const ordered = [...debts].sort((a, b) => {
+    if (strategy === "snowball") return a.balance - b.balance;
+    if (strategy === "avalanche") return b.apr - a.apr;
+    if (strategy === "highest_balance") return b.balance - a.balance;
+    return 0;
   });
 
-  const totals = {
-    numDebts: rows.length,
-    sumBalance: rows.reduce((s, r) => s + r.balance, 0),
-    sumMinPayment: rows.reduce((s, r) => s + r.minPayment, 0),
-    strategy: req.strategy,
-    extraMonthly: userExtraBudget,
-    oneTime: oneTimePayment,
-    totalMonths: schedule.length,
-    debtFreeMonth: schedule.length
-  };
+  const monthlySchedule: PaymentScheduleItem[] = [];
+  const totalDebt = ordered.reduce((sum, d) => sum + d.balance, 0);
+  const totalMinimumPayment = ordered.reduce((s, d) => s + d.min_payment, 0);
 
-  return { rows, totals, schedule, payoffOrder };
+  let month = 0;
+  let remainingDebts = [...ordered];
+  let totalInterest = 0;
+  let rollover = 0;
+  let extra = extraMonthly;
+  let oneTime = oneTimePayment;
+
+  while (remainingDebts.some(d => d.balance > 0) && month < 600) {
+    month++;
+    const now = new Date();
+    const monthDate = new Date(now.getFullYear(), now.getMonth() + month, 1);
+    const monthLabel = monthDate.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
+
+    let monthInterest = 0;
+    let monthPayment = 0;
+    const debtsThisMonth: PaymentScheduleItem["debts"] = [];
+
+    for (let i = 0; i < remainingDebts.length; i++) {
+      const debt = remainingDebts[i];
+      if (debt.balance <= 0) continue;
+
+      let payment = debt.min_payment;
+      if (i === 0) payment += rollover + extra;
+
+      if (month === 1 && i === 0 && oneTime > 0) {
+        payment += oneTime;
+        oneTime = 0;
+      }
+
+      const { newBalance, interestPaid } = applyPayment(
+        debt.balance,
+        debt.apr,
+        payment
+      );
+
+      monthInterest += interestPaid;
+      monthPayment += payment;
+      debt.balance = newBalance;
+
+      debtsThisMonth.push({
+        name: debt.name,
+        payment,
+        remaining_balance: newBalance,
+        is_paid_off: newBalance <= 0.01,
+      });
+
+      if (newBalance <= 0.01) rollover += debt.min_payment;
+    }
+
+    totalInterest += monthInterest;
+
+    const totalRemaining = remainingDebts.reduce(
+      (sum, d) => sum + Math.max(d.balance, 0),
+      0
+    );
+
+    monthlySchedule.push({
+      month,
+      date: monthLabel,
+      debts: debtsThisMonth,
+      total_payment: monthPayment,
+      total_remaining: totalRemaining,
+    });
+
+    if (totalRemaining <= 0.01) break;
+  }
+
+  return {
+    payoff_months: month,
+    total_interest: Number(totalInterest.toFixed(2)),
+    monthly_schedule: monthlySchedule,
+    summary: {
+      total_debt: totalDebt,
+      total_minimum_payment: totalMinimumPayment,
+      strategy,
+      extra_monthly: extraMonthly,
+      one_time_payment: oneTimePayment,
+    },
+  };
+}
+
+function validatePlans(snowballPlan: DebtPlanData, avalanchePlan: DebtPlanData) {
+  const compare = (a: DebtPlanData, b: DebtPlanData) => ({
+    faster: a.payoff_months < b.payoff_months ? a.summary.strategy : b.summary.strategy,
+    lessInterest:
+      a.total_interest < b.total_interest
+        ? a.summary.strategy
+        : b.summary.strategy,
+  });
+
+  const summary = compare(snowballPlan, avalanchePlan);
+
+  return {
+    snowball: {
+      payoff_months: snowballPlan.payoff_months,
+      total_interest: snowballPlan.total_interest,
+    },
+    avalanche: {
+      payoff_months: avalanchePlan.payoff_months,
+      total_interest: avalanchePlan.total_interest,
+    },
+    comparison: summary,
+  };
 }
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Verify authentication
-  const supabaseClient = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    {
-      global: {
-        headers: { Authorization: req.headers.get('Authorization')! },
-      },
-    }
-  );
-
-  const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-  if (authError || !user) {
-    return new Response(
-      JSON.stringify({ error: 'Unauthorized. Please sign in to use this feature.' }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { 
+      status: 405, 
+      headers: corsHeaders 
+    });
   }
 
   try {
-    const body = await req.json();
-    const validated = requestSchema.parse(body);
+    // Verify authentication
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
     
-    // Normalize APR to decimal
-    validated.debts.forEach(d => (d.apr = d.apr > 1 ? d.apr / 100 : d.apr));
-    
-    const result = computePlan(validated);
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error("Missing Supabase configuration");
+    }
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: req.headers.get('Authorization') || '' },
+      },
     });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    
+    if (authError || !user) {
+      console.error('Auth error:', authError);
       return new Response(
-        JSON.stringify({ error: 'Invalid input', details: error.errors }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        JSON.stringify({ error: 'Unauthorized. Please sign in to use this feature.' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    console.error('Error in compute-debt-plan:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+
+    // Parse and validate request body
+    const body = await req.json();
+    const validated = requestSchema.parse(body);
+
+    console.log(`Computing debt plans for user ${user.id} with ${validated.debts.length} debts`);
+
+    // Compute all three strategies
+    const snowballPlan = computePlan(
+      validated.debts,
+      "snowball",
+      validated.extra_monthly,
+      validated.one_time_payment
+    );
+    
+    const avalanchePlan = computePlan(
+      validated.debts,
+      "avalanche",
+      validated.extra_monthly,
+      validated.one_time_payment
+    );
+    
+    const highestBalancePlan = computePlan(
+      validated.debts,
+      "highest_balance",
+      validated.extra_monthly,
+      validated.one_time_payment
+    );
+
+    const validation = validatePlans(snowballPlan, avalanchePlan);
+
+    // Use service role key to insert data
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseServiceKey) {
+      throw new Error("Missing service role key");
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Save all three plans to database
+    const { error: insertError } = await supabaseAdmin.from("debt_plans").insert([
+      {
+        user_id: user.id,
+        strategy: "snowball",
+        extra_monthly: validated.extra_monthly,
+        one_time: validated.one_time_payment,
+        plan_data: snowballPlan,
+        debt_snapshot: validated.debts,
+      },
+      {
+        user_id: user.id,
+        strategy: "avalanche",
+        extra_monthly: validated.extra_monthly,
+        one_time: validated.one_time_payment,
+        plan_data: avalanchePlan,
+        debt_snapshot: validated.debts,
+      },
+      {
+        user_id: user.id,
+        strategy: "highest_balance",
+        extra_monthly: validated.extra_monthly,
+        one_time: validated.one_time_payment,
+        plan_data: highestBalancePlan,
+        debt_snapshot: validated.debts,
+      },
+    ]);
+
+    if (insertError) {
+      console.error('Database insert error:', insertError);
+      throw insertError;
+    }
+
+    console.log('Successfully computed and saved all debt plans');
+
+    return new Response(
+      JSON.stringify({
+        snowballPlan,
+        avalanchePlan,
+        highestBalancePlan,
+        validation,
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 200 
+      }
+    );
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error('Validation error:', error.errors);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input data', 
+          details: error.errors 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 400 
+        }
+      );
+    }
+    
+    console.error("compute-debt-plan error:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    );
   }
 });
