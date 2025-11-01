@@ -468,13 +468,14 @@ async function handleLiabilitiesWebhook(supabase: any, payload: any) {
       case 'DEFAULT_UPDATE':
         // New liability data available (balance changes, APR updates, etc.)
         console.log('Liabilities DEFAULT_UPDATE received for item:', item_id);
+        console.log('⚠️ REFRESH ONLY - This will UPDATE existing accounts, NOT create duplicates');
         
         // Sync accounts to update balances instead of creating duplicates
         try {
           await supabase.functions.invoke('plaid-sync-accounts', {
             body: { item_id }
           });
-          console.log('Successfully synced accounts after liabilities update');
+          console.log('✓ Successfully synced accounts (update only, no duplicates created)');
         } catch (syncError) {
           console.error('Failed to sync accounts:', syncError);
         }

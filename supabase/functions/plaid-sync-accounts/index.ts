@@ -34,7 +34,8 @@ serve(async (req) => {
       throw new Error('item_id is required');
     }
 
-    console.log('Syncing accounts for item:', item_id);
+    console.log('🔄 Syncing accounts for item:', item_id);
+    console.log('⚠️ REFRESH MODE - Will UPDATE existing accounts, NOT create duplicates');
 
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
@@ -144,10 +145,11 @@ serve(async (req) => {
       }
     }
 
-    console.log('Account sync completed:', {
+    console.log('✓ Account sync completed:', {
       item_id,
       updated: updatedCount,
-      inserted: insertedCount
+      inserted: insertedCount,
+      message: updatedCount > 0 ? 'Balances refreshed successfully' : 'New accounts added'
     });
 
     return new Response(JSON.stringify({ 

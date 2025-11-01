@@ -295,4 +295,198 @@ All colors MUST be HSL.
       transparent 100%
     );
   }
+  
+  .bg-gradient-card {
+    background: var(--gradient-card);
+  }
+  
+  .shadow-vibrant {
+    box-shadow: var(--shadow-vibrant);
+  }
+}
+
+/* Print Styles - Clean, Professional Output */
+@media print {
+  @page {
+    size: letter;
+    margin: 0.5in;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    font-family: 'Helvetica', 'Arial', 'Inter', sans-serif !important;
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  /* Hide interactive elements */
+  .no-print,
+  nav, 
+  button:not(.print-keep), 
+  .sidebar,
+  [role="dialog"],
+  [role="alertdialog"] {
+    display: none !important;
+  }
+
+  /* Optimize layout for printing */
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Make tables print-friendly */
+  table {
+    page-break-inside: avoid;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12pt 0;
+  }
+
+  thead {
+    display: table-header-group;
+    font-weight: bold;
+  }
+
+  th, td {
+    border: 1pt solid #333;
+    padding: 6pt 8pt;
+    text-align: left;
+    font-size: 10pt;
+  }
+
+  th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold;
+  }
+
+  /* Cards and sections */
+  .card, .chart-container, section {
+    page-break-inside: avoid;
+    border: 1pt solid #ddd;
+    padding: 12pt;
+    margin-bottom: 12pt;
+    background: white !important;
+  }
+
+  /* Headings */
+  h1 {
+    font-size: 24pt;
+    margin-bottom: 12pt;
+    color: black !important;
+    page-break-after: avoid;
+  }
+
+  h2 {
+    font-size: 18pt;
+    margin-top: 12pt;
+    margin-bottom: 8pt;
+    color: black !important;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 14pt;
+    margin-top: 10pt;
+    margin-bottom: 6pt;
+    color: black !important;
+  }
+
+  /* Remove backgrounds */
+  .bg-background, 
+  .bg-card, 
+  .bg-muted,
+  .glass,
+  .glass-intense {
+    background: white !important;
+    backdrop-filter: none !important;
+    border: 1pt solid #ddd !important;
+    box-shadow: none !important;
+  }
+
+  /* Text colors */
+  .text-foreground,
+  .text-muted-foreground,
+  p, span, div {
+    color: black !important;
+  }
+
+  /* Preserve semantic colors */
+  .text-success, 
+  .text-green-600,
+  .text-green-400 {
+    color: #059669 !important;
+  }
+
+  .text-warning, 
+  .text-yellow-600,
+  .text-orange-600 {
+    color: #d97706 !important;
+  }
+
+  .text-destructive, 
+  .text-red-600,
+  .text-red-400 {
+    color: #dc2626 !important;
+  }
+
+  .text-primary,
+  .text-blue-600 {
+    color: #2563eb !important;
+  }
+
+  /* Links */
+  a {
+    color: #2563eb !important;
+    text-decoration: underline;
+  }
+
+  /* Avoid page breaks */
+  tr, img, figure {
+    page-break-inside: avoid;
+  }
+
+  /* Chart and image handling */
+  img, svg, canvas {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+  }
+
+  /* Grid layouts */
+  .grid {
+    display: block !important;
+  }
+
+  .grid > * {
+    margin-bottom: 8pt;
+  }
+
+  /* Borders and spacing */
+  .border {
+    border-color: #333 !important;
+  }
+
+  /* Lists */
+  ul, ol {
+    margin-left: 20pt;
+  }
+
+  li {
+    margin-bottom: 4pt;
+  }
+
+  /* Stats and metrics */
+  .stat-card, .metric {
+    border: 1pt solid #ddd;
+    padding: 8pt;
+    margin-bottom: 8pt;
+  }
 }

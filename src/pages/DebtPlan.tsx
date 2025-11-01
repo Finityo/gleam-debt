@@ -7,7 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { ArrowLeft, Download, Info, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Download, Info, ChevronDown, Printer } from 'lucide-react';
+import { PrintExportButton } from '@/components/PrintExportButton';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/logger';
@@ -98,6 +99,10 @@ const DebtPlan = () => {
   const [oneTime, setOneTime] = useState<number>(location.state?.oneTime || 0);
   const [isLoading, setIsLoading] = useState(false);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   useEffect(() => {
     if (!result) {
       navigate('/debts');
@@ -171,25 +176,32 @@ const DebtPlan = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/dashboard')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Dashboard
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/debts')}
-            >
-              Debt Management
-            </Button>
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="flex gap-2 no-print">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate('/debts')}
+                >
+                  Debt Management
+                </Button>
+              </div>
+              <h1 className="text-4xl font-bold text-foreground">Your Debt Payoff Plan</h1>
+              <p className="text-muted-foreground mt-2">
+                Review your personalized debt payoff strategy
+              </p>
+            </div>
+            <div className="no-print">
+              <PrintExportButton onPrint={handlePrint} />
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-foreground">Your Debt Payoff Plan</h1>
-          <p className="text-muted-foreground mt-2">
-            Review your personalized debt payoff strategy
-          </p>
         </div>
 
         <Card className="mb-6 border-primary/20 bg-primary/5">

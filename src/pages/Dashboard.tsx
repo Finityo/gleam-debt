@@ -11,7 +11,8 @@ import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
 import { PlaidAnalytics } from '@/components/PlaidAnalytics';
 import { TrialSubscriptionDialog } from '@/components/TrialSubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Printer } from 'lucide-react';
+import { PrintExportButton } from '@/components/PrintExportButton';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
 
@@ -41,6 +42,10 @@ const Dashboard = () => {
   const [showPlaidLink, setShowPlaidLink] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -147,7 +152,8 @@ const Dashboard = () => {
             <h1 className="text-4xl font-bold text-foreground">Dashboard</h1>
             <p className="text-muted-foreground mt-2">{user?.email}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 no-print">
+            <PrintExportButton onPrint={handlePrint} />
             <Button variant="outline" onClick={() => navigate('/profile')}>
               <UserIcon className="w-4 h-4 mr-2" />
               Profile
