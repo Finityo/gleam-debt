@@ -1199,4 +1199,6 @@ export function DebtCalculator() {
 
     </div>
   );
-}
+};
+
+export default DebtCalculator;
