@@ -40,6 +40,7 @@ const Dashboard = () => {
   const [unmigratedItemIds, setUnmigratedItemIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPlaidLink, setShowPlaidLink] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -56,7 +57,7 @@ const Dashboard = () => {
         
         if (!session) {
           navigate('/auth');
-        } else if (event === 'SIGNED_IN') {
+        } else if (event === 'SIGNED_IN' && !isFetching) {
           // Defer the account fetch to avoid blocking the callback
           setTimeout(() => {
             fetchAccounts();
@@ -72,7 +73,7 @@ const Dashboard = () => {
       
       if (!session) {
         navigate('/auth');
-      } else {
+      } else if (!isFetching) {
         fetchAccounts();
       }
       setLoading(false);
@@ -82,7 +83,10 @@ const Dashboard = () => {
   }, [navigate]);
 
   const fetchAccounts = async () => {
+    if (isFetching) return; // Prevent duplicate fetches
+    
     try {
+      setIsFetching(true);
       const { data, error } = await supabase.functions.invoke('plaid-get-accounts');
       
       if (error) throw error;
@@ -119,6 +123,8 @@ const Dashboard = () => {
         description: 'Failed to load accounts',
         variant: 'destructive',
       });
+    } finally {
+      setIsFetching(false);
     }
   };
 
