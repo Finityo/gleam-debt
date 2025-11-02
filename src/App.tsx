@@ -39,6 +39,7 @@ const BlogPost = lazy(() => import("./pages/BlogPost"));
 const DocumentExport = lazy(() => import("./pages/DocumentExport"));
 const OAuthRedirect = lazy(() => import("./pages/OAuthRedirect"));
 const Demo = lazy(() => import("./pages/Demo"));
+const Install = lazy(() => import("./pages/Install"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // ✅ Simple branded loading screen
@@ -101,6 +102,7 @@ const AppRoutes = () => {
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/oauth-redirect" element={<OAuthRedirect />} />
               <Route path="/demo" element={<Demo />} />
+              <Route path="/install" element={<Install />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

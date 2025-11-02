@@ -17,20 +17,22 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
-        name: 'Debt Snowball - Financial Freedom',
-        short_name: 'Debt Snowball',
-        description: 'Take control of your debt with smart snowball and avalanche strategies',
-        theme_color: '#1A1F2C',
-        background_color: '#1A1F2C',
+        name: 'Finityo - Debt Payoff Planner',
+        short_name: 'Finityo',
+        description: 'Smart debt payoff calculator with snowball and avalanche strategies. Plan your path to financial freedom.',
+        theme_color: '#6E59A5',
+        background_color: '#0A0F1E',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'portrait-primary',
         scope: '/',
         start_url: '/',
+        categories: ['finance', 'productivity', 'utilities'],
         icons: [
           {
             src: '/pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: '/pwa-512x512.png',
@@ -43,6 +45,29 @@ export default defineConfig(({ mode }) => ({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
+          }
+        ],
+        shortcuts: [
+          {
+            name: 'Dashboard',
+            short_name: 'Dashboard',
+            description: 'View your debt dashboard',
+            url: '/dashboard',
+            icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }]
+          },
+          {
+            name: 'My Debts',
+            short_name: 'Debts',
+            description: 'Manage your debts',
+            url: '/debts',
+            icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }]
+          },
+          {
+            name: 'Demo',
+            short_name: 'Demo',
+            description: 'Try the demo',
+            url: '/demo',
+            icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }]
           }
         ]
       },
