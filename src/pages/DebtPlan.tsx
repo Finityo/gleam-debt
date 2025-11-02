@@ -591,7 +591,7 @@ const DebtPlan = () => {
                           <TableCell className="font-medium">{row.label}</TableCell>
                           <TableCell className="text-right">${row.balance.toFixed(2)}</TableCell>
                           <TableCell className="text-right">${row.minPayment.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">{(row.apr * 100).toFixed(2)}%</TableCell>
+                          <TableCell className="text-right">{row.apr.toFixed(2)}%</TableCell>
                           <TableCell>{formatDueDate(row.dueDate) || 'N/A'}</TableCell>
                           <TableCell className="text-right">{row.monthsToPayoff}</TableCell>
                         </TableRow>
