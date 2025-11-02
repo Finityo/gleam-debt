@@ -1,5 +1,8 @@
 project_id = "jsvduobkznoszmxedkss"
 
+[functions.ai-financial-advisor]
+verify_jwt = true
+
 [functions.plaid-webhook]
 verify_jwt = false
 

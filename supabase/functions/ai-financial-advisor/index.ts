@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,45 +6,43 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
 
   try {
-    // Verify authentication
-    const supabaseClient = await createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
-
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const { messages, debtContext } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
 
-    // Build system prompt with optional debt context
-    let systemPrompt = `You are a helpful financial advisor specializing in debt management. You provide clear, actionable advice about:
-- Debt payoff strategies (avalanche vs snowball methods)
+    // Build system prompt with debt context if available
+    let systemPrompt = `You are an expert financial advisor specializing in debt management and payoff strategies. 
+You provide clear, actionable advice on:
+- Debt snowball vs avalanche methods
 - Interest rate optimization
-- Budget planning and cash flow management
-- Debt consolidation and refinancing
-- Financial goal setting
+- Budgeting and cash flow management
+- Credit score improvement
+- Negotiating with creditors
+- Debt consolidation options
 
-Keep responses concise, practical, and encouraging. Use simple language and avoid jargon when possible.`;
+Keep your responses:
+- Clear and concise (2-3 paragraphs max unless asked for more detail)
+- Actionable with specific steps
+- Empathetic and encouraging
+- Focused on practical financial strategies
+
+IMPORTANT: Always remind users that this is educational information only and they should consult licensed financial professionals for personalized advice.`;
 
     if (debtContext) {
-      systemPrompt += `\n\nUser's Current Debt Summary:\n${JSON.stringify(debtContext, null, 2)}`;
+      systemPrompt += `\n\nUser's Current Debt Situation:
+- Total number of debts: ${debtContext.totalDebts}
+- Total balance: $${debtContext.totalBalance.toLocaleString()}
+- Average APR: ${debtContext.avgAPR}%
+
+Use this context to provide personalized advice when relevant.`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -65,33 +62,59 @@ Keep responses concise, practical, and encouraging. Use simple language and avoi
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ 
+            error: "Rate limit exceeded. Please wait a moment before trying again." 
+          }), 
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "AI credits depleted. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ 
+            error: "AI service credits depleted. Please contact support to add credits." 
+          }), 
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
         );
       }
       
-      throw new Error("AI gateway error");
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      return new Response(
+        JSON.stringify({ error: "AI service error. Please try again." }), 
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
+    // Stream the response back to client
     return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
     });
-  } catch (e) {
-    console.error("Error in ai-financial-advisor:", e);
+  } catch (error) {
+    console.error("ai-financial-advisor error:", error);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : "Unknown error occurred" 
+      }), 
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
     );
   }
 });
