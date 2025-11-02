@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { DebtCalculator } from '@/components/DebtCalculator';
+import { DemoBanner } from '@/components/DemoBanner';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import type { User } from '@supabase/supabase-js';
@@ -45,7 +46,8 @@ const Debts = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEOHead 
+      <DemoBanner />
+      <SEOHead
         title="My Debts | Finityo Debt Payoff"
         description="Track, manage, and optimize your debt payoff strategy with Finityo"
         canonical="https://finityo-debt.com/debts"
