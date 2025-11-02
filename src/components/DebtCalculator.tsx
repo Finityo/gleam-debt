@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from 'exceljs';
 import { logError } from '@/utils/logger';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { DEMO } from "@/config/demo";
 
 type Strategy = "snowball" | "avalanche";
 
@@ -163,6 +164,8 @@ export function DebtCalculator() {
   }, [strategy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadSavedData = async () => {
+    if (DEMO) return; // Skip database load in demo mode
+    
     try {
       // Load debts
       const { data: debtsData, error: debtsError } = await supabase
@@ -215,6 +218,8 @@ export function DebtCalculator() {
   };
 
   const triggerAutoComputation = async () => {
+    if (DEMO) return; // Skip in demo mode
+    
     try {
       const { error } = await supabase.functions.invoke('auto-compute-debt-plans');
       if (error) {
@@ -226,6 +231,8 @@ export function DebtCalculator() {
   };
 
   const saveDebts = async () => {
+    if (DEMO) return; // Skip database save in demo mode
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -481,6 +488,69 @@ export function DebtCalculator() {
 
   const compute = async (useStrategy?: Strategy) => {
     try {
+      // Demo mode: Use mock computation results
+      if (DEMO) {
+        toast({ 
+          title: "Demo Mode", 
+          description: "Showing sample debt plan calculation",
+          duration: 3000
+        });
+        
+        // Create mock results based on current debts
+        const validDebts = debts.filter(d => 
+          d.name.trim() !== '' && d.balance > 0 && d.minPayment > 0
+        );
+        
+        if (validDebts.length === 0) {
+          toast({ 
+            title: "No Valid Debts", 
+            description: "Please add at least one debt to see the demo plan.",
+            variant: "destructive" 
+          });
+          return;
+        }
+        
+        const mockData: ComputeResult = {
+          rows: validDebts.map((d, i) => ({
+            index: i,
+            label: `${i + 1}`,
+            name: d.name,
+            last4: d.last4,
+            balance: d.balance,
+            minPayment: d.minPayment,
+            apr: d.apr,
+            monthlyRate: d.apr / 12 / 100,
+            totalPayment: d.balance + (d.balance * 0.15),
+            monthsToPayoff: Math.ceil(d.balance / d.minPayment),
+            cumulativeMonths: 0,
+            dueDate: d.dueDate
+          })),
+          totals: {
+            numDebts: validDebts.length,
+            sumBalance: validDebts.reduce((sum, d) => sum + d.balance, 0),
+            sumMinPayment: validDebts.reduce((sum, d) => sum + d.minPayment, 0),
+            strategy: useStrategy || strategy,
+            extraMonthly: Number(extra) || 0,
+            oneTime: Number(oneTime) || 0,
+            totalMonths: 24,
+            debtFreeMonth: 24
+          },
+          schedule: [],
+          payoffOrder: validDebts.map(d => d.name)
+        };
+        
+        navigate('/debt-plan', {
+          state: {
+            result: mockData,
+            strategy: useStrategy || strategy,
+            debts: validDebts,
+            extra: Number(extra) || 0,
+            oneTime: Number(oneTime) || 0
+          }
+        });
+        return;
+      }
+      
       // Validate that we have at least one valid debt
       const validDebts = debts.filter(d => 
         d.name.trim() !== '' && d.balance > 0 && d.minPayment > 0
