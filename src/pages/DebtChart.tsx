@@ -68,9 +68,18 @@ const DebtChart = () => {
         const totalDebtAmount = demoDebts.reduce((sum, debt) => sum + debt.balance, 0);
         setTotalDebt(totalDebtAmount);
         
-        // Demo mode: no Plaid accounts, so no credit utilization
-        setTotalLimit(0);
-        setPlaidDebt(0);
+        // Demo mode: simulate Plaid credit accounts for credit utilization
+        // Assume credit cards have 2x their balance as credit limit
+        const creditCardDebts = demoDebts.filter(d => 
+          d.name.toLowerCase().includes('credit card') || 
+          d.name.toLowerCase().includes('visa')
+        );
+        
+        const demoCreditUsed = creditCardDebts.reduce((sum, debt) => sum + debt.balance, 0);
+        const demoCreditLimit = demoCreditUsed * 2; // Assume 50% utilization
+        
+        setPlaidDebt(demoCreditUsed);
+        setTotalLimit(demoCreditLimit);
         
         setLoading(false);
         return;
