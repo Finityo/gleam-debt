@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { DebtCard } from "@/components/DebtCard";
 import { SEOHead } from "@/components/SEOHead";
+import { DemoBanner } from "@/components/DemoBanner";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Wallet, TrendingDown, Target, Zap, ArrowRight, CreditCard, Download, Lock, FileText, CheckCircle2, Shield, Star } from "lucide-react";
 import heroImage from "@/assets/hero-financial-freedom.jpg";
@@ -101,7 +102,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEOHead 
+      <DemoBanner />
+      <SEOHead
         title="Finityo Debt Payoff | Snowball or Avalanche Plan" 
         description="Connect with Plaid, choose Snowball or Avalanche, and get a month-by-month payoff plan. Free to start." 
         canonical="https://finityo-debt.com/" 
