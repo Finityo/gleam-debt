@@ -517,6 +517,55 @@ export function DebtCalculator() {
         // Sort debts for avalanche (highest APR first)
         const avalancheDebts = [...validDebts].sort((a, b) => b.apr - a.apr);
         
+        // Generate mock monthly schedule for snowball
+        const generateSchedule = (sortedDebts: typeof validDebts, months: number) => {
+          const schedule: MonthlySnapshot[] = [];
+          let remainingDebts = sortedDebts.map(d => ({ ...d, remaining: d.balance }));
+          
+          for (let month = 1; month <= months; month++) {
+            const monthlyDebts = remainingDebts
+              .filter(d => d.remaining > 0)
+              .map(d => {
+                const monthlyRate = d.apr / 12 / 100;
+                const interest = d.remaining * monthlyRate;
+                const payment = Math.min(d.minPayment + 50, d.remaining + interest);
+                const principal = payment - interest;
+                const endBalance = Math.max(0, d.remaining - principal);
+                
+                return {
+                  name: d.name,
+                  last4: d.last4,
+                  payment,
+                  interest,
+                  principal,
+                  endBalance
+                };
+              });
+            
+            const totalPaid = monthlyDebts.reduce((sum, d) => sum + d.payment, 0);
+            const totalRemaining = monthlyDebts.reduce((sum, d) => sum + d.endBalance, 0);
+            
+            schedule.push({
+              month,
+              debts: monthlyDebts,
+              snowballExtra: Number(extra) || 0,
+              totalPaidThisMonth: totalPaid,
+              totalRemaining
+            });
+            
+            // Update remaining balances
+            remainingDebts = remainingDebts.map(d => {
+              const debtInMonth = monthlyDebts.find(md => md.name === d.name);
+              return {
+                ...d,
+                remaining: debtInMonth?.endBalance || d.remaining
+              };
+            });
+          }
+          
+          return schedule;
+        };
+        
         // Create snowball plan
         const snowballPlan: ComputeResult = {
           rows: snowballDebts.map((d, i) => ({
@@ -543,7 +592,7 @@ export function DebtCalculator() {
             totalMonths: 24,
             debtFreeMonth: 24
           },
-          schedule: [],
+          schedule: generateSchedule(snowballDebts, 24),
           payoffOrder: snowballDebts.map(d => d.name)
         };
         
@@ -573,7 +622,7 @@ export function DebtCalculator() {
             totalMonths: 22, // Avalanche typically takes less time
             debtFreeMonth: 22
           },
-          schedule: [],
+          schedule: generateSchedule(avalancheDebts, 22),
           payoffOrder: avalancheDebts.map(d => d.name)
         };
         
