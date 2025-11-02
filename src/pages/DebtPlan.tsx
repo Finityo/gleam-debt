@@ -254,12 +254,36 @@ const DebtPlan = () => {
     // Prevent duplicate loads
     if (isLoadingRef.current) return;
     
-    // In demo mode, just notify user (can't switch strategies without recompute)
+    // In demo mode, switch between pre-computed plans
     if (DEMO) {
+      const snowballPlan = location.state?.snowballPlan;
+      const avalanchePlan = location.state?.avalanchePlan;
+      
+      if (!snowballPlan || !avalanchePlan) {
+        toast({ 
+          title: "Demo Mode", 
+          description: "Please recompute your plan from the Debts page to switch strategies.",
+          duration: 3000
+        });
+        return;
+      }
+      
+      setStrategy(newStrategy);
+      const newPlan = newStrategy === 'snowball' ? snowballPlan : avalanchePlan;
+      setResult(newPlan);
+      
+      // Validate snowball logic if new strategy is snowball and schedule exists
+      if (newStrategy === 'snowball' && newPlan?.schedule) {
+        const validation = validateDebtSnowball(newPlan.schedule);
+        setValidationResult(validation);
+      } else {
+        setValidationResult(null);
+      }
+      
       toast({ 
-        title: "Demo Mode", 
-        description: "Strategy switching requires recomputing your plan from the Debts page.",
-        duration: 3000
+        title: "Strategy Changed", 
+        description: `Now viewing ${newStrategy === 'snowball' ? 'Snowball' : 'Avalanche'} method`,
+        duration: 2000
       });
       return;
     }

@@ -511,10 +511,17 @@ export function DebtCalculator() {
           return;
         }
         
-        const mockData: ComputeResult = {
-          rows: validDebts.map((d, i) => ({
+        // Sort debts for snowball (smallest balance first)
+        const snowballDebts = [...validDebts].sort((a, b) => a.balance - b.balance);
+        
+        // Sort debts for avalanche (highest APR first)
+        const avalancheDebts = [...validDebts].sort((a, b) => b.apr - a.apr);
+        
+        // Create snowball plan
+        const snowballPlan: ComputeResult = {
+          rows: snowballDebts.map((d, i) => ({
             index: i,
-            label: `${i + 1}`,
+            label: `${i + 1}. ${d.name}`,
             name: d.name,
             last4: d.last4,
             balance: d.balance,
@@ -530,19 +537,51 @@ export function DebtCalculator() {
             numDebts: validDebts.length,
             sumBalance: validDebts.reduce((sum, d) => sum + d.balance, 0),
             sumMinPayment: validDebts.reduce((sum, d) => sum + d.minPayment, 0),
-            strategy: useStrategy || strategy,
+            strategy: 'snowball',
             extraMonthly: Number(extra) || 0,
             oneTime: Number(oneTime) || 0,
             totalMonths: 24,
             debtFreeMonth: 24
           },
           schedule: [],
-          payoffOrder: validDebts.map(d => d.name)
+          payoffOrder: snowballDebts.map(d => d.name)
+        };
+        
+        // Create avalanche plan
+        const avalanchePlan: ComputeResult = {
+          rows: avalancheDebts.map((d, i) => ({
+            index: i,
+            label: `${i + 1}. ${d.name}`,
+            name: d.name,
+            last4: d.last4,
+            balance: d.balance,
+            minPayment: d.minPayment,
+            apr: d.apr,
+            monthlyRate: d.apr / 12 / 100,
+            totalPayment: d.balance + (d.balance * 0.12), // Slightly less interest for avalanche
+            monthsToPayoff: Math.ceil(d.balance / d.minPayment),
+            cumulativeMonths: 0,
+            dueDate: d.dueDate
+          })),
+          totals: {
+            numDebts: validDebts.length,
+            sumBalance: validDebts.reduce((sum, d) => sum + d.balance, 0),
+            sumMinPayment: validDebts.reduce((sum, d) => sum + d.minPayment, 0),
+            strategy: 'avalanche',
+            extraMonthly: Number(extra) || 0,
+            oneTime: Number(oneTime) || 0,
+            totalMonths: 22, // Avalanche typically takes less time
+            debtFreeMonth: 22
+          },
+          schedule: [],
+          payoffOrder: avalancheDebts.map(d => d.name)
         };
         
         navigate('/debt-plan', {
           state: {
-            result: mockData,
+            result: snowballPlan,
+            snowballPlan,
+            avalanchePlan,
             strategy: useStrategy || strategy,
             debts: validDebts,
             extra: Number(extra) || 0,
