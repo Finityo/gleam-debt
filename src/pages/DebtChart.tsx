@@ -85,72 +85,69 @@ const DebtChart = () => {
         return;
       }
       
-      // Skip auth check in demo mode
+      // Skip database queries in demo mode
       if (!DEMO) {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           navigate('/auth');
           return;
         }
-      }
 
-      // Get session for authenticated users only
-      const { data: { session } } = await supabase.auth.getSession();
+        // Fetch ALL debts (both Plaid-imported and Excel-imported)
+        const { data: debtData, error: debtError } = await supabase
+          .from('debts')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('balance', { ascending: false });
 
-      // Fetch ALL debts (both Plaid-imported and Excel-imported)
-      const { data: debtData, error: debtError } = await supabase
-        .from('debts')
-        .select('*')
-        .eq('user_id', session!.user.id)
-        .order('balance', { ascending: false });
+        if (debtError) throw debtError;
 
-      if (debtError) throw debtError;
+        const allDebts = debtData || [];
+        setDebts(allDebts);
+        
+        // Calculate total debt from ALL sources
+        const totalDebtAmount = allDebts.reduce((sum, debt) => sum + debt.balance, 0);
+        
+        // Fetch Plaid credit accounts for accurate credit utilization
+        const { data: accounts, error: accountsError } = await supabase
+          .from('plaid_accounts')
+          .select('current_balance, available_balance, subtype, name, mask')
+          .eq('user_id', session.user.id)
+          .in('subtype', ['credit card', 'credit']);
 
-      const allDebts = debtData || [];
-      setDebts(allDebts);
-      
-      // Calculate total debt from ALL sources
-      const totalDebtAmount = allDebts.reduce((sum, debt) => sum + debt.balance, 0);
-      
-      // Fetch Plaid credit accounts for accurate credit utilization
-      const { data: accounts, error: accountsError } = await supabase
-        .from('plaid_accounts')
-        .select('current_balance, available_balance, subtype, name, mask')
-        .eq('user_id', session!.user.id)
-        .in('subtype', ['credit card', 'credit']);
-
-      if (accountsError) throw accountsError;
-      
-      // Calculate credit utilization from Plaid accounts ONLY
-      // (Excel imports don't have credit limit data)
-      let plaidDebtAmount = 0;
-      let creditLimit = 0;
-      
-      if (accounts && accounts.length > 0) {
-        accounts.forEach(account => {
-          // current_balance is negative for credit cards (amount owed)
-          const debt = Math.abs(account.current_balance || 0);
-          const available = Math.max(0, account.available_balance || 0);
-          
-          // Credit limit = what you owe + what's available
-          const accountLimit = debt + available;
-          
-          plaidDebtAmount += debt;
-          creditLimit += accountLimit;
+        if (accountsError) throw accountsError;
+        
+        // Calculate credit utilization from Plaid accounts ONLY
+        // (Excel imports don't have credit limit data)
+        let plaidDebtAmount = 0;
+        let creditLimit = 0;
+        
+        if (accounts && accounts.length > 0) {
+          accounts.forEach(account => {
+            // current_balance is negative for credit cards (amount owed)
+            const debt = Math.abs(account.current_balance || 0);
+            const available = Math.max(0, account.available_balance || 0);
+            
+            // Credit limit = what you owe + what's available
+            const accountLimit = debt + available;
+            
+            plaidDebtAmount += debt;
+            creditLimit += accountLimit;
+          });
+        }
+        
+        setTotalDebt(totalDebtAmount);
+        setTotalLimit(creditLimit);
+        setPlaidDebt(plaidDebtAmount);
+        
+        console.log('Chart Data:', {
+          totalDebts: allDebts.length,
+          totalDebtAmount,
+          plaidAccounts: accounts?.length || 0,
+          plaidDebtAmount,
+          creditLimit
         });
       }
-      
-      setTotalDebt(totalDebtAmount);
-      setTotalLimit(creditLimit);
-      setPlaidDebt(plaidDebtAmount);
-      
-      console.log('Chart Data:', {
-        totalDebts: allDebts.length,
-        totalDebtAmount,
-        plaidAccounts: accounts?.length || 0,
-        plaidDebtAmount,
-        creditLimit
-      });
     } catch (error: any) {
       toast({
         title: 'Error',
