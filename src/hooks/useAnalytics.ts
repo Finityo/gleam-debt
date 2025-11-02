@@ -11,7 +11,8 @@ type EventType =
   | 'plan_calculated'
   | 'bank_connected'
   | 'bank_disconnected'
-  | 'hero_cta_click';
+  | 'hero_cta_click'
+  | 'demo_cta_click';
 
 export const useAnalytics = () => {
   const trackEvent = async (eventType: EventType, metadata?: Record<string, any>) => {

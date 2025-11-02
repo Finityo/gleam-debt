@@ -146,16 +146,30 @@ const Index = () => {
                 Connect accounts with Plaid, choose Snowball or Avalanche, and see your debt-free date
               </p>
 
-              <Button 
-                size="lg" 
-                className="bg-white/80 text-primary hover:bg-white hover:shadow-glow transition-all text-lg px-8 py-6 font-semibold"
-                onClick={() => {
-                  trackEvent('hero_cta_click');
-                  navigate('/auth?mode=signup');
-                }}
-              >
-                Create your free plan →
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button 
+                  size="lg" 
+                  className="bg-white/80 text-primary hover:bg-white hover:shadow-glow transition-all text-lg px-8 py-6 font-semibold"
+                  onClick={() => {
+                    trackEvent('hero_cta_click');
+                    navigate('/auth?mode=signup');
+                  }}
+                >
+                  Create your free plan →
+                </Button>
+
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6 font-semibold"
+                  onClick={() => {
+                    trackEvent('demo_cta_click');
+                    window.location.href = '/dashboard?demo=true';
+                  }}
+                >
+                  🚀 Try Demo
+                </Button>
+              </div>
 
               <Button
                 variant="ghost"
