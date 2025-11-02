@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ArrowLeft, Download, Info, ChevronDown, Printer, CheckCircle2, XCircle } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
+import { DemoBanner } from '@/components/DemoBanner';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/logger';
@@ -319,6 +320,7 @@ const DebtPlan = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <DemoBanner />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex justify-between items-start">

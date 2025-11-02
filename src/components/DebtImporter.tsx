@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Download } from 'lucide-react';
+import { demoGuard } from '@/services/api';
 
 interface DebtImporterProps {
   onImportComplete?: () => void;
@@ -14,6 +15,8 @@ export const DebtImporter = ({ onImportComplete }: DebtImporterProps) => {
   const { toast } = useToast();
 
   const handleImport = async () => {
+    if (demoGuard("Import Debts from Plaid")) return;
+    
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('plaid-import-debts');

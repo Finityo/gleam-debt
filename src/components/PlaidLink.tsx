@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { PlaidConsentDialog } from './PlaidConsentDialog';
 import { PlaidSuccessScreen } from './PlaidSuccessScreen';
+import { demoGuard } from '@/services/api';
 
 interface PlaidLinkProps {
   onSuccess?: () => void;
@@ -308,6 +309,8 @@ export const PlaidLink = ({ onSuccess }: PlaidLinkProps) => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleConnectClick = () => {
+    if (demoGuard("Connect Bank Account")) return;
+    
     console.log('PlaidLink: Connect button clicked', { ready, consentGiven, linkToken: !!linkToken });
     
     // SECURITY: Always show consent dialog before connecting to financial institutions
