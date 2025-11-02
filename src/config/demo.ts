@@ -1,4 +1,6 @@
-export const DEMO = import.meta.env.VITE_DEMO_MODE === 'true';
+export const DEMO =
+  import.meta.env.VITE_DEMO_MODE === "true" ||
+  window.location.search.includes("demo=true");
 
 export const mockDebts = [
   { creditor: "Mission Lane", balance: 251.4, minPayment: 29 },
