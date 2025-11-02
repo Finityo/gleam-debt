@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
@@ -16,10 +17,13 @@ const Index = () => {
   const { trackEvent } = useAnalytics();
   
   // Redirect to dashboard in Demo Mode
-  if (DEMO) {
-    navigate("/dashboard");
-    return null;
-  }
+  useEffect(() => {
+    if (DEMO) {
+      navigate("/dashboard?demo=true");
+    }
+  }, [navigate]);
+  
+  if (DEMO) return null; // render nothing while redirecting
   
   const structuredData = {
     "@context": "https://schema.org",
