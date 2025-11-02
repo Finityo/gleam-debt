@@ -16,6 +16,7 @@ import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar,
 import { PrintExportButton } from '@/components/PrintExportButton';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
+import { DEMO } from '@/config/demo';
 
 interface Account {
   id: string;
@@ -50,6 +51,12 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    // Skip auth checks in demo mode
+    if (DEMO) {
+      setLoading(false);
+      return;
+    }
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {

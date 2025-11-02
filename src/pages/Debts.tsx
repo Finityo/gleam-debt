@@ -7,6 +7,7 @@ import { DemoBanner } from '@/components/DemoBanner';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import type { User } from '@supabase/supabase-js';
+import { DEMO } from '@/config/demo';
 
 const Debts = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -14,6 +15,12 @@ const Debts = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Skip auth checks in demo mode
+    if (DEMO) {
+      setLoading(false);
+      return;
+    }
+    
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       
