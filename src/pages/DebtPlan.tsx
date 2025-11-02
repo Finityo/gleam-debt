@@ -14,6 +14,7 @@ import { DemoBanner } from '@/components/DemoBanner';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/logger';
+import { DEMO } from '@/config/demo';
 
 type Strategy = "snowball" | "avalanche";
 
@@ -179,6 +180,29 @@ const DebtPlan = () => {
     // Prevent duplicate loads
     if (isLoadingRef.current) return;
     
+    // In demo mode, use data from location.state if available
+    if (DEMO && location.state?.result) {
+      setResult(location.state.result);
+      setDebts(location.state.debts || []);
+      setExtra(location.state.extra || 0);
+      setOneTime(location.state.oneTime || 0);
+      setStrategy(location.state.strategy || 'snowball');
+      setIsLoading(false);
+      return;
+    }
+    
+    // Skip database loading in demo mode if no data
+    if (DEMO) {
+      setIsLoading(false);
+      toast({ 
+        title: "Demo Mode", 
+        description: "Please compute a debt plan from the Debts page first.",
+        variant: "default"
+      });
+      navigate('/debts?demo=true');
+      return;
+    }
+    
     try {
       isLoadingRef.current = true;
       setIsLoading(true);
@@ -229,6 +253,16 @@ const DebtPlan = () => {
   const handleStrategyChange = async (newStrategy: Strategy) => {
     // Prevent duplicate loads
     if (isLoadingRef.current) return;
+    
+    // In demo mode, just notify user (can't switch strategies without recompute)
+    if (DEMO) {
+      toast({ 
+        title: "Demo Mode", 
+        description: "Strategy switching requires recomputing your plan from the Debts page.",
+        duration: 3000
+      });
+      return;
+    }
     
     setStrategy(newStrategy);
     try {
