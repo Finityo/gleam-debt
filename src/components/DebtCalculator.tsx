@@ -99,11 +99,19 @@ const formatDueDate = (dueDate?: string | null): string => {
 
 export function DebtCalculator() {
   const navigate = useNavigate();
-  const [debts, setDebts] = useState<DebtInput[]>([
-    { name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "", debtType: "personal", notes: "" }
-  ]);
-  const [extra, setExtra] = useState<number | string>("");
-  const [oneTime, setOneTime] = useState<number | string>("");
+  
+  // Pre-populate with mock debts in demo mode
+  const getInitialDebts = (): DebtInput[] => {
+    if (DEMO) {
+      const { mockDebts } = require('@/lib/mockData');
+      return mockDebts;
+    }
+    return [{ name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "", debtType: "personal", notes: "" }];
+  };
+  
+  const [debts, setDebts] = useState<DebtInput[]>(getInitialDebts());
+  const [extra, setExtra] = useState<number | string>(DEMO ? 200 : "");
+  const [oneTime, setOneTime] = useState<number | string>(DEMO ? 1000 : "");
   const [strategy, setStrategy] = useState<Strategy>("snowball");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDebtIndices, setSelectedDebtIndices] = useState<Set<number>>(new Set());
