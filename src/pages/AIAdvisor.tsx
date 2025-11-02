@@ -37,11 +37,7 @@ const AIAdvisor = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
-        throw new Error("Please log in to use the AI advisor");
-      }
-      
-      // Optionally fetch user's debt data for context
+      // Optionally fetch user's debt data for context (only if logged in)
       let debtContext = null;
       if (session) {
         const { data: debts } = await supabase
@@ -60,12 +56,18 @@ const AIAdvisor = () => {
 
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-financial-advisor`;
       
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      
+      // Add auth token only if logged in
+      if (session) {
+        headers.Authorization = `Bearer ${session.access_token}`;
+      }
+      
       const resp = await fetch(CHAT_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        headers,
         body: JSON.stringify({ 
           messages: newMessages,
           debtContext 
