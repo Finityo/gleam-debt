@@ -15,6 +15,7 @@ import * as XLSX from 'exceljs';
 import { logError } from '@/utils/logger';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { DEMO } from "@/config/demo";
+import { mockDebts } from "@/lib/mockData";
 
 type Strategy = "snowball" | "avalanche";
 
@@ -99,17 +100,9 @@ const formatDueDate = (dueDate?: string | null): string => {
 
 export function DebtCalculator() {
   const navigate = useNavigate();
-  
-  // Pre-populate with mock debts in demo mode
-  const getInitialDebts = (): DebtInput[] => {
-    if (DEMO) {
-      const { mockDebts } = require('@/lib/mockData');
-      return mockDebts;
-    }
-    return [{ name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "", debtType: "personal", notes: "" }];
-  };
-  
-  const [debts, setDebts] = useState<DebtInput[]>(getInitialDebts());
+  const [debts, setDebts] = useState<DebtInput[]>(
+    DEMO ? mockDebts : [{ name: "", last4: "", balance: 0, minPayment: 0, apr: 0, dueDate: "", debtType: "personal", notes: "" }]
+  );
   const [extra, setExtra] = useState<number | string>(DEMO ? 200 : "");
   const [oneTime, setOneTime] = useState<number | string>(DEMO ? 1000 : "");
   const [strategy, setStrategy] = useState<Strategy>("snowball");
