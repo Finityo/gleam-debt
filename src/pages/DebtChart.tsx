@@ -85,17 +85,23 @@ const DebtChart = () => {
         return;
       }
       
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/auth');
-        return;
+      // Skip auth check in demo mode
+      if (!DEMO) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate('/auth');
+          return;
+        }
       }
+
+      // Get session for authenticated users only
+      const { data: { session } } = await supabase.auth.getSession();
 
       // Fetch ALL debts (both Plaid-imported and Excel-imported)
       const { data: debtData, error: debtError } = await supabase
         .from('debts')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', session!.user.id)
         .order('balance', { ascending: false });
 
       if (debtError) throw debtError;
@@ -110,7 +116,7 @@ const DebtChart = () => {
       const { data: accounts, error: accountsError } = await supabase
         .from('plaid_accounts')
         .select('current_balance, available_balance, subtype, name, mask')
-        .eq('user_id', session.user.id)
+        .eq('user_id', session!.user.id)
         .in('subtype', ['credit card', 'credit']);
 
       if (accountsError) throw accountsError;

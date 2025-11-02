@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { SubscriptionManager } from '@/components/SubscriptionManager';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { SEOHead } from '@/components/SEOHead';
+import { DEMO } from '@/config/demo';
 
 interface Profile {
   first_name: string;
@@ -43,6 +44,12 @@ const Profile = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Skip auth in demo mode
+      if (DEMO) {
+        setLoading(false);
+        return;
+      }
+      
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/auth');
