@@ -11,10 +11,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { z } from 'zod';
 import { Smartphone, Mail } from 'lucide-react';
 import { PasswordStrengthIndicator, validatePasswordStrength } from '@/components/PasswordStrengthIndicator';
+import { DEMO } from '@/config/demo';
 const emailSchema = z.string().email('Invalid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const phoneSchema = z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format (use international format, e.g., +1234567890)');
+
 const Auth = () => {
+  // 🚀 Early return for demo mode
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (DEMO) {
+      navigate("/dashboard?demo=true");
+    }
+  }, [navigate]);
+  
+  if (DEMO) return null; // render nothing while redirecting
+  
   // Check URL parameter for default mode
   const params = new URLSearchParams(window.location.search);
   const urlMode = params.get('mode');
@@ -38,10 +51,10 @@ const Auth = () => {
   const [lastName, setLastName] = useState('');
   const [address, setAddress] = useState('');
   const [zipCode, setZipCode] = useState('');
-  const navigate = useNavigate();
   const {
     toast
   } = useToast();
+  
   useEffect(() => {
     // Check if user is coming from password reset link
     const params = new URLSearchParams(window.location.search);
