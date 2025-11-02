@@ -5,6 +5,7 @@ import { DebtCard } from "@/components/DebtCard";
 import { SEOHead } from "@/components/SEOHead";
 import { DemoBanner } from "@/components/DemoBanner";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { DEMO } from "@/config/demo";
 import { Wallet, TrendingDown, Target, Zap, ArrowRight, CreditCard, Download, Lock, FileText, CheckCircle2, Shield, Star } from "lucide-react";
 import heroImage from "@/assets/hero-financial-freedom.jpg";
 import finityoLogo from "@/assets/finityo-logo.png";
@@ -13,6 +14,12 @@ import plaidBadge from "@/assets/plaid-badge.png";
 const Index = () => {
   const navigate = useNavigate();
   const { trackEvent } = useAnalytics();
+  
+  // Redirect to dashboard in Demo Mode
+  if (DEMO) {
+    navigate("/dashboard");
+    return null;
+  }
   
   const structuredData = {
     "@context": "https://schema.org",
