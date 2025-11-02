@@ -7,6 +7,8 @@ import { StatCard } from '@/components/ui/stat-card';
 import { ArrowLeft, TrendingDown, CreditCard, DollarSign, PieChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
+import { DEMO } from '@/config/demo';
+import { mockDebts } from '@/lib/mockData';
 
 interface Debt {
   id: string;
@@ -47,6 +49,33 @@ const DebtChart = () => {
 
   const loadDebts = async () => {
     try {
+      // In demo mode, use mock data
+      if (DEMO) {
+        const demoDebts = mockDebts.map((debt, index) => ({
+          id: `demo-${index}`,
+          name: debt.name,
+          balance: debt.balance,
+          apr: debt.apr,
+          last4: debt.last4 || '',
+          min_payment: debt.minPayment,
+          due_date: debt.dueDate || '',
+          user_id: 'demo-user',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+        
+        setDebts(demoDebts);
+        const totalDebtAmount = demoDebts.reduce((sum, debt) => sum + debt.balance, 0);
+        setTotalDebt(totalDebtAmount);
+        
+        // Demo mode: no Plaid accounts, so no credit utilization
+        setTotalLimit(0);
+        setPlaidDebt(0);
+        
+        setLoading(false);
+        return;
+      }
+      
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/auth');
@@ -140,7 +169,7 @@ const DebtChart = () => {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <Button
           variant="ghost"
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(DEMO ? '/dashboard?demo=true' : '/dashboard')}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 w-4 h-4" />
