@@ -1,5 +1,4 @@
-import { DEMO } from "@/config/demo";
-import { mockDebts, mockPlan } from "@/lib/mockData";
+import { DEMO, mockDebts, mockPlan } from "@/config/demo";
 
 export async function getDebts() {
   if (DEMO) return mockDebts;
