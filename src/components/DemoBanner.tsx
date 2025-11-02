@@ -1,4 +1,4 @@
-import { DEMO } from "@/lib/config";
+import { DEMO } from "@/config/demo";
 
 export function DemoBanner() {
   if (!DEMO) return null;
