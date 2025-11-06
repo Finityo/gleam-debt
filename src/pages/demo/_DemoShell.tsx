@@ -2,33 +2,34 @@ import React from "react";
 import GlassCard from "@/components/GlassCard";
 import { DemoPlanProvider } from "@/context/DemoPlanContext";
 
-export default function DemoShell({ 
-  children, 
-  title, 
-  subtitle 
-}: { 
-  children: React.ReactNode; 
-  title: string; 
+export default function DemoShell({
+  children,
+  title,
+  subtitle,
+}: {
+  children: React.ReactNode;
+  title: string;
   subtitle?: string;
 }) {
   return (
     <DemoPlanProvider>
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950 dark:via-teal-950 dark:to-cyan-950 py-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <GlassCard className="mb-8">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent mb-2">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="text-muted-foreground text-lg">{subtitle}</p>
-              )}
-            </div>
-          </GlassCard>
-          
-          <div className="space-y-6">
+      <div className="min-h-screen flex flex-col justify-center bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/25 via-cyan-400/20 to-indigo-500/10 text-white">
+        <div className="max-w-5xl w-full mx-auto px-4 py-10">
+          <header className="mb-8 text-center">
+            <h1 className="text-5xl font-bold tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">
+              Debt Simplified.
+            </h1>
+            {subtitle && (
+              <p className="text-white/80 mt-2 text-lg">{subtitle}</p>
+            )}
+          </header>
+
+          <GlassCard className="p-6 md:p-10 bg-white/10">
+            <h2 className="text-2xl font-semibold mb-6 text-center drop-shadow-sm">
+              {title}
+            </h2>
             {children}
-          </div>
+          </GlassCard>
         </div>
       </div>
     </DemoPlanProvider>
