@@ -113,6 +113,17 @@ All colors MUST be HSL.
     --shadow-glow: 0 0 40px hsl(270 85% 70% / 0.4);
     --shadow-accent: 0 10px 40px -10px hsl(180 90% 60% / 0.4);
     --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.25);
+
+    /* ==== Finityo Glass – Palette & helpers ==== */
+    --fin-bg-a: 254 39% 8%;
+    --fin-bg-b: 264 45% 14%;
+    --fin-card-a: 264 47% 11%;
+    --fin-card-b: 260 44% 17%;
+    --fin-card-c: 262 43% 22%;
+    --fin-accent-emerald: 160 84% 39%;
+    --fin-accent-teal: 172 80% 40%;
+    --fin-accent-cyan: 187 95% 43%;
+    --fin-accent-magenta: 270 91% 65%;
   }
 }
 
@@ -302,6 +313,33 @@ All colors MUST be HSL.
   
   .shadow-vibrant {
     box-shadow: var(--shadow-vibrant);
+  }
+
+  /* ==== Finityo Glass Utilities ==== */
+  .fin-bg {
+    background: radial-gradient(90% 120% at 100% 0%, hsla(var(--fin-accent-teal), 0.12), transparent 50%),
+                radial-gradient(90% 120% at 0% 100%, hsla(var(--fin-accent-magenta), 0.12), transparent 50%),
+                linear-gradient(180deg, hsl(var(--fin-bg-a)), hsl(var(--fin-bg-b)));
+  }
+
+  .fin-card {
+    background: linear-gradient(135deg, hsla(var(--fin-card-a), 0.85), hsla(var(--fin-card-c), 0.75));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .fin-glow {
+    box-shadow: 0 0 0 1px hsla(var(--fin-accent-magenta), 0.2), 
+                0 10px 30px hsla(var(--fin-accent-teal), 0.25);
+  }
+
+  .fin-bar {
+    background: linear-gradient(90deg, 
+                hsl(var(--fin-accent-magenta)), 
+                hsl(var(--fin-accent-teal)), 
+                hsl(var(--fin-accent-cyan)));
   }
 }
 
