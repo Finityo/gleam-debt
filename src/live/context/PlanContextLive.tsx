@@ -35,37 +35,21 @@ export function PlanProviderLive({ children }: { children: React.ReactNode }) {
 
   async function refreshFromBackend() {
     try {
-      // Import Supabase client
-      const { supabase } = await import("@/integrations/supabase/client");
-
-      // Fetch debts from edge function
-      const { data: debts, error: debtsError } = await supabase.functions.invoke('get-debts');
+      // Using local API files
+      const { getDebts } = await import("../api/debts");
+      const { getSettings } = await import("../api/settings");
       
-      if (debtsError) {
-        console.error("❌ Failed to fetch debts:", debtsError);
-        throw debtsError;
-      }
-
-      // Fetch settings from edge function
-      const { data: settings, error: settingsError } = await supabase.functions.invoke('get-settings');
-      
-      if (settingsError) {
-        console.error("❌ Failed to fetch settings:", settingsError);
-        throw settingsError;
-      }
+      const data = await getDebts();
+      const cfg = await getSettings();
 
       setInputsState({
-        debts: debts || [],
-        extraMonthly: settings?.extraMonthly ?? 0,
-        oneTimeExtra: settings?.oneTimeExtra ?? 0,
-        strategy: settings?.strategy ?? "snowball",
-        startDate: settings?.startDate,
+        debts: data,
+        extraMonthly: cfg.extraMonthly ?? 0,
+        oneTimeExtra: cfg.oneTimeExtra ?? 0,
+        strategy: cfg.strategy ?? "snowball",
+        startDate: cfg.startDate,
       });
-      
-      console.log("✅ Live debts and settings loaded from Lovable Cloud:", {
-        debtCount: debts?.length || 0,
-        settings
-      });
+      console.log("✅ Live debts and settings loaded from local API.");
     } catch (err) {
       console.error("❌ Failed to load live data:", err);
     }
