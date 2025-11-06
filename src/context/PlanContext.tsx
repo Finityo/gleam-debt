@@ -60,15 +60,40 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       startDate: inputs.startDate,
     });
     
-    // Log Month 1 verification
+    // ✅ CONSOLE VERIFICATION LOG
     if (res.months.length > 0) {
       const month1 = res.months[0];
-      console.log("✅ Month 1 Results:", {
-        totalPrincipal: month1.totals.principal,
-        totalInterest: month1.totals.interest,
-        totalOutflow: month1.totals.outflow,
-        debtsClosedThisMonth: month1.payments.filter(p => p.closedThisMonth).map(p => p.debtId)
-      });
+      const closedDebts = month1.payments.filter(p => p.closedThisMonth);
+      const allMins = inputs.debts
+        .filter(d => d.include !== false)
+        .reduce((sum, d) => sum + d.minPayment, 0);
+      
+      console.log("┌─────────────────────────────────────────────────────");
+      console.log("│ ✅ FINITYO ENGINE VERIFICATION - MONTH 1");
+      console.log("├─────────────────────────────────────────────────────");
+      console.log("│ 💰 PAYMENT POOL:");
+      console.log(`│    All Minimums:        $${allMins.toFixed(2)}`);
+      console.log(`│    + Extra Monthly:     $${inputs.extraMonthly.toFixed(2)}`);
+      console.log(`│    + One-Time Payment:  $${inputs.oneTimeExtra.toFixed(2)}`);
+      console.log(`│    ─────────────────────────────────`);
+      console.log(`│    = TOTAL POOL:        $${(allMins + inputs.extraMonthly + inputs.oneTimeExtra).toFixed(2)}`);
+      console.log("│");
+      console.log("│ 📊 MONTH 1 RESULTS:");
+      console.log(`│    Principal Paid:      $${month1.totals.principal.toFixed(2)}`);
+      console.log(`│    Interest Accrued:    $${month1.totals.interest.toFixed(2)}`);
+      console.log(`│    Total Outflow:       $${month1.totals.outflow.toFixed(2)}`);
+      console.log(`│    Debts Closed:        ${closedDebts.length}`);
+      
+      if (closedDebts.length > 0) {
+        console.log("│");
+        console.log("│ 🎉 DEBTS PAID OFF IN MONTH 1:");
+        closedDebts.forEach(p => {
+          const debt = inputs.debts.find(d => d.id === p.debtId);
+          console.log(`│    ✅ ${debt?.name} ($${p.totalPaid.toFixed(2)} paid)`);
+        });
+      }
+      
+      console.log("└─────────────────────────────────────────────────────");
     }
     
     console.log("📈 Full Plan Summary:", {

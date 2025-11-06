@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { usePlan } from "@/context/PlanContext";
 import { PlanService, Strategy, formatAPR } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,14 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Lock, Unlock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function DebtPlanPage() {
   const { inputs, setInputs, plan, compute, resetDemo } = usePlan();
   const navigate = useNavigate();
+  const [advancedMode, setAdvancedMode] = useState(false);
 
   const totalMins = useMemo(
     () => inputs.debts.filter(d => d.include !== false).reduce((a, d) => a + d.minPayment, 0),
@@ -27,6 +29,30 @@ export default function DebtPlanPage() {
       <h1 className="text-3xl font-bold mb-6">Debt Plan</h1>
 
       <Card className="p-6 mb-6">
+        {/* Advanced Options Toggle */}
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
+          <div className="flex items-center gap-3">
+            {advancedMode ? (
+              <Unlock className="h-5 w-5 text-primary" />
+            ) : (
+              <Lock className="h-5 w-5 text-muted-foreground" />
+            )}
+            <div>
+              <Label htmlFor="advanced-mode" className="text-base font-semibold cursor-pointer">
+                Advanced Options
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {advancedMode ? "Customize payment amounts" : "Locked to default Finityo plan"}
+              </p>
+            </div>
+          </div>
+          <Switch
+            id="advanced-mode"
+            checked={advancedMode}
+            onCheckedChange={setAdvancedMode}
+          />
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-4">
           <div className="space-y-2">
             <Label>Strategy</Label>
@@ -34,7 +60,6 @@ export default function DebtPlanPage() {
               value={inputs.strategy}
               onValueChange={(v) => {
                 setInputs({ strategy: v as Strategy });
-                // Auto-compute after strategy change
                 setTimeout(() => compute(), 100);
               }}
             >
@@ -49,16 +74,19 @@ export default function DebtPlanPage() {
           </div>
           
           <div className="space-y-2">
-            <Label>Extra Monthly ($)</Label>
+            <Label className="flex items-center gap-2">
+              Extra Monthly ($)
+              {!advancedMode && <Lock className="h-3 w-3 text-muted-foreground" />}
+            </Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
               <Input
                 type="number"
                 className="pl-7"
                 value={inputs.extraMonthly}
+                disabled={!advancedMode}
                 onChange={(e) => {
                   setInputs({ extraMonthly: Number(e.target.value) });
-                  // Auto-compute after input change
                   setTimeout(() => compute(), 100);
                 }}
               />
@@ -67,16 +95,19 @@ export default function DebtPlanPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>One-time (Month 1) ($)</Label>
+            <Label className="flex items-center gap-2">
+              One-time (Month 1) ($)
+              {!advancedMode && <Lock className="h-3 w-3 text-muted-foreground" />}
+            </Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
               <Input
                 type="number"
                 className="pl-7"
                 value={inputs.oneTimeExtra}
+                disabled={!advancedMode}
                 onChange={(e) => {
                   setInputs({ oneTimeExtra: Number(e.target.value) });
-                  // Auto-compute after input change
                   setTimeout(() => compute(), 100);
                 }}
               />
@@ -91,7 +122,6 @@ export default function DebtPlanPage() {
               value={inputs.startDate ?? ""}
               onChange={(e) => {
                 setInputs({ startDate: e.target.value || undefined });
-                // Auto-compute after date change
                 setTimeout(() => compute(), 100);
               }}
             />
