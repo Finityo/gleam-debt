@@ -1,5 +1,37 @@
 # Finityo Build Instructions
 
+## Quick Start
+
+### Development Mode
+
+**Demo Mode** (default):
+```bash
+npm run dev
+```
+Opens at `http://localhost:8080` - Demo environment with mock data
+
+**Live Mode**:
+```bash
+npm run dev:live
+```
+Opens at `http://localhost:8080` - Live environment ready for production
+
+### Production Builds
+
+**Demo Build**:
+```bash
+npm run build
+```
+Builds to `dist/` - Demo version
+
+**Live Build**:
+```bash
+npm run build:live
+```
+Builds to `dist-live/` - Production version
+
+---
+
 ## Project Structure
 
 This project has **two parallel environments**:
