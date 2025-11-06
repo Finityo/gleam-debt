@@ -9,10 +9,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
 import { PlanProvider } from "@/context/PlanContext";
+import { DemoPlanProvider } from "@/context/DemoPlanContext";
 
 // ✅ Lazy-load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -50,10 +51,7 @@ const DebtPlanNew = lazy(() => import("./pages/DebtPlanNew"));
 const DebtChartNew = lazy(() => import("./pages/DebtChartNew"));
 const DebtVisualization = lazy(() => import("./pages/DebtVisualization"));
 
-import { DemoPlanProvider } from "@/context/DemoPlanContext";
-
-// Demo pages - DemoLayout is NOT lazy-loaded to avoid context issues
-import DemoLayout from "./pages/demo/DemoLayout";
+// Demo pages
 const DemoStart = lazy(() => import("./pages/demo/DemoStart"));
 const DemoDebts = lazy(() => import("./pages/demo/DemoDebts"));
 const DemoPlan = lazy(() => import("./pages/demo/DemoPlan"));
@@ -88,6 +86,15 @@ const Loader = () => (
 );
 
 const queryClient = new QueryClient();
+
+// Inline demo layout wrapper to avoid bundling issues
+const DemoLayoutWrapper = () => (
+  <DemoPlanProvider>
+    <Suspense fallback={<Loader />}>
+      <Outlet />
+    </Suspense>
+  </DemoPlanProvider>
+);
 
 const AppRoutes = () => {
   useAutoLogout();
@@ -130,7 +137,7 @@ const AppRoutes = () => {
               <Route path="/debt-visualization" element={<DebtVisualization />} />
               
               {/* Demo routes with shared context provider */}
-              <Route path="/demo" element={<DemoLayout />}>
+              <Route path="/demo" element={<DemoLayoutWrapper />}>
                 <Route index element={<DemoStart />} />
                 <Route path="start" element={<DemoStart />} />
                 <Route path="debts" element={<DemoDebts />} />
