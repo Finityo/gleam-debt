@@ -15,6 +15,9 @@ import { useAutoLogout } from "@/hooks/useAutoLogout";
 import { PlanProvider } from "@/context/PlanContext";
 import { DemoPlanProvider } from "@/context/DemoPlanContext";
 
+// ===== Finityo Mode Check =====
+console.log("🔍 Finityo Build Mode:", import.meta.env.VITE_MODE);
+
 // ✅ Lazy-load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
 const Hero = lazy(() => import("./pages/Hero"));
@@ -159,6 +162,18 @@ const App = () => (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <TooltipProvider>
         <PlanProvider>
+          {/* ✅ Build Mode Indicator */}
+          {import.meta.env.VITE_MODE === "demo" && (
+            <div className="fixed top-2 right-2 px-3 py-1 bg-amber-500/80 text-black rounded-full text-xs z-50">
+              DEMO MODE
+            </div>
+          )}
+          {import.meta.env.VITE_MODE === "live" && (
+            <div className="fixed top-2 right-2 px-3 py-1 bg-emerald-600/80 text-white rounded-full text-xs z-50">
+              LIVE MODE
+            </div>
+          )}
+
           {/* ✅ Toast Systems */}
           <Toaster />
           <Sonner />
