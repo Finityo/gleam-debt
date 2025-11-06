@@ -128,6 +128,15 @@ const Index = () => {
 
         {/* Hero Content */}
         <div className="relative z-10 max-w-4xl">
+          <div className="flex justify-center mb-8">
+            <img 
+              src="/finityo-icon-final.png" 
+              alt="Finityo Icon" 
+              className="w-[110px] h-[110px] rounded-[24px] backdrop-blur-sm bg-white/10 border border-white/30 shadow-xl p-1"
+              loading="eager"
+            />
+          </div>
+          
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
             Debt Simplified.
           </h1>
