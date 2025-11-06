@@ -168,7 +168,7 @@ const Index = () => {
                   className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6 font-semibold"
                   onClick={() => {
                     trackEvent('demo_cta_click');
-                    window.location.href = '/dashboard?demo=true';
+                    navigate('/demo/start');
                   }}
                 >
                   🚀 Try Demo
