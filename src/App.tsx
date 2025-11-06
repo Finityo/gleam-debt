@@ -50,6 +50,12 @@ const DebtPlanNew = lazy(() => import("./pages/DebtPlanNew"));
 const DebtChartNew = lazy(() => import("./pages/DebtChartNew"));
 const DebtVisualization = lazy(() => import("./pages/DebtVisualization"));
 
+// Demo pages
+const DemoStart = lazy(() => import("./pages/demo/DemoStart"));
+const DemoDebts = lazy(() => import("./pages/demo/DemoDebts"));
+const DemoPlan = lazy(() => import("./pages/demo/DemoPlan"));
+const DemoChart = lazy(() => import("./pages/demo/DemoChart"));
+
 // ✅ Simple branded loading screen
 const Loader = () => (
   <div className="flex flex-col items-center justify-center h-screen text-center">
@@ -118,6 +124,10 @@ const AppRoutes = () => {
               <Route path="/debt-plan-new" element={<DebtPlanNew />} />
               <Route path="/debt-chart-new" element={<DebtChartNew />} />
               <Route path="/debt-visualization" element={<DebtVisualization />} />
+              <Route path="/demo/start" element={<DemoStart />} />
+              <Route path="/demo/debts" element={<DemoDebts />} />
+              <Route path="/demo/plan" element={<DemoPlan />} />
+              <Route path="/demo/chart" element={<DemoChart />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
