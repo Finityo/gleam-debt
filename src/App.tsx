@@ -51,6 +51,7 @@ const DebtChartNew = lazy(() => import("./pages/DebtChartNew"));
 const DebtVisualization = lazy(() => import("./pages/DebtVisualization"));
 
 // Demo pages
+const DemoLayout = lazy(() => import("./pages/demo/DemoLayout"));
 const DemoStart = lazy(() => import("./pages/demo/DemoStart"));
 const DemoDebts = lazy(() => import("./pages/demo/DemoDebts"));
 const DemoPlan = lazy(() => import("./pages/demo/DemoPlan"));
@@ -116,7 +117,7 @@ const AppRoutes = () => {
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/oauth-redirect" element={<OAuthRedirect />} />
-              <Route path="/demo" element={<Demo />} />
+              <Route path="/demo-old" element={<Demo />} />
               <Route path="/demo-test" element={<DemoTest />} />
               <Route path="/install" element={<Install />} />
               <Route path="/payoff-calendar" element={<PayoffCalendar />} />
@@ -125,10 +126,16 @@ const AppRoutes = () => {
               <Route path="/debt-plan-new" element={<DebtPlanNew />} />
               <Route path="/debt-chart-new" element={<DebtChartNew />} />
               <Route path="/debt-visualization" element={<DebtVisualization />} />
-              <Route path="/demo/start" element={<DemoStart />} />
-              <Route path="/demo/debts" element={<DemoDebts />} />
-              <Route path="/demo/plan" element={<DemoPlan />} />
-              <Route path="/demo/chart" element={<DemoChart />} />
+              
+              {/* Demo routes with shared context provider */}
+              <Route path="/demo" element={<DemoLayout />}>
+                <Route index element={<DemoStart />} />
+                <Route path="start" element={<DemoStart />} />
+                <Route path="debts" element={<DemoDebts />} />
+                <Route path="plan" element={<DemoPlan />} />
+                <Route path="chart" element={<DemoChart />} />
+              </Route>
+              
               <Route path="/sitemap" element={<Sitemap />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
