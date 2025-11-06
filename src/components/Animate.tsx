@@ -1,11 +1,14 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
 export function PageFade({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={typeof window !== "undefined" ? location.pathname : "static"}
+        key={location.pathname}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -12 }}
