@@ -121,77 +121,46 @@ const Index = () => {
         structuredData={structuredData} 
       />
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-screen flex items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-hero" />
-        
-        <div className="relative container mx-auto px-4 py-20">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="backdrop-blur-xl bg-white/10 dark:bg-gray-900/30 border border-white/20 dark:border-gray-700/50 rounded-3xl p-10 shadow-2xl animate-fade-in">
-              <div className="flex justify-center mb-6">
-                <img 
-                  src="/finityo-icon-final.png" 
-                  alt="Finityo Icon" 
-                  className="w-[110px] h-[110px] rounded-[24px] backdrop-blur-sm bg-white/10 border border-white/30 shadow-xl p-1"
-                  loading="eager"
-                />
-              </div>
-              
-              <div className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-full bg-indigo-200/20 border border-indigo-200/30 text-indigo-100">
-                <Zap className="w-4 h-4" />
-                <span className="text-sm font-medium">Accelerate Your Debt Freedom</span>
-              </div>
-              
-              <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
-                Build your debt payoff plan in minutes
-              </h1>
-              
-              <p className="text-lg lg:text-xl text-indigo-100 mb-8 max-w-lg mx-auto">
-                Connect accounts with Plaid, choose Snowball or Avalanche, and see your debt-free date
-              </p>
+      {/* ======= FINITYO HERO (Investor-Ready) ======= */}
+      <section className="relative flex flex-col items-center justify-center text-center min-h-[90vh] fin-bg text-white px-6 md:px-12">
+        {/* Subtle gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-fuchsia-500/10 to-cyan-500/10 backdrop-blur-2xl" />
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Button 
-                  size="lg" 
-                  className="bg-white/80 text-primary hover:bg-white hover:shadow-glow transition-all text-lg px-8 py-6 font-semibold"
-                  onClick={() => {
-                    trackEvent('hero_cta_click');
-                    navigate('/auth?mode=signup');
-                  }}
-                >
-                  Create your free plan →
-                </Button>
+        {/* Hero Content */}
+        <div className="relative z-10 max-w-4xl">
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+            Debt Simplified.
+          </h1>
 
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6 font-semibold"
-                  onClick={() => {
-                    trackEvent('demo_cta_click');
-                    navigate('/demo/start');
-                  }}
-                >
-                  🚀 Try Demo
-                </Button>
-              </div>
+          <p className="text-white/80 text-lg md:text-xl mb-10 leading-relaxed">
+            Finityo helps you visualize your journey to debt freedom with clarity,
+            strategy, and a little bit of AI magic.
+          </p>
 
-              <Button
-                variant="ghost"
-                size="lg"
-                className="text-white/90 hover:text-white hover:bg-white/10 mt-4"
-                onClick={() => navigate('/pricing')}
-              >
-                View Pricing
-              </Button>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => (window.location.href = "/demo/start")}
+              className="px-8 py-4 rounded-2xl text-lg font-semibold text-white
+                bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400
+                shadow-[0_4px_30px_rgba(16,185,129,0.4)]
+                hover:brightness-110 transition-all duration-300"
+            >
+              🚀 Try the Demo
+            </button>
+
+            <a
+              href="#learn-more"
+              className="px-8 py-4 rounded-2xl text-lg font-semibold text-white/90 border border-white/20
+                hover:bg-white/10 transition-all duration-300"
+            >
+              Learn More
+            </a>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" className="w-full h-auto text-background">
-            <path fill="currentColor" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z" />
-          </svg>
-        </div>
+        {/* Decorative Gradient Rings */}
+        <div className="absolute w-[600px] h-[600px] rounded-full bg-emerald-500/10 blur-3xl top-[-10%] left-[-20%]" />
+        <div className="absolute w-[700px] h-[700px] rounded-full bg-cyan-500/10 blur-3xl bottom-[-20%] right-[-15%]" />
       </section>
 
       {/* Stats Section */}
