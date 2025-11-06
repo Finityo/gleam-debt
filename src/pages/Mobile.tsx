@@ -1,5 +1,6 @@
 import React from "react";
 import { usePlan } from "@/context/PlanContext";
+import { formatAPR } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -27,7 +28,7 @@ export default function MobileViewPage() {
             <Card key={d.id} className="p-4">
               <div className="font-semibold text-lg mb-2">{d.name}</div>
               <div className="text-sm text-muted-foreground mb-3">
-                APR {d.apr.toFixed(2)}% • Min ${d.minPayment.toFixed(2)}
+                APR {formatAPR(d.apr)} • Min ${d.minPayment.toFixed(2)}
               </div>
               <div className="space-y-1 text-sm">
                 <div>Start: ${d.originalBalance.toFixed(2)}</div>

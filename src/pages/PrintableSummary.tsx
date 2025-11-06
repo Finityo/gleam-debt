@@ -1,6 +1,6 @@
 import React from "react";
 import { usePlan } from "@/context/PlanContext";
-import { PlanService } from "@/lib/debtPlan";
+import { PlanService, formatAPR } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Printer } from "lucide-react";
@@ -59,7 +59,7 @@ export default function PrintableSummaryPage() {
             {rows.map((r, i) => (
               <tr key={i} className="border-b hover:bg-muted/50">
                 <td className="p-3">{r.creditor}</td>
-                <td className="text-right p-3">{r.apr.toFixed(2)}</td>
+                <td className="text-right p-3">{formatAPR(r.apr)}</td>
                 <td className="text-right p-3">${r.minPayment.toFixed(2)}</td>
                 <td className="text-right p-3">${r.startingBalance.toFixed(2)}</td>
                 <td className="p-3">{r.payoffDate ?? ""}</td>

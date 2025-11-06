@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { usePlan } from "@/context/PlanContext";
-import { PlanService, Strategy } from "@/lib/debtPlan";
+import { PlanService, Strategy, formatAPR } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -130,7 +130,7 @@ export default function DebtPlanPage() {
             ).map((row, i) => (
               <tr key={i} className="border-b hover:bg-muted/50">
                 <td className="p-3">{row.creditor}</td>
-                <td className="text-right p-3">{row.apr.toFixed(2)}</td>
+                <td className="text-right p-3">{formatAPR(row.apr)}</td>
                 <td className="text-right p-3">${row.minPayment.toFixed(2)}</td>
                 <td className="text-right p-3">${row.startingBalance.toFixed(2)}</td>
                 <td className="p-3">{row.payoffDate ?? ""}</td>

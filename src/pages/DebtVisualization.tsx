@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { usePlan } from "@/context/PlanContext";
+import { formatAPR } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -40,18 +41,12 @@ export default function DebtVisualizationPage() {
     );
   }
 
-  // Normalize APRs so they show correctly
-  const normalizedDebts = plan.debts.map(d => ({
-    ...d,
-    apr: d.apr > 100 ? d.apr / 100 : d.apr,
-  }));
-
-  // Calculate key totals from computed data
-  const totalDebt = normalizedDebts
+  // Calculate key totals from computed data (APRs already normalized by engine)
+  const totalDebt = plan.debts
     .filter(d => d.included)
     .reduce((sum, d) => sum + d.originalBalance, 0);
 
-  const totalAvailableCredit = normalizedDebts
+  const totalAvailableCredit = plan.debts
     .filter(d => !d.included)
     .reduce((sum, d) => sum + d.originalBalance, 0);
 
@@ -61,7 +56,7 @@ export default function DebtVisualizationPage() {
 
   // Prepare pie chart data from computed plan
   const pieData = useMemo(() => {
-    const included = normalizedDebts.filter(d => d.included);
+    const included = plan.debts.filter(d => d.included);
     const sum = included.reduce((s, d) => s + d.originalBalance, 0);
     if (sum === 0) return [];
     return included.map(d => ({
@@ -69,7 +64,7 @@ export default function DebtVisualizationPage() {
       value: ((d.originalBalance / sum) * 100),
       color: pickColor(d.name),
     }));
-  }, [normalizedDebts]);
+  }, [plan.debts]);
 
   // Simple Pie SVG
   const radius = 80;
@@ -118,7 +113,7 @@ export default function DebtVisualizationPage() {
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground">Debts in Plan</div>
-          <div className="text-2xl font-bold mt-1">{normalizedDebts.filter(d => d.included).length}</div>
+          <div className="text-2xl font-bold mt-1">{plan.debts.filter(d => d.included).length}</div>
         </Card>
       </div>
 
@@ -154,12 +149,12 @@ export default function DebtVisualizationPage() {
             </tr>
           </thead>
           <tbody>
-            {normalizedDebts.map((d, i) => (
+            {plan.debts.map((d, i) => (
               <tr key={i} className="border-b border-border/50">
                 <td className="p-3">{d.name}</td>
                 <td className="text-right p-3">${d.originalBalance.toFixed(2)}</td>
                 <td className="text-right p-3">${d.minPayment.toFixed(2)}</td>
-                <td className="text-right p-3">{d.apr.toFixed(2)}%</td>
+                <td className="text-right p-3">{formatAPR(d.apr)}</td>
                 <td className="p-3">{d.payoffDateISO ?? "—"}</td>
               </tr>
             ))}
