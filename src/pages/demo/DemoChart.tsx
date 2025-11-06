@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import DemoShell from "./_DemoShell";
 import NextBack from "@/components/NextBack";
 import AIAdvisor from "@/components/AIAdvisor";
@@ -12,6 +12,11 @@ import { format } from "date-fns";
 
 export default function DemoChart() {
   const { plan, inputs } = useDemoPlan();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const chartData = useMemo(() => {
     if (!plan) return [];
@@ -116,8 +121,9 @@ export default function DemoChart() {
             <TrendingDown className="w-5 h-5 text-emerald-300" />
             Debt Payoff Progress
           </h3>
-          <Card className="p-6 bg-white/10 border-white/30 backdrop-blur-sm">
-            <ResponsiveContainer width="100%" height={300}>
+          {mounted && chartData.length > 0 ? (
+            <Card className="p-6 bg-white/10 border-white/30 backdrop-blur-sm">
+              <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
@@ -158,6 +164,11 @@ export default function DemoChart() {
               </AreaChart>
             </ResponsiveContainer>
           </Card>
+          ) : (
+            <Card className="p-6 bg-white/10 border-white/30 backdrop-blur-sm">
+              <p className="text-white/80 text-center">Loading chart...</p>
+            </Card>
+          )}
         </div>
 
         <div className="pt-6">

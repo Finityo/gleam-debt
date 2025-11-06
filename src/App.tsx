@@ -50,8 +50,10 @@ const DebtPlanNew = lazy(() => import("./pages/DebtPlanNew"));
 const DebtChartNew = lazy(() => import("./pages/DebtChartNew"));
 const DebtVisualization = lazy(() => import("./pages/DebtVisualization"));
 
-// Demo pages
-const DemoLayout = lazy(() => import("./pages/demo/DemoLayout"));
+import { DemoPlanProvider } from "@/context/DemoPlanContext";
+
+// Demo pages - DemoLayout is NOT lazy-loaded to avoid context issues
+import DemoLayout from "./pages/demo/DemoLayout";
 const DemoStart = lazy(() => import("./pages/demo/DemoStart"));
 const DemoDebts = lazy(() => import("./pages/demo/DemoDebts"));
 const DemoPlan = lazy(() => import("./pages/demo/DemoPlan"));
