@@ -3,7 +3,7 @@ import DemoShell from "./_DemoShell";
 import NextBack from "@/components/NextBack";
 import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
-import AIAdvisor from "@/components/AIAdvisor";
+import AIChatDrawer from "@/components/AIChatDrawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -19,15 +19,6 @@ export default function DemoPlan() {
     navigate("/demo/chart");
   };
 
-  useEffect(() => {
-    const onTip = (e: any) => {
-      if (e?.detail?.strategy === "avalanche") {
-        setInputs({ strategy: "avalanche" as any });
-      }
-    };
-    window.addEventListener("finityo:advisor:switch-strategy", onTip);
-    return () => window.removeEventListener("finityo:advisor:switch-strategy", onTip);
-  }, [setInputs]);
 
   return (
     <>
@@ -139,19 +130,7 @@ export default function DemoPlan() {
         </PopIn>
       </DemoShell>
 
-      <AIAdvisor
-        visible={!!plan}
-        message={
-          plan
-            ? `Nice! Based on your inputs, you'll be debt-free in ${plan.totals.monthsToDebtFree} months. Try switching to AVALANCHE to compare interest savings.`
-            : ""
-        }
-        actionText="Try Avalanche"
-        onAction={() => {
-          const evt = new CustomEvent("finityo:advisor:switch-strategy", { detail: { strategy: "avalanche" }});
-          window.dispatchEvent(evt);
-        }}
-      />
+      <AIChatDrawer plan={plan} />
     </>
   );
 }

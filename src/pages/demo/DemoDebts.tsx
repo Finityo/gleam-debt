@@ -1,6 +1,7 @@
 import React from "react";
 import DemoShell from "./_DemoShell";
 import NextBack from "@/components/NextBack";
+import DebtCard from "@/components/DebtCard";
 import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
 import { Input } from "@/components/ui/input";
@@ -35,30 +36,26 @@ export default function DemoDebts() {
 
         <div className="space-y-4">
           {inputs.debts.map((debt) => (
-            <div 
-              key={debt.id} 
-              className="p-4 rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <Input
-                  value={debt.name}
-                  onChange={(e) => updateDebt(debt.id, { name: e.target.value })}
-                  className="text-lg font-semibold bg-transparent border-0 p-0 h-auto focus-visible:ring-0 text-white placeholder:text-white/50"
-                  placeholder="Debt name"
-                />
-                {inputs.debts.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeDebt(debt.id)}
-                    className="text-white/70 hover:text-white hover:bg-white/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div key={debt.id} className="space-y-3">
+              <DebtCard
+                name={debt.name}
+                type="Credit Card"
+                balance={debt.balance}
+                apr={debt.apr}
+                minPayment={debt.minPayment}
+                dueDay={debt.dueDay}
+                progressPct={0}
+              />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-2">
+                <div>
+                  <Label className="text-xs text-white/70 mb-1 block">Name</Label>
+                  <Input
+                    value={debt.name}
+                    onChange={(e) => updateDebt(debt.id, { name: e.target.value })}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/40"
+                    placeholder="Debt name"
+                  />
+                </div>
                 <div>
                   <Label className="text-xs text-white/70 mb-1 block">Balance</Label>
                   <div className="relative">
@@ -71,7 +68,6 @@ export default function DemoDebts() {
                     />
                   </div>
                 </div>
-
                 <div>
                   <Label className="text-xs text-white/70 mb-1 block">APR %</Label>
                   <Input
@@ -82,7 +78,6 @@ export default function DemoDebts() {
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/40"
                   />
                 </div>
-
                 <div>
                   <Label className="text-xs text-white/70 mb-1 block">Min Payment</Label>
                   <div className="relative">
@@ -95,19 +90,20 @@ export default function DemoDebts() {
                     />
                   </div>
                 </div>
-
-                <div>
-                  <Label className="text-xs text-white/70 mb-1 block">Due Day</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="31"
-                    value={debt.dueDay || ""}
-                    onChange={(e) => updateDebt(debt.id, { dueDay: parseInt(e.target.value) || 1 })}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/40"
-                  />
-                </div>
               </div>
+              {inputs.debts.length > 1 && (
+                <div className="px-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeDebt(debt.id)}
+                    className="text-white/70 hover:text-white hover:bg-white/10"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove Debt
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
         </div>

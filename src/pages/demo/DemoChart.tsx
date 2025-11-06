@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import DemoShell from "./_DemoShell";
 import NextBack from "@/components/NextBack";
-import AIAdvisor from "@/components/AIAdvisor";
+import AIChatDrawer from "@/components/AIChatDrawer";
+import DebtCard from "@/components/DebtCard";
 import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
 import { Progress } from "@/components/ui/progress";
@@ -33,14 +34,6 @@ export default function DemoChart() {
     });
   }, [plan]);
 
-  const aiMessage = useMemo(() => {
-    if (!plan) return "";
-    
-    const months = plan.totals.monthsToDebtFree;
-    const interest = plan.totals.interest;
-    
-    return `Great job! With your ${inputs.strategy} strategy and $${inputs.extraMonthly}/month extra payment, you'll be debt-free in ${months} months, saving thousands in interest. Consider automating your extra payments for guaranteed success.`;
-  }, [plan, inputs]);
 
   const progressPercent = useMemo(() => {
     if (!plan || plan.months.length === 0) return 0;
@@ -173,36 +166,36 @@ export default function DemoChart() {
 
         <div className="pt-6">
           <h3 className="text-lg font-semibold text-white mb-4">Payoff Order</h3>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {plan.debts
               .filter(debt => debt.payoffDateISO)
               .sort((a, b) => (a.payoffMonthIndex || 0) - (b.payoffMonthIndex || 0))
-              .map((debt, idx) => (
-                <div 
-                  key={debt.id} 
-                  className="p-4 rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20 border border-white/30 text-white text-sm font-bold">
-                      {idx + 1}
-                    </div>
-                    <div>
-                      <div className="font-medium text-white">{debt.name}</div>
+              .map((debt, idx) => {
+                const totalMonths = plan.totals.monthsToDebtFree;
+                const payoffMonth = debt.payoffMonthIndex || 0;
+                const progressPct = totalMonths > 0 ? ((totalMonths - payoffMonth) / totalMonths) * 100 : 0;
+                
+                return (
+                  <div key={debt.id}>
+                    <div className="flex items-center gap-2 mb-2 px-2">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white/20 border border-white/30 text-white text-xs font-bold">
+                        {idx + 1}
+                      </div>
                       <div className="text-sm text-white/70">
                         Paid off: {debt.payoffDateISO ? format(new Date(debt.payoffDateISO), "MMM yyyy") : "N/A"}
                       </div>
                     </div>
+                    <DebtCard
+                      name={debt.name}
+                      type="Credit Card"
+                      balance={debt.originalBalance}
+                      apr={debt.apr}
+                      minPayment={debt.minPayment}
+                      progressPct={progressPct}
+                    />
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-medium text-white">
-                      ${Math.round(debt.totalPaid).toLocaleString()}
-                    </div>
-                    <div className="text-xs text-white/70">
-                      ${Math.round(debt.totalInterestPaid).toLocaleString()} interest
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
           </div>
         </div>
@@ -211,7 +204,7 @@ export default function DemoChart() {
         </PopIn>
       </DemoShell>
 
-      <AIAdvisor visible={true} message={aiMessage} />
+      <AIChatDrawer plan={plan} />
     </>
   );
 }

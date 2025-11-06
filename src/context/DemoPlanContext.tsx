@@ -51,17 +51,20 @@ export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
   const addDebt = () =>
     setInputsState(prev => ({
       ...prev,
-      debts: [
-        ...prev.debts,
-        {
-          id: crypto.randomUUID(),
-          name: "New Debt",
-          balance: 500,
-          apr: 12.99,
-          minPayment: 25,
-          include: true,
-        } as DebtInput,
-      ],
+      debts:
+        prev.debts.length >= 5
+          ? prev.debts
+          : [
+              ...prev.debts,
+              {
+                id: crypto.randomUUID(),
+                name: "New Debt",
+                balance: 500,
+                apr: 12.99,
+                minPayment: 25,
+                include: true,
+              } as DebtInput,
+            ],
     }));
 
   const removeDebt = (id: string) =>
