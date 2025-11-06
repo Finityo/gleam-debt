@@ -279,6 +279,23 @@ export function computeDebtPlan(
 }
 
 // ===================================
+// Helper: Remaining balance by month
+// ===================================
+
+export function remainingByMonth(plan: DebtPlan) {
+  return plan.months.map((m) => {
+    const remaining = m.payments.reduce(
+      (acc, p) => acc + p.balanceEnd,
+      0
+    );
+    return {
+      monthIndex: m.monthIndex,
+      remaining,
+    };
+  });
+}
+
+// ===================================
 // Local save/load helpers (no auth)
 // ===================================
 
