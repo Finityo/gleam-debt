@@ -1,8 +1,9 @@
 import { usePlan } from "@/context/PlanContext";
 import { exportPlanToExcel } from "@/lib/exportExcel";
+import { exportPlanToPDF } from "@/lib/exportPdf";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function PlanPage() {
@@ -33,10 +34,17 @@ export default function PlanPage() {
           Back
         </Button>
         
-        <Button onClick={() => exportPlanToExcel(debts, settings, plan)}>
-          <Download className="mr-2 h-4 w-4" />
-          Download Excel
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => exportPlanToPDF(debts, settings, plan)}>
+            <FileText className="mr-2 h-4 w-4" />
+            Download PDF
+          </Button>
+          
+          <Button onClick={() => exportPlanToExcel(debts, settings, plan)} variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Download Excel
+          </Button>
+        </div>
       </div>
       
       <h1 className="text-3xl font-bold mb-2">Payoff Plan</h1>
