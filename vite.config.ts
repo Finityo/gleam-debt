@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
+const isLive = process.env.BUILD_ENV === "live";
+
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -16,5 +18,13 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  build: {
+    rollupOptions: {
+      input: isLive
+        ? path.resolve(__dirname, "src/live/index.html")
+        : path.resolve(__dirname, "index.html"),
+    },
+    outDir: isLive ? "dist-live" : "dist-demo",
   },
 }));
