@@ -32,7 +32,11 @@ export default function DebtPlanPage() {
             <Label>Strategy</Label>
             <Select
               value={inputs.strategy}
-              onValueChange={(v) => setInputs({ strategy: v as Strategy })}
+              onValueChange={(v) => {
+                setInputs({ strategy: v as Strategy });
+                // Auto-compute after strategy change
+                setTimeout(() => compute(), 100);
+              }}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -46,20 +50,38 @@ export default function DebtPlanPage() {
           
           <div className="space-y-2">
             <Label>Extra Monthly ($)</Label>
-            <Input
-              type="number"
-              value={inputs.extraMonthly}
-              onChange={(e) => setInputs({ extraMonthly: Number(e.target.value) })}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+              <Input
+                type="number"
+                className="pl-7"
+                value={inputs.extraMonthly}
+                onChange={(e) => {
+                  setInputs({ extraMonthly: Number(e.target.value) });
+                  // Auto-compute after input change
+                  setTimeout(() => compute(), 100);
+                }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">Applied every month</p>
           </div>
 
           <div className="space-y-2">
             <Label>One-time (Month 1) ($)</Label>
-            <Input
-              type="number"
-              value={inputs.oneTimeExtra}
-              onChange={(e) => setInputs({ oneTimeExtra: Number(e.target.value) })}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+              <Input
+                type="number"
+                className="pl-7"
+                value={inputs.oneTimeExtra}
+                onChange={(e) => {
+                  setInputs({ oneTimeExtra: Number(e.target.value) });
+                  // Auto-compute after input change
+                  setTimeout(() => compute(), 100);
+                }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">Applied first month only</p>
           </div>
 
           <div className="space-y-2">
@@ -67,7 +89,11 @@ export default function DebtPlanPage() {
             <Input
               type="date"
               value={inputs.startDate ?? ""}
-              onChange={(e) => setInputs({ startDate: e.target.value || undefined })}
+              onChange={(e) => {
+                setInputs({ startDate: e.target.value || undefined });
+                // Auto-compute after date change
+                setTimeout(() => compute(), 100);
+              }}
             />
           </div>
         </div>
@@ -77,6 +103,62 @@ export default function DebtPlanPage() {
           <Button variant="outline" onClick={resetDemo}>Reset Demo</Button>
         </div>
       </Card>
+
+      {/* Month 1 Payment Pool Summary */}
+      {plan && (
+        <Card className="p-6 mb-6 bg-gradient-primary/10 border-primary/20">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span className="text-2xl">💰</span> Month 1 Payment Pool Breakdown
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <div className="text-sm text-muted-foreground">All Minimum Payments</div>
+              <div className="text-2xl font-bold text-foreground">
+                ${totalMins.toFixed(2)}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">+ Extra Monthly</div>
+              <div className="text-2xl font-bold text-accent">
+                +${inputs.extraMonthly.toFixed(2)}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">+ One-Time Payment</div>
+              <div className="text-2xl font-bold text-accent">
+                +${inputs.oneTimeExtra.toFixed(2)}
+              </div>
+            </div>
+            <div className="bg-primary/10 rounded-lg p-3">
+              <div className="text-sm text-muted-foreground">= Total Month 1 Pool</div>
+              <div className="text-3xl font-bold text-primary">
+                ${(totalMins + inputs.extraMonthly + inputs.oneTimeExtra).toFixed(2)}
+              </div>
+            </div>
+          </div>
+          {plan.months[0] && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <div className="text-sm text-muted-foreground mb-2">Month 1 Results:</div>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Principal Paid: </span>
+                  <span className="font-semibold">${plan.months[0].totals.principal.toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Interest: </span>
+                  <span className="font-semibold">${plan.months[0].totals.interest.toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Debts Closed: </span>
+                  <span className="font-semibold text-success">
+                    {plan.months[0].payments.filter(p => p.closedThisMonth).length}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       <Card className="p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Plan Summary</h2>
