@@ -1,5 +1,5 @@
 import { DEMO } from "@/lib/config";
-import { mockDebts, mockPlan } from "@/lib/mockData";
+import { mockDebts, getMockPlan } from "@/lib/mockData";
 
 export async function getDebts() {
   if (DEMO) return mockDebts;
@@ -8,7 +8,7 @@ export async function getDebts() {
 }
 
 export async function getDebtPlan() {
-  if (DEMO) return mockPlan;
+  if (DEMO) return getMockPlan();
   const res = await fetch("/api/plan");
   return res.json();
 }

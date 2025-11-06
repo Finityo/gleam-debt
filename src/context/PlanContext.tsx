@@ -19,13 +19,14 @@ interface PlanContextValue {
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);
 
-// Demo debts fallback
+// Demo debts - matching the 5 original demo accounts
 function useDemoDebts(): DebtInput[] {
   return [
-    { id: "store", name: "Store Card ****1234", balance: 420.33, apr: 23.99, minPayment: 35, dueDay: 12, include: true },
-    { id: "medical", name: "Medical Bill ****7788", balance: 610.0, apr: 0, minPayment: 25, dueDay: 18, include: true },
-    { id: "visa9925", name: "Navy Fed CashRewards ****9925", balance: 410.09, apr: 17.9, minPayment: 30, dueDay: 20, include: true },
-    { id: "loan3668", name: "Navy Fed Loan ****3668", balance: 384.57, apr: 9.99, minPayment: 45, dueDay: 22, include: true },
+    { id: "store4231", name: "Store Credit Card", balance: 850, apr: 24.99, minPayment: 35, dueDay: 15, include: true },
+    { id: "personal7892", name: "Personal Loan", balance: 5200, apr: 8.5, minPayment: 185, dueDay: 1, include: true },
+    { id: "auto3344", name: "Auto Loan", balance: 12500, apr: 5.9, minPayment: 320, dueDay: 10, include: true },
+    { id: "visa1156", name: "Credit Card - Visa", balance: 3200, apr: 18.99, minPayment: 96, dueDay: 22, include: true },
+    { id: "medical9801", name: "Medical Bill", balance: 1450, apr: 0, minPayment: 50, dueDay: 5, include: true },
   ];
 }
 

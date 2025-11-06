@@ -1,5 +1,5 @@
 import { DEMO } from "@/config/demo";
-import { mockDebts, mockPlan } from "@/lib/mockData";
+import { mockDebts, getMockPlan } from "@/lib/mockData";
 
 /** Read-only fetchers that return mock data in Demo Mode. */
 export async function getDebts() {
@@ -9,7 +9,7 @@ export async function getDebts() {
 }
 
 export async function getDebtPlan() {
-  if (DEMO) return mockPlan;
+  if (DEMO) return getMockPlan();
   const res = await fetch("/api/plan", { credentials: "include" });
   return res.ok ? res.json() : Promise.reject(new Error("Failed to fetch plan"));
 }
