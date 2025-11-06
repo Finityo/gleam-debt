@@ -1,8 +1,8 @@
 import React from "react";
 import DemoShell from "./_DemoShell";
-import GlassCard from "@/components/GlassCard";
 import NextBack from "@/components/NextBack";
 import { useDemoPlan } from "@/context/DemoPlanContext";
+import { PopIn } from "@/components/Animate";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,8 @@ export default function DemoDebts() {
       title="Your Debts" 
       subtitle="Review and adjust the sample debt data"
     >
-      <div className="space-y-6">
+      <PopIn>
+        <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold text-white">Current Debts</h2>
@@ -130,7 +131,8 @@ export default function DemoDebts() {
         </div>
       </div>
 
-      <NextBack back="/demo/start" next="/demo/plan" />
+        <NextBack back="/demo/start" next="/demo/plan" />
+      </PopIn>
     </DemoShell>
   );
 }

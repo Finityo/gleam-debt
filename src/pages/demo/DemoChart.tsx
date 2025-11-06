@@ -1,12 +1,13 @@
 import React, { useMemo } from "react";
 import DemoShell from "./_DemoShell";
-import GlassCard from "@/components/GlassCard";
 import NextBack from "@/components/NextBack";
-import AIAdvisorBanner from "@/components/AIAdvisorBanner";
+import AIAdvisor from "@/components/AIAdvisor";
 import { useDemoPlan } from "@/context/DemoPlanContext";
+import { PopIn } from "@/components/Animate";
+import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { TrendingDown, Calendar, DollarSign, Sparkles } from "lucide-react";
+import { TrendingDown, Calendar, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 
 export default function DemoChart() {
@@ -36,23 +37,39 @@ export default function DemoChart() {
     return `Great job! With your ${inputs.strategy} strategy and $${inputs.extraMonthly}/month extra payment, you'll be debt-free in ${months} months, saving thousands in interest. Consider automating your extra payments for guaranteed success.`;
   }, [plan, inputs]);
 
+  const progressPercent = useMemo(() => {
+    if (!plan || plan.months.length === 0) return 0;
+    const totalMonths = plan.totals.monthsToDebtFree || plan.months.length;
+    return Math.round((1 / totalMonths) * 100);
+  }, [plan]);
+
   if (!plan) {
     return (
       <DemoShell title="Results" subtitle="Computing your debt freedom plan...">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
-          <p className="text-white/80">Analyzing your debts...</p>
-        </div>
+        <PopIn>
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
+            <p className="text-white/80">Analyzing your debts...</p>
+          </div>
+        </PopIn>
       </DemoShell>
     );
   }
 
   return (
-    <DemoShell 
-      title="Your Debt Freedom Plan" 
-      subtitle={`${inputs.strategy.charAt(0).toUpperCase() + inputs.strategy.slice(1)} Strategy Results`}
-    >
-      <div className="space-y-6">
+    <>
+      <DemoShell 
+        title="Your Debt Freedom Plan" 
+        subtitle={`${inputs.strategy.charAt(0).toUpperCase() + inputs.strategy.slice(1)} Strategy Results`}
+      >
+        <PopIn>
+          <div className="space-y-6">
+        <div className="rounded-2xl bg-white/10 border border-white/30 p-4 backdrop-blur-sm mb-6">
+          <div className="text-white/70 text-xs mb-2">Your Progress (Month 1 Snapshot)</div>
+          <Progress value={progressPercent} className="h-3 mb-2" />
+          <div className="text-sm text-white">{progressPercent}% of your journey visualized</div>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-3">
           <div className="p-4 rounded-xl bg-white/10 border border-white/30 backdrop-blur-sm">
             <div className="flex items-center gap-2 text-emerald-300 mb-2">
@@ -176,12 +193,14 @@ export default function DemoChart() {
                 </div>
               ))}
           </div>
+          </div>
         </div>
-      </div>
 
-      <NextBack back="/demo/plan" nextLabel="Start Over" next="/demo/start" />
+          <NextBack back="/demo/plan" nextLabel="Start Over" next="/demo/start" />
+        </PopIn>
+      </DemoShell>
 
-      <AIAdvisorBanner visible={true} message={aiMessage} />
-    </DemoShell>
+      <AIAdvisor visible={true} message={aiMessage} />
+    </>
   );
 }

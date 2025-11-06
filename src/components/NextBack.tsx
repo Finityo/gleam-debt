@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { PopIn } from "./Animate";
 
 export default function NextBack({
   back,
@@ -18,23 +18,24 @@ export default function NextBack({
   const nav = useNavigate();
   
   return (
-    <div className={`mt-8 flex items-center justify-between gap-4 ${className}`}>
-      <Button
-        variant="outline"
-        onClick={() => (back ? nav(back) : nav(-1))}
-        className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
-      >
-        Back
-      </Button>
-      {next && (
-        <Button
-          onClick={() => nav(next)}
-          disabled={nextDisabled}
-          className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+    <PopIn delay={0.05}>
+      <div className={`mt-8 flex items-center justify-between gap-4 ${className}`}>
+        <button
+          onClick={() => (back ? nav(back) : nav(-1))}
+          className="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all backdrop-blur-sm"
         >
-          {nextLabel}
-        </Button>
-      )}
-    </div>
+          Back
+        </button>
+        {next && (
+          <button
+            onClick={() => nav(next)}
+            disabled={nextDisabled}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {nextLabel}
+          </button>
+        )}
+      </div>
+    </PopIn>
   );
 }
