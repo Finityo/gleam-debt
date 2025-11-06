@@ -1,8 +1,8 @@
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
+import App from "./App";
 import "./index.css";
 
-// 🔍 Run demo engine verification on startup
+// Safe, no-op verification (prevents startup crash)
 import "./utils/verifyDemoEngine";
 
 createRoot(document.getElementById("root")!).render(<App />);
