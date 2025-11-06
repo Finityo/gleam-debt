@@ -12,9 +12,9 @@ Opens at `http://localhost:8080` - Demo environment with mock data
 
 **Live Mode**:
 ```bash
-npm run dev:live
+vite --config vite-live.config.ts
 ```
-Opens at `http://localhost:8080` - Live environment ready for production
+Opens at `http://localhost:8080` - Live environment (loads `index-live.html`)
 
 ### Production Builds
 
@@ -26,9 +26,28 @@ Builds to `dist/` - Demo version
 
 **Live Build**:
 ```bash
-npm run build:live
+vite build --config vite-live.config.ts
 ```
 Builds to `dist-live/` - Production version
+
+---
+
+## How It Works
+
+- **Demo**: Uses `index.html` → `src/main.tsx` → Demo pages
+- **Live**: Uses `index-live.html` → `src/live/index.tsx` → Live pages
+- Both share the same `@/lib/debtPlan.ts` engine
+
+---
+
+## Testing Live Mode
+
+Run in your terminal:
+```bash
+vite --config vite-live.config.ts
+```
+
+You should see **"Finityo Live Dashboard"** at the root!
 
 ---
 
