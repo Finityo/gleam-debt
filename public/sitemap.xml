@@ -206,6 +206,14 @@
     <priority>0.6</priority>
   </url>
   
+  <!-- Sitemap -->
+  <url>
+    <loc>https://finityo-debt.com/sitemap</loc>
+    <lastmod>2025-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
   <!-- Note: Admin pages (/admin, /admin/roles, /admin/documents, /support-dashboard, /security-audit) -->
   <!-- and auth pages (/auth, /team-access) are intentionally excluded from the sitemap -->
   
