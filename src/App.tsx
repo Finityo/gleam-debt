@@ -40,6 +40,7 @@ const BlogPost = lazy(() => import("./pages/BlogPost"));
 const DocumentExport = lazy(() => import("./pages/DocumentExport"));
 const OAuthRedirect = lazy(() => import("./pages/OAuthRedirect"));
 const Demo = lazy(() => import("./pages/Demo"));
+const DemoTest = lazy(() => import("./pages/DemoTest"));
 const Install = lazy(() => import("./pages/Install"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PayoffCalendar = lazy(() => import("./pages/PayoffCalendar"));
@@ -109,6 +110,7 @@ const AppRoutes = () => {
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/oauth-redirect" element={<OAuthRedirect />} />
               <Route path="/demo" element={<Demo />} />
+              <Route path="/demo-test" element={<DemoTest />} />
               <Route path="/install" element={<Install />} />
               <Route path="/payoff-calendar" element={<PayoffCalendar />} />
               <Route path="/printable-summary" element={<PrintableSummary />} />

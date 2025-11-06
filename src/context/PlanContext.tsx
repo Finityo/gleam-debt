@@ -45,6 +45,13 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   }
 
   function compute() {
+    console.log("🚀 Computing plan with inputs:", {
+      strategy: inputs.strategy,
+      extraMonthly: inputs.extraMonthly,
+      oneTimeExtra: inputs.oneTimeExtra,
+      debtCount: inputs.debts.filter(d => d.include !== false).length
+    });
+    
     const res = PlanService.compute({
       debts: inputs.debts,
       extraMonthly: inputs.extraMonthly,
@@ -52,6 +59,24 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       strategy: inputs.strategy,
       startDate: inputs.startDate,
     });
+    
+    // Log Month 1 verification
+    if (res.months.length > 0) {
+      const month1 = res.months[0];
+      console.log("✅ Month 1 Results:", {
+        totalPrincipal: month1.totals.principal,
+        totalInterest: month1.totals.interest,
+        totalOutflow: month1.totals.outflow,
+        debtsClosedThisMonth: month1.payments.filter(p => p.closedThisMonth).map(p => p.debtId)
+      });
+    }
+    
+    console.log("📈 Full Plan Summary:", {
+      monthsToDebtFree: res.totals.monthsToDebtFree,
+      totalInterest: res.totals.interest,
+      oneTimeApplied: res.totals.oneTimeApplied
+    });
+    
     setPlan(res);
   }
 

@@ -1,3 +1,6 @@
+// ===============================================
+// Demo Data - NO CACHING - Always Fresh Computation
+// ===============================================
 import { computeDebtPlan, DebtInput } from "./debtPlan";
 
 export const mockDebts = [
@@ -74,15 +77,37 @@ const demoDebtsForEngine: DebtInput[] = mockDebts.map(d => ({
   include: true,
 }));
 
-// Compute plan dynamically using the live engine with $1000 one-time + $200 monthly snowball
+/**
+ * ALWAYS compute fresh - NO CACHING
+ * This ensures the latest engine logic is used every time
+ */
 export function getMockPlan() {
-  return computeDebtPlan({
+  console.log("🔄 Computing fresh demo plan with live engine...");
+  const result = computeDebtPlan({
     debts: demoDebtsForEngine,
     strategy: "snowball",
     extraMonthly: 200,
     oneTimeExtra: 1000,
   });
+  
+  // Log Month 1 details for verification
+  if (result.months.length > 0) {
+    const month1 = result.months[0];
+    console.log("📊 Month 1 Computation:", {
+      totalPrincipal: month1.totals.principal,
+      totalInterest: month1.totals.interest,
+      payments: month1.payments.map(p => ({
+        debt: p.debtId,
+        starting: p.startingBalance,
+        paid: p.totalPaid,
+        ending: p.endingBalance,
+        closed: p.closedThisMonth
+      }))
+    });
+  }
+  
+  return result;
 }
 
-// Legacy export for backwards compatibility - now computed dynamically
+// NO CACHED EXPORT - Always call getMockPlan() for fresh computation
 export const mockPlan = getMockPlan();
