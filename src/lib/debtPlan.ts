@@ -133,20 +133,22 @@ function adjustToDueDay(monthDate: Date, dueDay: number): Date {
   return d;
 }
 
+// =============================================================
+// TRUE CASCADING DEBT SNOWBALL ENGINE
+// Applies one-time extra immediately and rolls every freed minimum
+// =============================================================
 export function computeDebtPlan(params: ComputeParams): PlanResult {
   const { strategy, extraMonthly, oneTimeExtra, maxMonths = 600 } = params;
   const startISO = params.startDate ?? toISODate(new Date());
   const planStart = startOfMonth(new Date(startISO));
 
-  // ✅ Normalize APRs from imported data
   const debtsAll = applyAPRNormalization(params.debts).map(d => ({
     ...d,
     include: d.include !== false,
     dueDay: clampDueDay(d.dueDay),
   }));
-
   const debts = debtsAll.filter(d => d.include);
-  if (debts.length === 0) {
+  if (!debts.length) {
     return {
       strategy,
       startDateISO: toISODate(planStart),
@@ -163,44 +165,37 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
     };
   }
 
-  // --- working state ---
   const balances = debts.map(d => round2(Math.max(0, d.balance)));
   const monthlyRates = debts.map(d => normalizeAPR(d.apr) / 12 / 100);
   const mins = debts.map(d => round2(d.minPayment));
   const originals = [...balances];
-
-  const baseOutflow = round2(mins.reduce((a, b) => a + b, 0) + (extraMonthly || 0));
 
   const payoffIdx: (number | null)[] = debts.map(() => null);
   const totalIntByDebt = debts.map(() => 0);
   const totalPaidByDebt = debts.map(() => 0);
 
   const months: PlanMonth[] = [];
-  let globalInt = 0;
-  let globalPrin = 0;
+  let globalInt = 0, globalPrin = 0;
 
-  // rolling snowball tracker
-  let currentSnowball = extraMonthly;
+  // ====== rolling snowball tracker ======
+  let rollingExtra = extraMonthly;           // monthly recurring extra
+  let carryOver = 0;                         // freed mins that join snowball next month
 
   for (let m = 0; m < maxMonths; m++) {
-    const mDate = addMonths(planStart, m);
-    const interestThis = balances.map((bal, i) => (bal > 0 ? round2(bal * monthlyRates[i]) : 0));
+    const monthDate = addMonths(planStart, m);
+    const interestThis = balances.map((b, i) => b > 0 ? round2(b * monthlyRates[i]) : 0);
 
-    // add interest
+    // accrue interest
     for (let i = 0; i < balances.length; i++) {
-      if (balances[i] > 0) {
-        balances[i] = round2(balances[i] + interestThis[i]);
-        totalIntByDebt[i] = round2(totalIntByDebt[i] + interestThis[i]);
-        globalInt = round2(globalInt + interestThis[i]);
-      }
+      balances[i] = round2(balances[i] + interestThis[i]);
+      totalIntByDebt[i] = round2(totalIntByDebt[i] + interestThis[i]);
+      globalInt = round2(globalInt + interestThis[i]);
     }
 
-    // Month pool = base minimums + current snowball (+ one-time on month 0)
-    let monthPool = mins.reduce((a, b) => a + b, 0) + currentSnowball;
+    // month pool = all mins + current rolling extra (+ one-time for month 0)
+    let monthPool = mins.reduce((a, b) => a + b, 0) + rollingExtra + carryOver;
     if (m === 0) monthPool += oneTimeExtra || 0;
-    monthPool = round2(monthPool);
 
-    // apply minimums
     const minApplied = mins.map((min, i) => {
       if (balances[i] <= 0) return 0;
       const pay = Math.min(min, balances[i]);
@@ -210,9 +205,10 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
       return pay;
     });
 
-    // apply snowball / avalanche extra
+    // allocate remaining pool by strategy order
     const order = sortIndex(strategy, debts.map((d, i) => ({ balance: balances[i], apr: normalizeAPR(d.apr) })));
     const extraApplied = debts.map(() => 0);
+    let freedMins = 0;
 
     for (const idx of order) {
       if (monthPool <= 0) break;
@@ -222,29 +218,24 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
       extraApplied[idx] = round2(extraApplied[idx] + pay);
       totalPaidByDebt[idx] = round2(totalPaidByDebt[idx] + pay);
       monthPool = round2(monthPool - pay);
+      // if debt closes here, add its min to next month
+      if (balances[idx] === 0 && payoffIdx[idx] === null) {
+        payoffIdx[idx] = m;
+        freedMins += mins[idx];
+      }
     }
 
-    // close debts + grow snowball
-    let newSnowAdd = 0;
-    let monthOut = 0;
-    let monthPrin = 0;
-
-    const payments: DebtMonthPayment[] = debts.map((d, i) => {
+    const monthPayments: DebtMonthPayment[] = debts.map((d, i) => {
       const starting = round2(balances[i] + minApplied[i] + extraApplied[i]);
       const ending = balances[i];
       const closed = starting > 0 && ending === 0;
-      if (closed && payoffIdx[i] === null) {
-        payoffIdx[i] = m;
-        newSnowAdd += mins[i]; // rollover min
-      }
-      const interest = interestThis[i];
+      if (closed && payoffIdx[i] === null) payoffIdx[i] = m;
       const totalPaid = round2(minApplied[i] + extraApplied[i]);
-      monthOut = round2(monthOut + totalPaid);
-      monthPrin = round2(monthPrin + totalPaid);
+      globalPrin = round2(globalPrin + totalPaid);
       return {
         debtId: d.id,
         startingBalance: starting,
-        interestAccrued: interest,
+        interestAccrued: interestThis[i],
         minApplied: minApplied[i],
         extraApplied: extraApplied[i],
         totalPaid,
@@ -253,26 +244,24 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
       };
     });
 
-    globalPrin = round2(globalPrin + monthPrin);
     months.push({
       monthIndex: m,
-      monthLabel: monthLabel(mDate),
-      dateISO: toISODate(startOfMonth(mDate)),
-      payments,
+      monthLabel: monthLabel(monthDate),
+      dateISO: toISODate(startOfMonth(monthDate)),
+      payments: monthPayments,
       totals: {
         interest: round2(interestThis.reduce((a, b) => a + b, 0)),
-        principal: monthPrin,
-        outflow: round2(monthOut),
+        principal: round2(monthPayments.reduce((a, p) => a + p.totalPaid, 0)),
+        outflow: round2(monthPayments.reduce((a, p) => a + p.totalPaid, 0)),
       },
     });
 
-    // update snowball for next month
-    currentSnowball = round2(currentSnowball + newSnowAdd);
-
+    // ====== grow snowball for next month ======
+    carryOver = freedMins;                   // add freed mins next month
     if (balances.every(b => b <= 0.0001)) break;
   }
 
-  // build debt summaries
+  // summaries
   const summaries: DebtSummary[] = debts.map((d, i) => {
     const idx = payoffIdx[i];
     return {
@@ -317,7 +306,7 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
       monthsToDebtFree,
       interest: round2(globalInt),
       principal: round2(globalPrin),
-      outflowMonthly: baseOutflow,
+      outflowMonthly: round2(extraMonthly + mins.reduce((a, b) => a + b, 0)),
       oneTimeApplied: round2(oneTimeExtra || 0),
       totalPaid: round2(globalInt + globalPrin),
     },
