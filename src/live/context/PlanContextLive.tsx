@@ -35,12 +35,12 @@ export function PlanProviderLive({ children }: { children: React.ReactNode }) {
 
   async function refreshFromBackend() {
     try {
-      // 🔐 Replace with live Lovable Cloud fetch
-      const res = await fetch("/api/debts", { cache: "no-store" });
-      const data: DebtInput[] = await res.json();
-
-      const settings = await fetch("/api/settings");
-      const cfg = await settings.json();
+      // Using local API files (will be replaced with Lovable Cloud later)
+      const { getDebts } = await import("../api/debts");
+      const { getSettings } = await import("../api/settings");
+      
+      const data = await getDebts();
+      const cfg = await getSettings();
 
       setInputsState({
         debts: data,

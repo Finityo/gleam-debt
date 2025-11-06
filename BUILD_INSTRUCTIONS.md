@@ -1,49 +1,48 @@
 # Finityo Build Instructions
 
-## Build Environments
+## Project Structure
 
-This project supports **two separate build environments**:
+This project has **two parallel environments**:
 
-### 1. **Demo Build** (Default)
+### 1. **Demo Environment** (Current Default)
 - Entry point: `src/main.tsx`
 - Uses demo/mock data from `src/context/PlanContext.tsx`
-- Output directory: `dist-demo`
 - Perfect for testing, development, and showcasing features
+- No backend required
 
-### 2. **Live Build** (Production)
+### 2. **Live Environment** (Ready for Production)
 - Entry point: `src/live/index.tsx`
-- Connects to real backend APIs
-- Output directory: `dist-live`
-- Production-ready with authentication and real data
+- Uses local API modules: `src/live/api/debts.ts` and `src/live/api/settings.ts`
+- Ready to connect to Lovable Cloud backend
+- Currently uses placeholder data
 
 ---
 
-## Build Commands
-
-### Demo Build
-```bash
-npm run build
-# or
-vite build
-```
-Builds to `dist-demo/` using demo data
-
-### Live Build
-```bash
-BUILD_ENV=live npm run build
-# or
-BUILD_ENV=live vite build
-```
-Builds to `dist-live/` using live backend
-
----
-
-## Development Mode
+## Current Development
 
 ```bash
 npm run dev
 ```
-Runs demo version by default on `http://localhost:8080`
+Runs demo version on `http://localhost:8080`
+
+---
+
+## Testing Live Environment Locally
+
+To switch the entry point to test live mode during development:
+
+1. Temporarily edit `index.html` line 61:
+   ```html
+   <!-- Change from: -->
+   <script type="module" src="/src/main.tsx"></script>
+   
+   <!-- To: -->
+   <script type="module" src="/src/live/index.tsx"></script>
+   ```
+
+2. Run `npm run dev`
+
+3. Remember to revert before committing!
 
 ---
 
@@ -53,44 +52,38 @@ Runs demo version by default on `http://localhost:8080`
 - **Context**: `src/context/PlanContext.tsx`
 - **Pages**: `src/pages/*`
 - **Data**: Mock data with preset demo debts
-- **API**: No backend required
+- **API**: None (fully client-side)
 
 ### Live Environment
 - **Context**: `src/live/context/PlanContextLive.tsx`
 - **Pages**: `src/live/pages/*`
-- **Data**: Fetched from `/api/debts` and `/api/settings`
-- **API**: Requires Lovable Cloud backend
+- **Data**: `src/live/api/debts.ts` and `src/live/api/settings.ts`
+- **API**: Ready to integrate with Lovable Cloud
 
 ---
 
-## Next Steps for Live Deployment
+## Next Steps for Production
 
-1. **Set up Backend APIs**:
-   - Create `/api/debts` endpoint
-   - Create `/api/settings` endpoint
+1. **Replace Local API Files with Lovable Cloud**:
+   - Update `src/live/context/PlanContextLive.tsx`
+   - Replace import statements with fetch calls to Supabase
    
 2. **Add Authentication**:
-   - Implement login/signup
+   - Implement login/signup in live environment
    - Protect routes with auth guards
 
 3. **Deploy**:
-   ```bash
-   BUILD_ENV=live npm run build
-   # Deploy dist-live/ to your hosting provider
-   ```
+   - Configure deployment to use `src/live/index.tsx` as entry point
+   - Set up environment variables for production
 
 ---
 
-## Environment Detection
+## Data Flow
 
-The build system automatically detects which environment to use:
+**Demo**: 
+- Hardcoded data in PlanContext → PlanService.compute() → UI
 
-```typescript
-const isLive = process.env.BUILD_ENV === "live";
-```
+**Live**: 
+- API files → PlanContextLive → PlanService.compute() → UI
+- (Future: Lovable Cloud → PlanContextLive → PlanService.compute() → UI)
 
-This switches:
-- Entry HTML file
-- TypeScript entry point
-- Output directory
-- Build configuration
