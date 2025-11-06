@@ -138,6 +138,7 @@ function adjustToDueDay(monthDate: Date, dueDay: number): Date {
 // Applies one-time extra immediately and rolls every freed minimum
 // =============================================================
 export function computeDebtPlan(params: ComputeParams): PlanResult {
+  console.time("⚡ computeDebtPlan");
   const { strategy, extraMonthly, oneTimeExtra, maxMonths = 600 } = params;
   const startISO = params.startDate ?? toISODate(new Date());
   const planStart = startOfMonth(new Date(startISO));
@@ -296,6 +297,8 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
 
   const monthsToDebtFree =
     Math.max(...summaries.filter(s => s.included && s.payoffMonthIndex !== null).map(s => s.payoffMonthIndex ?? 0)) + 1 || 0;
+
+  console.timeEnd("⚡ computeDebtPlan");
 
   return {
     strategy,

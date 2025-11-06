@@ -1,50 +1,42 @@
-import React, { Suspense, lazy } from "react";
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { PlanProviderLive } from "./context/PlanContextLive";
-
-const DashboardLive = lazy(() => import("./pages/DashboardLive"));
-const DebtsLive = lazy(() => import("./pages/DebtsLive"));
-const DebtPlanLive = lazy(() => import("./pages/DebtPlanLive"));
-const VisualizationLive = lazy(() => import("./pages/VisualizationLive"));
-
-const Loader = () => (
-  <div className="flex flex-col items-center justify-center h-screen text-center">
-    <svg className="animate-spin h-10 w-10 text-blue-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-    </svg>
-    <p className="text-gray-500 dark:text-gray-300">Loading Finityo Live...</p>
-  </div>
-);
+import { LayoutLive } from "./components/LayoutLive";
+import DashboardLive from "./pages/DashboardLive";
+import DebtsLive from "./pages/DebtsLive";
+import DebtPlanLive from "./pages/DebtPlanLive";
+import VisualizationLive from "./pages/VisualizationLive";
 
 const queryClient = new QueryClient();
 
 export default function AppLive() {
+  console.log("🔍 Finityo Build Mode:", import.meta.env.VITE_MODE);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <TooltipProvider>
-          <PlanProviderLive>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Suspense fallback={<Loader />}>
-                <Routes>
-                  <Route path="/" element={<DashboardLive />} />
-                  <Route path="/debts" element={<DebtsLive />} />
-                  <Route path="/plan" element={<DebtPlanLive />} />
-                  <Route path="/visualization" element={<VisualizationLive />} />
-                </Routes>
-              </Suspense>
-            </BrowserRouter>
-          </PlanProviderLive>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <>
+      {/* ===== LIVE MODE BADGE ===== */}
+      <div className="fixed top-2 right-2 px-3 py-1 bg-emerald-600/80 text-white rounded-full text-xs z-50">
+        LIVE MODE
+      </div>
+
+      <QueryClientProvider client={queryClient}>
+        <PlanProviderLive>
+          <BrowserRouter>
+            <LayoutLive>
+              <Routes>
+                <Route path="/" element={<DashboardLive />} />
+                <Route path="/dashboard" element={<DashboardLive />} />
+                <Route path="/debts" element={<DebtsLive />} />
+                <Route path="/plan" element={<DebtPlanLive />} />
+                <Route path="/visualization" element={<VisualizationLive />} />
+              </Routes>
+            </LayoutLive>
+          </BrowserRouter>
+          <Toaster />
+        </PlanProviderLive>
+      </QueryClientProvider>
+    </>
   );
 }
