@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Wallet, TrendingDown, Target, Zap, ArrowRight } from "lucide-react";
 import heroImage from "@/assets/hero-financial-freedom.jpg";
-import finityoLogo from "@/assets/finityo-logo.png";
+import finityoIcon from "@/assets/finityo-app-icon.png";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -32,8 +32,8 @@ const Hero = () => {
             {/* Logo */}
             <div className="mb-8 flex justify-center">
               <img 
-                src={finityoLogo} 
-                alt="Finityo Logo" 
+                src={finityoIcon} 
+                alt="Finityo Icon" 
                 className="h-16 md:h-20 drop-shadow-2xl"
               />
             </div>
