@@ -5,6 +5,42 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export type Strategy = "snowball" | "avalanche";
 
+/**
+ * Normalize APR values from various formats
+ * Handles: strings with %, numbers over 1000 (2499 → 24.99), etc.
+ */
+export function normalizeAPR(value: any): number {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === "string") {
+    const cleaned = parseFloat(value.replace("%", "").trim());
+    if (isNaN(cleaned)) return 0;
+    return cleaned > 100 ? cleaned / 100 : cleaned;
+  }
+  if (typeof value === "number") {
+    if (value > 1000) return value / 100; // e.g. 2499 → 24.99
+    return value;
+  }
+  return 0;
+}
+
+/**
+ * Apply APR normalization to an array of debts
+ */
+export function applyAPRNormalization(debts: DebtInput[]): DebtInput[] {
+  return debts.map(d => ({
+    ...d,
+    apr: normalizeAPR(d.apr),
+  }));
+}
+
+/**
+ * Format APR for display (e.g., "24.99%")
+ */
+export function formatAPR(value: number | string): string {
+  const n = normalizeAPR(value);
+  return `${n.toFixed(2)}%`;
+}
+
 export interface DebtInput {
   id: string;
   name: string;
@@ -102,19 +138,44 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
   const startISO = params.startDate ?? toISODate(new Date());
   const planStart = startOfMonth(new Date(startISO));
 
-  const debtsAll = params.debts.map(d => ({ ...d, include: d.include !== false, dueDay: clampDueDay(d.dueDay) }));
+  // 🔧 Normalize APRs before doing anything else
+  const debtsAll = applyAPRNormalization(params.debts).map(d => ({
+    ...d,
+    include: d.include !== false,
+    dueDay: clampDueDay(d.dueDay),
+  }));
+
   const debts = debtsAll.filter(d => d.include);
   if (debts.length === 0) {
     return {
-      strategy, startDateISO: toISODate(planStart), months: [], debts: debtsAll.map(d=>({
-        id:d.id, name:d.name, apr:d.apr, originalBalance:d.balance, minPayment:d.minPayment, included: !!d.include,
-        payoffMonthIndex:null, payoffDateISO:null, totalInterestPaid:0, totalPaid:0
-      })), totals: { monthsToDebtFree:0, interest:0, principal:0, outflowMonthly:0, oneTimeApplied:0, totalPaid:0 }
+      strategy,
+      startDateISO: toISODate(planStart),
+      months: [],
+      debts: debtsAll.map(d => ({
+        id: d.id,
+        name: d.name,
+        apr: normalizeAPR(d.apr),
+        originalBalance: d.balance,
+        minPayment: d.minPayment,
+        included: !!d.include,
+        payoffMonthIndex: null,
+        payoffDateISO: null,
+        totalInterestPaid: 0,
+        totalPaid: 0,
+      })),
+      totals: {
+        monthsToDebtFree: 0,
+        interest: 0,
+        principal: 0,
+        outflowMonthly: 0,
+        oneTimeApplied: 0,
+        totalPaid: 0,
+      },
     };
   }
 
   const working = debts.map(d => Math.max(0, round2(d.balance)));
-  const rates = debts.map(d => d.apr>0 ? d.apr/12/100 : 0);
+  const rates = debts.map(d => normalizeAPR(d.apr) / 12 / 100);
   const mins = debts.map(d => Math.max(0, round2(d.minPayment)));
   const originals = [...working];
 
@@ -148,7 +209,7 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
       return pay;
     });
 
-    const order = sortIndex(strategy, debts.map((d,i)=>({ balance: working[i], apr: d.apr })));
+    const order = sortIndex(strategy, debts.map((d,i)=>({ balance: working[i], apr: normalizeAPR(d.apr) })));
     const extraApplied = debts.map(()=>0);
     for (const idx of order) {
       if (pool<=0) break;
@@ -200,15 +261,31 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
   const summaries: DebtSummary[] = debts.map((d,i)=>{
     const idx = payoffIdx[i];
     return {
-      id:d.id, name:d.name, apr:d.apr, originalBalance: round2(originals[i]), minPayment: round2(d.minPayment), included: true,
-      payoffMonthIndex: idx, payoffDateISO: (idx===null?null: toISODate(adjustToDueDay(addMonths(planStart, idx), d.dueDay!))),
-      totalInterestPaid: round2(totalIntByDebt[i]), totalPaid: round2(totalPaidByDebt[i])
+      id: d.id,
+      name: d.name,
+      apr: normalizeAPR(d.apr),
+      originalBalance: round2(originals[i]),
+      minPayment: round2(d.minPayment),
+      included: true,
+      payoffMonthIndex: idx,
+      payoffDateISO: idx === null ? null : toISODate(adjustToDueDay(addMonths(planStart, idx), d.dueDay!)),
+      totalInterestPaid: round2(totalIntByDebt[i]),
+      totalPaid: round2(totalPaidByDebt[i]),
     };
   });
-  for (const ex of debtsAll.filter(d=>!d.include)) {
+
+  for (const ex of debtsAll.filter(d => !d.include)) {
     summaries.push({
-      id: ex.id, name: ex.name, apr: ex.apr, originalBalance: round2(ex.balance), minPayment: round2(ex.minPayment),
-      included:false, payoffMonthIndex:null, payoffDateISO:null, totalInterestPaid:0, totalPaid:0
+      id: ex.id,
+      name: ex.name,
+      apr: normalizeAPR(ex.apr),
+      originalBalance: round2(ex.balance),
+      minPayment: round2(ex.minPayment),
+      included: false,
+      payoffMonthIndex: null,
+      payoffDateISO: null,
+      totalInterestPaid: 0,
+      totalPaid: 0,
     });
   }
 
