@@ -2,52 +2,49 @@
 // Finityo Debt Plan Engine — Drop-in Module
 // File: src/lib/debtPlan.ts
 // ===============================================
-
-/**
- * Public Types your pages can import
- */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export type Strategy = "snowball" | "avalanche";
 
 export interface DebtInput {
   id: string;
   name: string;
-  balance: number;        // current principal
-  apr: number;            // e.g., 19.99 (percent)
-  minPayment: number;     // required minimum payment
-  dueDay?: number;        // 1..28 (safe range), optional (defaults: 15)
-  include?: boolean;      // if false, skipped from plan math but listed
+  balance: number;
+  apr: number;            // percent, e.g. 19.99
+  minPayment: number;
+  dueDay?: number;        // 1..28
+  include?: boolean;      // default true
   notes?: string;
 }
 
 export interface ComputeParams {
   debts: DebtInput[];
-  strategy: Strategy;           // "snowball" or "avalanche"
-  extraMonthly: number;         // extra amount every month
-  oneTimeExtra: number;         // applied in Month 1 immediately
-  startDate?: string;           // ISO date (yyyy-mm-dd); default: today
-  maxMonths?: number;           // guardrail; default: 600
+  strategy: Strategy;
+  extraMonthly: number;
+  oneTimeExtra: number;
+  startDate?: string;
+  maxMonths?: number;
 }
 
 export interface DebtMonthPayment {
   debtId: string;
   startingBalance: number;
   interestAccrued: number;
-  minApplied: number;       // portion counted against the debt's minimum
-  extraApplied: number;     // snowball/avalanche extra beyond min
-  totalPaid: number;        // minApplied + extraApplied (capped to balance+interest)
+  minApplied: number;
+  extraApplied: number;
+  totalPaid: number;
   endingBalance: number;
   closedThisMonth: boolean;
 }
 
 export interface PlanMonth {
-  monthIndex: number;           // 0-based
-  monthLabel: string;           // e.g., "Nov 2025"
-  dateISO: string;              // first-of-month ISO for reference
+  monthIndex: number;
+  monthLabel: string;
+  dateISO: string;
   payments: DebtMonthPayment[];
   totals: {
     interest: number;
     principal: number;
-    outflow: number;           // constant: sum(mins of open at t0) + extraMonthly (+ oneTime in m0)
+    outflow: number;
   };
 }
 
@@ -61,7 +58,7 @@ export interface DebtSummary {
   payoffMonthIndex: number | null;
   payoffDateISO: string | null;
   totalInterestPaid: number;
-  totalPaid: number;             // interest + principal
+  totalPaid: number;
 }
 
 export interface PlanResult {
@@ -73,314 +70,166 @@ export interface PlanResult {
     monthsToDebtFree: number;
     interest: number;
     principal: number;
-    outflowMonthly: number;      // constant outflow (see note)
-    oneTimeApplied: number;      // in Month 1
+    outflowMonthly: number;
+    oneTimeApplied: number;
     totalPaid: number;
   };
 }
 
-/**
- * Utility: date helpers
- */
-function toISODate(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-function startOfMonth(d: Date): Date {
-  const x = new Date(d);
-  x.setDate(1);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-function addMonths(d: Date, n: number): Date {
-  const x = new Date(d);
-  x.setMonth(x.getMonth() + n);
-  return x;
-}
-function monthLabel(d: Date): string {
-  return d.toLocaleString("en-US", { month: "short", year: "numeric" });
-}
-function clampDueDay(day?: number): number {
-  if (!day || day < 1) return 15;
-  return Math.min(Math.max(day, 1), 28);
-}
+function toISODate(d: Date): string { return d.toISOString().slice(0,10); }
+function startOfMonth(d: Date): Date { const x = new Date(d); x.setDate(1); x.setHours(0,0,0,0); return x; }
+function addMonths(d: Date, n: number): Date { const x = new Date(d); x.setMonth(x.getMonth()+n); return x; }
+function monthLabel(d: Date): string { return d.toLocaleString("en-US", { month: "short", year: "numeric" }); }
+function clampDueDay(day?: number): number { if (!day || day < 1) return 15; return Math.min(Math.max(day,1),28); }
+function round2(n: number): number { return Math.round((n + Number.EPSILON)*100)/100; }
 
-/**
- * Sorting per strategy:
- * - snowball: smallest balance first
- * - avalanche: highest APR first
- */
 function sortIndex(strategy: Strategy, items: { balance: number; apr: number }[]): number[] {
-  const indexed = items.map((v, i) => ({ i, ...v }));
-  if (strategy === "snowball") {
-    indexed.sort((a, b) => a.balance - b.balance || b.apr - a.apr);
-  } else {
-    indexed.sort((a, b) => b.apr - a.apr || a.balance - b.balance);
-  }
-  return indexed.map(x => x.i);
+  const arr = items.map((v,i)=>({i,...v}));
+  if (strategy === "snowball") arr.sort((a,b)=> a.balance - b.balance || b.apr - a.apr);
+  else arr.sort((a,b)=> b.apr - a.apr || a.balance - b.balance);
+  return arr.map(x=>x.i);
 }
 
-/**
- * Core compute engine
- * Rules:
- *  - Interest accrues monthly: i = bal * (APR/12/100)
- *  - Constant outflow each month = SUM(mins of *initially included & open* debts) + extraMonthly
- *    (As debts close, their mins "roll over" into the snowball automatically.)
- *  - Month 1: add oneTimeExtra to the monthly pool and cascade immediately.
- *  - No negative balances: payments cap at (balance + interest).
- *  - Debts with include=false are carried through for display but not paid.
- */
-export function computeDebtPlan(params: ComputeParams): PlanResult {
-  const {
-    strategy,
-    extraMonthly,
-    oneTimeExtra,
-    maxMonths = 600,
-  } = params;
+function adjustToDueDay(monthDate: Date, dueDay: number): Date {
+  const d = new Date(monthDate);
+  d.setDate(clampDueDay(dueDay));
+  d.setHours(0,0,0,0);
+  return d;
+}
 
-  const startISO = params.startDate ? params.startDate : toISODate(new Date());
+export function computeDebtPlan(params: ComputeParams): PlanResult {
+  const { strategy, extraMonthly, oneTimeExtra, maxMonths = 600 } = params;
+  const startISO = params.startDate ?? toISODate(new Date());
   const planStart = startOfMonth(new Date(startISO));
 
-  // Build working set (deep copy so we can mutate balances)
-  const debtsAll = params.debts.map(d => ({
-    ...d,
-    include: d.include !== false, // default true
-    dueDay: clampDueDay(d.dueDay),
-  }));
-
-  // Filter to included debts for math
+  const debtsAll = params.debts.map(d => ({ ...d, include: d.include !== false, dueDay: clampDueDay(d.dueDay) }));
   const debts = debtsAll.filter(d => d.include);
-  // If nothing to compute, return skeletal structure
   if (debts.length === 0) {
     return {
-      strategy,
-      startDateISO: toISODate(planStart),
-      months: [],
-      debts: debtsAll.map(d => ({
-        id: d.id,
-        name: d.name,
-        apr: d.apr,
-        originalBalance: d.balance,
-        minPayment: d.minPayment,
-        included: !!d.include,
-        payoffMonthIndex: null,
-        payoffDateISO: null,
-        totalInterestPaid: 0,
-        totalPaid: 0,
-      })),
-      totals: {
-        monthsToDebtFree: 0,
-        interest: 0,
-        principal: 0,
-        outflowMonthly: 0,
-        oneTimeApplied: 0,
-        totalPaid: 0,
-      },
+      strategy, startDateISO: toISODate(planStart), months: [], debts: debtsAll.map(d=>({
+        id:d.id, name:d.name, apr:d.apr, originalBalance:d.balance, minPayment:d.minPayment, included: !!d.include,
+        payoffMonthIndex:null, payoffDateISO:null, totalInterestPaid:0, totalPaid:0
+      })), totals: { monthsToDebtFree:0, interest:0, principal:0, outflowMonthly:0, oneTimeApplied:0, totalPaid:0 }
     };
   }
 
-  // State arrays (mutating balances month-by-month)
-  const workingBalances = debts.map(d => Math.max(0, round2(d.balance)));
-  const monthlyRates = debts.map(d => (d.apr > 0 ? d.apr / 12 / 100 : 0));
+  const working = debts.map(d => Math.max(0, round2(d.balance)));
+  const rates = debts.map(d => d.apr>0 ? d.apr/12/100 : 0);
   const mins = debts.map(d => Math.max(0, round2(d.minPayment)));
+  const originals = [...working];
 
-  const originalBalances = [...workingBalances];
+  const baseOutflow = round2(mins.reduce((a,b)=>a+b,0) + (extraMonthly || 0));
 
-  // Constant monthly outflow (sum of mins at t0 for included debts) + extraMonthly
-  const baseOutflow = round2(mins.reduce((a, b) => a + b, 0) + (extraMonthly || 0));
-
-  // Payoff tracking
-  const payoffMonthIndex: Array<number | null> = debts.map(() => null);
-  const totalInterestByDebt = debts.map(() => 0);
-  const totalPaidByDebt = debts.map(() => 0);
+  const payoffIdx: (number|null)[] = debts.map(()=>null);
+  const totalIntByDebt = debts.map(()=>0);
+  const totalPaidByDebt = debts.map(()=>0);
 
   const months: PlanMonth[] = [];
-  let globalInterest = 0;
-  let globalPrincipal = 0;
+  let globalInt = 0;
+  let globalPrin = 0;
 
-  // Loop months until all paid or guardrail reached
-  for (let m = 0; m < maxMonths; m++) {
-    const monthDate = addMonths(planStart, m);
-    const payments: DebtMonthPayment[] = [];
-
-    // 1) Accrue interest for all open debts
-    const interestThisMonth = workingBalances.map((bal, i) => {
-      if (bal <= 0) return 0;
-      const interest = round2(bal * monthlyRates[i]);
-      return interest;
-    });
-
-    // Apply interest to balances before payments
-    for (let i = 0; i < workingBalances.length; i++) {
-      if (workingBalances[i] > 0) {
-        workingBalances[i] = round2(workingBalances[i] + interestThisMonth[i]);
-        totalInterestByDebt[i] = round2(totalInterestByDebt[i] + interestThisMonth[i]);
-        globalInterest = round2(globalInterest + interestThisMonth[i]);
-      }
+  for (let m=0;m<maxMonths;m++) {
+    const mdate = addMonths(planStart, m);
+    const interestThis = working.map((bal,i)=> bal>0 ? round2(bal * rates[i]) : 0);
+    for (let i=0;i<working.length;i++) if (working[i]>0) {
+      working[i] = round2(working[i] + interestThis[i]);
+      totalIntByDebt[i] = round2(totalIntByDebt[i] + interestThis[i]);
+      globalInt = round2(globalInt + interestThis[i]);
     }
 
-    // 2) Compute available pool this month (constant outflow + one-time in month 0)
-    let monthPool = baseOutflow + (m === 0 ? (oneTimeExtra || 0) : 0);
-    monthPool = round2(monthPool);
+    let pool = round2(baseOutflow + (m===0 ? (oneTimeExtra||0) : 0));
 
-    // 3) First, cover minimums for all still-open debts (but cap at balance)
-    const minApplied = mins.map((min, i) => {
-      if (workingBalances[i] <= 0) return 0;
-      const pay = Math.min(min, workingBalances[i]);
-      monthPool = round2(monthPool - pay);
-      workingBalances[i] = round2(workingBalances[i] - pay);
+    const minApplied = mins.map((min,i)=>{
+      if (working[i]<=0) return 0;
+      const pay = Math.min(min, working[i]);
+      pool = round2(pool - pay);
+      working[i] = round2(working[i] - pay);
       totalPaidByDebt[i] = round2(totalPaidByDebt[i] + pay);
       return pay;
     });
 
-    // 4) Allocate remaining pool by strategy order to principal (snowball/avalanche)
-    const order = sortIndex(strategy, debts.map((d, i) => ({
-      balance: workingBalances[i],
-      apr: d.apr,
-    })));
-
-    const extraApplied = debts.map(() => 0);
+    const order = sortIndex(strategy, debts.map((d,i)=>({ balance: working[i], apr: d.apr })));
+    const extraApplied = debts.map(()=>0);
     for (const idx of order) {
-      if (monthPool <= 0) break;
-      if (workingBalances[idx] <= 0) continue;
-
-      const pay = Math.min(workingBalances[idx], monthPool);
+      if (pool<=0) break;
+      if (working[idx]<=0) continue;
+      const pay = Math.min(working[idx], pool);
       extraApplied[idx] = round2(extraApplied[idx] + pay);
-      workingBalances[idx] = round2(workingBalances[idx] - pay);
+      working[idx] = round2(working[idx] - pay);
       totalPaidByDebt[idx] = round2(totalPaidByDebt[idx] + pay);
-      monthPool = round2(monthPool - pay);
+      pool = round2(pool - pay);
     }
 
-    // 5) Build month record & close trackers
-    let monthOutflow = 0;
-    let monthPrincipal = 0;
-    const monthPayments: DebtMonthPayment[] = debts.map((d, i) => {
-      const starting = round2(
-        // reconstruct starting balance before interest + payments:
-        workingBalances[i] + minApplied[i] + extraApplied[i]
-      );
-      const interest = interestThisMonth[i];
+    let monthOut = 0, monthPrin = 0;
+    const payments: DebtMonthPayment[] = debts.map((d,i)=>{
+      const starting = round2(working[i] + minApplied[i] + extraApplied[i]);
+      const interest = interestThis[i];
       const totalPaid = round2(minApplied[i] + extraApplied[i]);
-      const ending = workingBalances[i];
-      const closed = starting > 0 && ending === 0;
+      const ending = working[i];
+      const closed = starting>0 && ending===0;
+      if (closed && payoffIdx[i]===null) payoffIdx[i] = m;
 
-      if (closed && payoffMonthIndex[i] === null) {
-        payoffMonthIndex[i] = m;
-      }
-
-      monthOutflow = round2(monthOutflow + totalPaid);
-      // principal portion this month = totalPaid - interest that belonged to this debt
-      // But interest was added to balance prior; any payment reduces principal.
-      // So all payments reduce principal (since interest already capitalized).
-      monthPrincipal = round2(monthPrincipal + totalPaid);
+      monthOut = round2(monthOut + totalPaid);
+      monthPrin = round2(monthPrin + totalPaid);
 
       return {
         debtId: d.id,
-        startingBalance: round2(starting),
-        interestAccrued: round2(interest),
+        startingBalance: starting,
+        interestAccrued: interest,
         minApplied: round2(minApplied[i]),
         extraApplied: round2(extraApplied[i]),
-        totalPaid: round2(totalPaid),
-        endingBalance: round2(ending),
-        closedThisMonth: closed,
+        totalPaid,
+        endingBalance: ending,
+        closedThisMonth: closed
       };
     });
 
-    globalPrincipal = round2(globalPrincipal + monthPrincipal);
+    globalPrin = round2(globalPrin + monthPrin);
 
     months.push({
       monthIndex: m,
-      monthLabel: monthLabel(monthDate),
-      dateISO: toISODate(startOfMonth(monthDate)),
-      payments: monthPayments,
-      totals: {
-        interest: round2(interestThisMonth.reduce((a, b) => a + b, 0)),
-        principal: round2(monthPrincipal),
-        outflow: round2(monthOutflow + (m === 0 ? 0 : 0)), // explicit
-      },
+      monthLabel: monthLabel(mdate),
+      dateISO: toISODate(startOfMonth(mdate)),
+      payments,
+      totals: { interest: round2(interestThis.reduce((a,b)=>a+b,0)), principal: monthPrin, outflow: monthOut }
     });
 
-    // Check if all included debts are closed
-    const allClosed = workingBalances.every(b => b <= 0.000001);
-    if (allClosed) break;
+    if (working.every(b=>b<=0.000001)) break;
   }
 
-  // Build debt summaries with payoff dates
-  const debtSummaries: DebtSummary[] = debts.map((d, i) => {
-    const idx = payoffMonthIndex[i];
-    const payoffISO = idx === null ? null : toISODate(adjustToDueDay(addMonths(planStart, idx), d.dueDay));
+  const summaries: DebtSummary[] = debts.map((d,i)=>{
+    const idx = payoffIdx[i];
     return {
-      id: d.id,
-      name: d.name,
-      apr: d.apr,
-      originalBalance: round2(originalBalances[i]),
-      minPayment: round2(d.minPayment),
-      included: true,
-      payoffMonthIndex: idx,
-      payoffDateISO: payoffISO,
-      totalInterestPaid: round2(totalInterestByDebt[i]),
-      totalPaid: round2(totalPaidByDebt[i]),
+      id:d.id, name:d.name, apr:d.apr, originalBalance: round2(originals[i]), minPayment: round2(d.minPayment), included: true,
+      payoffMonthIndex: idx, payoffDateISO: (idx===null?null: toISODate(adjustToDueDay(addMonths(planStart, idx), d.dueDay!))),
+      totalInterestPaid: round2(totalIntByDebt[i]), totalPaid: round2(totalPaidByDebt[i])
     };
   });
-
-  // Append excluded debts to summaries (no math, for display)
-  for (const ex of debtsAll.filter(d => !d.include)) {
-    debtSummaries.push({
-      id: ex.id,
-      name: ex.name,
-      apr: ex.apr,
-      originalBalance: round2(ex.balance),
-      minPayment: round2(ex.minPayment),
-      included: false,
-      payoffMonthIndex: null,
-      payoffDateISO: null,
-      totalInterestPaid: 0,
-      totalPaid: 0,
+  for (const ex of debtsAll.filter(d=>!d.include)) {
+    summaries.push({
+      id: ex.id, name: ex.name, apr: ex.apr, originalBalance: round2(ex.balance), minPayment: round2(ex.minPayment),
+      included:false, payoffMonthIndex:null, payoffDateISO:null, totalInterestPaid:0, totalPaid:0
     });
   }
 
-  // Totals block
   const monthsToDebtFree =
-    Math.max(...debtSummaries.filter(d => d.included && d.payoffMonthIndex !== null).map(d => (d.payoffMonthIndex ?? 0))) + 1 || 0;
+    Math.max(...summaries.filter(s=>s.included && s.payoffMonthIndex!==null).map(s=>s.payoffMonthIndex ?? 0)) + 1 || 0;
 
-  const result: PlanResult = {
+  return {
     strategy,
     startDateISO: toISODate(planStart),
     months,
-    debts: debtSummaries,
+    debts: summaries,
     totals: {
       monthsToDebtFree,
-      interest: round2(globalInterest),
-      principal: round2(globalPrincipal),
-      outflowMonthly: baseOutflow,     // constant monthly outflow (excl. one-time)
+      interest: round2(globalInt),
+      principal: round2(globalPrin),
+      outflowMonthly: baseOutflow,
       oneTimeApplied: round2(oneTimeExtra || 0),
-      totalPaid: round2(globalInterest + globalPrincipal),
-    },
+      totalPaid: round2(globalInt + globalPrin),
+    }
   };
-
-  return result;
 }
-
-/**
- * Adjust payoff date to the debt's due day within that payoff month
- */
-function adjustToDueDay(monthDate: Date, dueDay: number): Date {
-  const d = new Date(monthDate);
-  d.setDate(clampDueDay(dueDay));
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-/**
- * Banker's rounding to cents
- */
-function round2(n: number): number {
-  return Math.round((n + Number.EPSILON) * 100) / 100;
-}
-
-// ====================================================
-// Convenience Service for your pages (DebtPlan, Calendar,
-// Charts, Mobile). Import and use directly.
-// ====================================================
 
 export interface EngineInputs {
   debts: DebtInput[];
@@ -397,98 +246,42 @@ export class PlanService {
       extraMonthly: inputs.extraMonthly,
       oneTimeExtra: inputs.oneTimeExtra,
       strategy: inputs.strategy ?? "snowball",
-      startDate: inputs.startDate,
+      startDate: inputs.startDate
     });
   }
-
-  /** Table-friendly debts list: name, last4 (if in name), payoff, totals */
   static debtsSummaryForPrintable(plan: PlanResult) {
     return plan.debts
       .slice()
-      .sort((a, b) => {
-        // included first, then by payoff month (nulls last), then name
-        if (a.included !== b.included) return a.included ? -1 : 1;
-        const ai = a.payoffMonthIndex ?? 1e9;
-        const bi = b.payoffMonthIndex ?? 1e9;
-        if (ai !== bi) return ai - bi;
+      .sort((a,b)=>{
+        if (a.included!==b.included) return a.included?-1:1;
+        const ai=a.payoffMonthIndex??1e9, bi=b.payoffMonthIndex??1e9;
+        if (ai!==bi) return ai-bi;
         return a.name.localeCompare(b.name);
       })
-      .map(d => ({
-        creditor: d.name,
-        apr: d.apr,
-        minPayment: d.minPayment,
-        startingBalance: d.originalBalance,
-        payoffDate: d.payoffDateISO,
-        totalInterest: d.totalInterestPaid,
-        totalPaid: d.totalPaid,
-        included: d.included,
+      .map(d=>({
+        creditor:d.name, apr:d.apr, minPayment:d.minPayment, startingBalance:d.originalBalance,
+        payoffDate:d.payoffDateISO, totalInterest:d.totalInterestPaid, totalPaid:d.totalPaid, included:d.included
       }));
   }
-
-  /** Month-by-month calendar (aggregate per month for widgets) */
   static calendar(plan: PlanResult) {
-    return plan.months.map(m => ({
-      monthIndex: m.monthIndex,
-      monthLabel: m.monthLabel,
-      dateISO: m.dateISO,
-      totalOutflow: round2(m.payments.reduce((a, p) => a + p.totalPaid, 0)),
-      totalInterest: round2(m.totals.interest),
-      totalPrincipal: round2(m.totals.principal),
-      payoffs: m.payments
-        .filter(p => p.closedThisMonth)
-        .map(p => {
-          const debt = plan.debts.find(d => d.id === p.debtId);
-          return { debtId: p.debtId, name: debt?.name ?? p.debtId };
-        }),
+    return plan.months.map(m=>({
+      monthIndex:m.monthIndex, monthLabel:m.monthLabel, dateISO:m.dateISO,
+      totalOutflow: round2(m.payments.reduce((a,p)=>a+p.totalPaid,0)),
+      totalInterest: round2(m.totals.interest), totalPrincipal: round2(m.totals.principal),
+      payoffs: m.payments.filter(p=>p.closedThisMonth).map(p=> {
+        const d = plan.debts.find(x=>x.id===p.debtId);
+        return { debtId:p.debtId, name: d?.name ?? p.debtId };
+      })
     }));
   }
-
-  /** Chart series: remaining principal by month */
   static chartSeriesRemainingPrincipal(plan: PlanResult) {
-    // compute remaining aggregate principal at end of each month
-    const lastBalances = new Map<string, number>();
-    // initialize with originals
-    plan.debts.forEach(d => {
-      if (d.included) lastBalances.set(d.id, d.originalBalance);
-    });
-
-    const points: { label: string; remaining: number }[] = [];
+    const last = new Map<string, number>();
+    plan.debts.forEach(d=>{ if(d.included) last.set(d.id, d.originalBalance); });
+    const points:{label:string;remaining:number}[]=[];
     for (const m of plan.months) {
-      // reconstruct per-debt ending balances from payments
-      for (const p of m.payments) {
-        if (!lastBalances.has(p.debtId)) continue;
-        lastBalances.set(p.debtId, p.endingBalance);
-      }
-      const aggRemaining = round2(Array.from(lastBalances.values()).reduce((a, b) => a + b, 0));
-      points.push({ label: m.monthLabel, remaining: aggRemaining });
+      for (const p of m.payments) if (last.has(p.debtId)) last.set(p.debtId, p.endingBalance);
+      points.push({ label:m.monthLabel, remaining: round2(Array.from(last.values()).reduce((a,b)=>a+b,0)) });
     }
     return points;
   }
 }
-
-// ===============================================
-// Example Usage (in your pages/components):
-//
-// import { PlanService, Strategy, DebtInput } from "@/lib/debtPlan";
-//
-// const plan = PlanService.compute({
-//   debts: [
-//     { id: "store", name: "Store Card ****1234", balance: 420.33, apr: 23.99, minPayment: 35, dueDay: 12, include: true },
-//     { id: "medical", name: "Medical Bill ****7788", balance: 610.00, apr: 0, minPayment: 25, include: true },
-//     { id: "visa", name: "Visa ****9925", balance: 2310.49, apr: 19.24, minPayment: 65, include: true },
-//   ],
-//   extraMonthly: 200,
-//   oneTimeExtra: 1000,     // cascades on Month 1
-//   strategy: "snowball",
-// });
-//
-// // Debt Plan page:
-// const rows = PlanService.debtsSummaryForPrintable(plan);
-//
-// // Calendar page:
-// const calendar = PlanService.calendar(plan);
-//
-// // Chart page:
-// const series = PlanService.chartSeriesRemainingPrincipal(plan);
-//
-// ===============================================

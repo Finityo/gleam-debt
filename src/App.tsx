@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
+import { PlanProvider } from "@/context/PlanContext";
 
 // ✅ Lazy-load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -41,6 +42,11 @@ const OAuthRedirect = lazy(() => import("./pages/OAuthRedirect"));
 const Demo = lazy(() => import("./pages/Demo"));
 const Install = lazy(() => import("./pages/Install"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const PayoffCalendar = lazy(() => import("./pages/PayoffCalendar"));
+const PrintableSummary = lazy(() => import("./pages/PrintableSummary"));
+const MobileView = lazy(() => import("./pages/Mobile"));
+const DebtPlanNew = lazy(() => import("./pages/DebtPlanNew"));
+const DebtChartNew = lazy(() => import("./pages/DebtChartNew"));
 
 // ✅ Simple branded loading screen
 const Loader = () => (
@@ -103,6 +109,11 @@ const AppRoutes = () => {
               <Route path="/oauth-redirect" element={<OAuthRedirect />} />
               <Route path="/demo" element={<Demo />} />
               <Route path="/install" element={<Install />} />
+              <Route path="/payoff-calendar" element={<PayoffCalendar />} />
+              <Route path="/printable-summary" element={<PrintableSummary />} />
+              <Route path="/mobile-view" element={<MobileView />} />
+              <Route path="/debt-plan-new" element={<DebtPlanNew />} />
+              <Route path="/debt-chart-new" element={<DebtChartNew />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
@@ -113,13 +124,15 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <TooltipProvider>
-        {/* ✅ Toast Systems */}
-        <Toaster />
-        <Sonner />
+        <PlanProvider>
+          {/* ✅ Toast Systems */}
+          <Toaster />
+          <Sonner />
 
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </PlanProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
