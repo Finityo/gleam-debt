@@ -19,6 +19,7 @@ const eventSchema = z.object({
     'bank_connected',
     'bank_disconnected',
     'hero_cta_click',
+    'demo_cta_click',
   ]),
   page_path: z.string().max(200).optional(),
   metadata: z.record(z.any()).optional(),
