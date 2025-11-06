@@ -22,7 +22,7 @@ export default function NextBack({
       <Button
         variant="outline"
         onClick={() => (back ? nav(back) : nav(-1))}
-        className="glass border-white/20"
+        className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
       >
         Back
       </Button>
@@ -30,7 +30,7 @@ export default function NextBack({
         <Button
           onClick={() => nav(next)}
           disabled={nextDisabled}
-          className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white border-0 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {nextLabel}
         </Button>
