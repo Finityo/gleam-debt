@@ -17,6 +17,7 @@ import { DemoPlanProvider } from "@/context/DemoPlanContext";
 
 // ✅ Lazy-load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
+const Hero = lazy(() => import("./pages/Hero"));
 const Auth = lazy(() => import("./pages/Auth"));
 const TeamAccess = lazy(() => import("./pages/TeamAccess"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -103,6 +104,7 @@ const AppRoutes = () => {
     <Suspense fallback={<Loader />}>
       <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/hero" element={<Hero />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/team-access" element={<TeamAccess />} />
               <Route path="/dashboard" element={<Dashboard />} />
