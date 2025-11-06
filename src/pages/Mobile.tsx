@@ -2,7 +2,7 @@ import React from "react";
 import { usePlan } from "@/context/PlanContext";
 import { formatAPR } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, CreditCard, TrendingDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -41,20 +41,42 @@ export default function MobileViewPage() {
           Back
         </Button>
 
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-foreground">Active Debts</h1>
-          <p className="text-lg text-muted-foreground mb-6">
-            Track and manage all your debt accounts in one place
-          </p>
-          <Button 
-            variant="outline" 
-            size="lg"
-            className="w-full sm:w-auto border-primary/20 hover:bg-primary/5"
-          >
-            <CreditCard className="mr-2 h-5 w-5" />
-            Connect Accounts
-          </Button>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-4xl md:text-5xl font-bold mb-3 text-foreground">Active Debts</h1>
+        <p className="text-lg text-muted-foreground mb-6">
+          Track and manage all your debt accounts in one place
+        </p>
+        
+        {/* Payment Strategy Display */}
+        <Card className="mb-6 bg-gradient-card border-primary/20">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Current Payoff Strategy</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">Strategy</div>
+                <div className="text-xl font-bold text-primary capitalize">{inputs.strategy}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">Extra Monthly</div>
+                <div className="text-xl font-bold text-foreground">${inputs.extraMonthly}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">One-Time (Month 1)</div>
+                <div className="text-xl font-bold text-foreground">${inputs.oneTimeExtra}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Button 
+          variant="outline" 
+          size="lg"
+          className="w-full sm:w-auto border-primary/20 hover:bg-primary/5"
+        >
+          <CreditCard className="mr-2 h-5 w-5" />
+          Connect Accounts
+        </Button>
+      </div>
 
         {!plan ? (
           <Card className="p-8 text-center">

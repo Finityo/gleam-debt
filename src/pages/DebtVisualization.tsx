@@ -22,7 +22,7 @@ function pickColor(name: string): string {
 }
 
 export default function DebtVisualizationPage() {
-  const { plan, compute } = usePlan();
+  const { plan, compute, inputs } = usePlan();
   const navigate = useNavigate();
 
   if (!plan) {
@@ -96,6 +96,30 @@ export default function DebtVisualizationPage() {
         Back
       </Button>
       <h1 className="text-3xl font-bold mb-6">Debt Overview</h1>
+
+      {/* Payment Strategy Display */}
+      <Card className="p-6 mb-6 bg-gradient-card border-primary/20">
+        <h3 className="text-xl font-semibold mb-4">💰 Payment Strategy</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <div className="text-sm text-muted-foreground">Extra Monthly Payment</div>
+            <div className="text-2xl font-bold text-foreground">${inputs.extraMonthly}</div>
+            <div className="text-xs text-muted-foreground">Applied every month</div>
+          </div>
+          <div>
+            <div className="text-sm text-muted-foreground">One-Time Payment</div>
+            <div className="text-2xl font-bold text-foreground">${inputs.oneTimeExtra}</div>
+            <div className="text-xs text-muted-foreground">Applied in Month 1 only</div>
+          </div>
+          <div>
+            <div className="text-sm text-muted-foreground">Strategy</div>
+            <div className="text-2xl font-bold text-primary capitalize">{inputs.strategy}</div>
+            <div className="text-xs text-muted-foreground">
+              {inputs.strategy === "snowball" ? "Smallest first" : "Highest APR first"}
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Totals */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">

@@ -80,6 +80,31 @@ export default function DebtPlanPage() {
 
       <Card className="p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Plan Summary</h2>
+        
+        {/* Payment Strategy Display - PROMINENT */}
+        <div className="bg-gradient-primary/10 border border-primary/20 rounded-lg p-4 mb-4">
+          <h3 className="text-lg font-semibold mb-3 text-primary">💰 Your Payment Strategy</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <div className="text-sm text-muted-foreground mb-1">Extra Monthly Payment</div>
+              <div className="text-2xl font-bold text-foreground">${inputs.extraMonthly}</div>
+              <div className="text-xs text-muted-foreground">Applied every month</div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground mb-1">One-Time Payment</div>
+              <div className="text-2xl font-bold text-foreground">${inputs.oneTimeExtra}</div>
+              <div className="text-xs text-muted-foreground">Applied in Month 1</div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground mb-1">Strategy</div>
+              <div className="text-2xl font-bold text-primary capitalize">{inputs.strategy}</div>
+              <div className="text-xs text-muted-foreground">
+                {inputs.strategy === "snowball" ? "Smallest balance first" : "Highest APR first"}
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div className="grid gap-2">
           <div>
             <strong>Monthly Outflow (mins + extra):</strong> ${(totalMins + inputs.extraMonthly).toFixed(2)}
