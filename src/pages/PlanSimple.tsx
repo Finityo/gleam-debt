@@ -1,11 +1,12 @@
 import { usePlan } from "@/context/PlanContext";
+import { exportPlanToExcel } from "@/lib/exportExcel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function PlanPage() {
-  const { plan, compute } = usePlan();
+  const { debts, settings, plan, compute } = usePlan();
   const navigate = useNavigate();
 
   if (!plan) {
@@ -26,10 +27,17 @@ export default function PlanPage() {
 
   return (
     <div className="container mx-auto p-6">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
-      </Button>
+      <div className="flex items-center justify-between mb-4">
+        <Button variant="ghost" onClick={() => navigate(-1)}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
+        <Button onClick={() => exportPlanToExcel(debts, settings, plan)}>
+          <Download className="mr-2 h-4 w-4" />
+          Download Excel
+        </Button>
+      </div>
       
       <h1 className="text-3xl font-bold mb-2">Payoff Plan</h1>
       <p className="text-lg text-muted-foreground mb-6">
