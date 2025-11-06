@@ -1,18 +1,21 @@
 import React, { useMemo } from "react";
 import { usePlan } from "@/context/PlanContext";
-import { PlanService } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function DebtChartPage() {
-  const { plan, compute } = usePlan();
+  const { plan, compute, debts } = usePlan();
   const navigate = useNavigate();
 
   const data = useMemo(() => {
     if (!plan) return [];
-    return PlanService.chartSeriesRemainingPrincipal(plan);
+    // Calculate remaining principal over time
+    return plan.months.map((month) => ({
+      label: `M${month.monthIndex + 1}`,
+      remaining: month.payments.reduce((sum, p) => sum + p.balanceEnd, 0),
+    }));
   }, [plan]);
 
   if (!plan) {

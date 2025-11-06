@@ -1,13 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { usePlan } from "@/context/PlanContext";
-import { PlanService } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function PayoffCalendarPage() {
-  const { plan, compute } = usePlan();
+  const { plan, compute, debts } = usePlan();
   const navigate = useNavigate();
 
   if (!plan) {
@@ -26,7 +25,25 @@ export default function PayoffCalendarPage() {
     );
   }
 
-  const cal = PlanService.calendar(plan);
+  // Generate calendar data from plan
+  const cal = useMemo(() => {
+    return plan.months.map(month => {
+      const closedDebts = month.payments.filter(p => p.balanceEnd <= 0.01 && p.paid > 0);
+      const payoffs = closedDebts.map(p => {
+        const debt = debts.find(d => d.id === p.debtId);
+        return { name: debt?.name || "Unknown" };
+      });
+      
+      return {
+        monthIndex: month.monthIndex,
+        monthLabel: `Month ${month.monthIndex + 1}`,
+        totalOutflow: month.totalPaid,
+        totalInterest: month.totalInterest,
+        totalPrincipal: month.totalPaid - month.totalInterest,
+        payoffs,
+      };
+    });
+  }, [plan, debts]);
 
   return (
     <div className="container mx-auto p-6">

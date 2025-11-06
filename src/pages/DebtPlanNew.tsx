@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { usePlan } from "@/context/PlanContext";
-import { PlanService, Strategy, formatAPR } from "@/lib/debtPlan";
+import { Strategy } from "@/lib/computeDebtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,14 +10,18 @@ import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Lock, Unlock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+// Helper to format APR
+const formatAPR = (apr: number) => `${apr.toFixed(2)}%`;
+
 export default function DebtPlanPage() {
-  const { inputs, setInputs, plan, compute, resetDemo } = usePlan();
+  const { debts, settings, plan, updateSettings, compute, reset } = usePlan();
   const navigate = useNavigate();
   const [advancedMode, setAdvancedMode] = useState(false);
+  const [startDate, setStartDate] = useState<string>("");
 
   const totalMins = useMemo(
-    () => inputs.debts.filter(d => d.include !== false).reduce((a, d) => a + d.minPayment, 0),
-    [inputs.debts]
+    () => debts.filter(d => d.include !== false).reduce((a, d) => a + d.minPayment, 0),
+    [debts]
   );
 
   return (
@@ -57,9 +61,9 @@ export default function DebtPlanPage() {
           <div className="space-y-2">
             <Label>Strategy</Label>
             <Select
-              value={inputs.strategy}
+              value={settings.strategy}
               onValueChange={(v) => {
-                setInputs({ strategy: v as Strategy });
+                updateSettings({ strategy: v as Strategy });
                 setTimeout(() => compute(), 100);
               }}
             >
@@ -83,10 +87,10 @@ export default function DebtPlanPage() {
               <Input
                 type="number"
                 className="pl-7"
-                value={inputs.extraMonthly}
+                value={settings.extraMonthly}
                 disabled={!advancedMode}
                 onChange={(e) => {
-                  setInputs({ extraMonthly: Number(e.target.value) });
+                  updateSettings({ extraMonthly: Number(e.target.value) });
                   setTimeout(() => compute(), 100);
                 }}
               />
@@ -104,10 +108,10 @@ export default function DebtPlanPage() {
               <Input
                 type="number"
                 className="pl-7"
-                value={inputs.oneTimeExtra}
+                value={settings.oneTimeExtra}
                 disabled={!advancedMode}
                 onChange={(e) => {
-                  setInputs({ oneTimeExtra: Number(e.target.value) });
+                  updateSettings({ oneTimeExtra: Number(e.target.value) });
                   setTimeout(() => compute(), 100);
                 }}
               />
@@ -119,9 +123,9 @@ export default function DebtPlanPage() {
             <Label>Start Date (optional)</Label>
             <Input
               type="date"
-              value={inputs.startDate ?? ""}
+              value={startDate}
               onChange={(e) => {
-                setInputs({ startDate: e.target.value || undefined });
+                setStartDate(e.target.value);
                 setTimeout(() => compute(), 100);
               }}
             />
@@ -130,7 +134,7 @@ export default function DebtPlanPage() {
 
         <div className="flex gap-3">
           <Button onClick={compute}>Compute Plan</Button>
-          <Button variant="outline" onClick={resetDemo}>Reset Demo</Button>
+          <Button variant="outline" onClick={reset}>Reset Demo</Button>
         </div>
       </Card>
 
@@ -152,19 +156,19 @@ export default function DebtPlanPage() {
               <div>
                 <div className="text-sm text-muted-foreground">+ Extra Monthly</div>
                 <div className="text-2xl font-bold text-accent">
-                  +${inputs.extraMonthly.toFixed(2)}
+                  +${settings.extraMonthly.toFixed(2)}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">+ One-Time Payment</div>
                 <div className="text-2xl font-bold text-accent">
-                  +${inputs.oneTimeExtra.toFixed(2)}
+                  +${settings.oneTimeExtra.toFixed(2)}
                 </div>
               </div>
               <div className="bg-primary/10 rounded-lg p-3">
                 <div className="text-sm text-muted-foreground">= Total Month 1 Pool</div>
                 <div className="text-3xl font-bold text-primary">
-                  ${(totalMins + inputs.extraMonthly + inputs.oneTimeExtra).toFixed(2)}
+                  ${(totalMins + settings.extraMonthly + settings.oneTimeExtra).toFixed(2)}
                 </div>
               </div>
             </div>
@@ -174,16 +178,16 @@ export default function DebtPlanPage() {
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Principal Paid: </span>
-                    <span className="font-semibold">${plan.months[0].totals.principal.toFixed(2)}</span>
+                    <span className="font-semibold">${(plan.months[0].totalPaid - plan.months[0].totalInterest).toFixed(2)}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Interest: </span>
-                    <span className="font-semibold">${plan.months[0].totals.interest.toFixed(2)}</span>
+                    <span className="font-semibold">${plan.months[0].totalInterest.toFixed(2)}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Debts Closed: </span>
                     <span className="font-semibold text-success">
-                      {plan.months[0].payments.filter(p => p.closedThisMonth).length}
+                      {plan.months[0].payments.filter(p => p.balanceEnd <= 0.01 && p.paid > 0).length}
                     </span>
                   </div>
                 </div>
@@ -199,7 +203,7 @@ export default function DebtPlanPage() {
             </p>
             <div className="space-y-2 max-h-[500px] overflow-y-auto">
               {plan.months.map((month) => {
-                const closedDebts = month.payments.filter(p => p.closedThisMonth);
+                const closedDebts = month.payments.filter(p => p.balanceEnd <= 0.01 && p.paid > 0);
                 return (
                   <div 
                     key={month.monthIndex} 
@@ -211,24 +215,21 @@ export default function DebtPlanPage() {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <span className="font-semibold">{month.monthLabel}</span>
-                        <span className="text-muted-foreground ml-2 text-sm">
-                          (Month {month.monthIndex + 1})
-                        </span>
+                        <span className="font-semibold">Month {month.monthIndex + 1}</span>
                       </div>
                       <div className="text-right">
                         <div className="text-sm text-muted-foreground">Total Payment</div>
-                        <div className="font-bold">${month.totals.outflow.toFixed(2)}</div>
+                        <div className="font-bold">${month.totalPaid.toFixed(2)}</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Principal: </span>
-                        <span className="font-semibold">${month.totals.principal.toFixed(2)}</span>
+                        <span className="font-semibold">${(month.totalPaid - month.totalInterest).toFixed(2)}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Interest: </span>
-                        <span className="font-semibold">${month.totals.interest.toFixed(2)}</span>
+                        <span className="font-semibold">${month.totalInterest.toFixed(2)}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Debts Paid Off: </span>
@@ -241,7 +242,7 @@ export default function DebtPlanPage() {
                       <div className="mt-2 pt-2 border-t border-success/20">
                         <div className="text-sm font-semibold text-success">
                           🎉 Paid Off: {closedDebts.map(p => {
-                            const debt = inputs.debts.find(d => d.id === p.debtId);
+                            const debt = debts.find(d => d.id === p.debtId);
                             return debt?.name;
                           }).join(", ")}
                         </div>
@@ -264,19 +265,19 @@ export default function DebtPlanPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <div className="text-sm text-muted-foreground mb-1">Extra Monthly Payment</div>
-              <div className="text-2xl font-bold text-foreground">${inputs.extraMonthly}</div>
+              <div className="text-2xl font-bold text-foreground">${settings.extraMonthly}</div>
               <div className="text-xs text-muted-foreground">Applied every month</div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground mb-1">One-Time Payment</div>
-              <div className="text-2xl font-bold text-foreground">${inputs.oneTimeExtra}</div>
+              <div className="text-2xl font-bold text-foreground">${settings.oneTimeExtra}</div>
               <div className="text-xs text-muted-foreground">Applied in Month 1</div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground mb-1">Strategy</div>
-              <div className="text-2xl font-bold text-primary capitalize">{inputs.strategy}</div>
+              <div className="text-2xl font-bold text-primary capitalize">{settings.strategy}</div>
               <div className="text-xs text-muted-foreground">
-                {inputs.strategy === "snowball" ? "Smallest balance first" : "Highest APR first"}
+                {settings.strategy === "snowball" ? "Smallest balance first" : "Highest APR first"}
               </div>
             </div>
           </div>
@@ -284,18 +285,18 @@ export default function DebtPlanPage() {
         
         <div className="grid gap-2">
           <div>
-            <strong>Monthly Outflow (mins + extra):</strong> ${(totalMins + inputs.extraMonthly).toFixed(2)}
+            <strong>Monthly Outflow (mins + extra):</strong> ${(totalMins + settings.extraMonthly).toFixed(2)}
           </div>
           {plan && (
             <>
               <div>
-                <strong>Months to Debt-Free:</strong> {plan.totals.monthsToDebtFree}
+                <strong>Months to Debt-Free:</strong> {plan.summary.finalMonthIndex + 1}
               </div>
               <div>
-                <strong>Total Interest:</strong> ${plan.totals.interest.toFixed(2)}
+                <strong>Total Interest:</strong> ${plan.totalInterest.toFixed(2)}
               </div>
               <div>
-                <strong>One-time Applied (Month 1):</strong> ${plan.totals.oneTimeApplied.toFixed(2)}
+                <strong>One-time Applied (Month 1):</strong> ${settings.oneTimeExtra.toFixed(2)}
               </div>
             </>
           )}
@@ -317,30 +318,28 @@ export default function DebtPlanPage() {
             </tr>
           </thead>
           <tbody>
-            {(plan
-              ? PlanService.debtsSummaryForPrintable(plan)
-              : inputs.debts.map(d => ({
-                  creditor: d.name,
-                  apr: d.apr,
-                  minPayment: d.minPayment,
-                  startingBalance: d.balance,
-                  payoffDate: "",
-                  totalInterest: 0,
-                  totalPaid: 0,
-                  included: d.include !== false,
-                }))
-            ).map((row, i) => (
-              <tr key={i} className="border-b hover:bg-muted/50">
-                <td className="p-3">{row.creditor}</td>
-                <td className="text-right p-3">{formatAPR(row.apr)}</td>
-                <td className="text-right p-3">${row.minPayment.toFixed(2)}</td>
-                <td className="text-right p-3">${row.startingBalance.toFixed(2)}</td>
-                <td className="p-3">{row.payoffDate ?? ""}</td>
-                <td className="text-right p-3">${row.totalInterest.toFixed(2)}</td>
-                <td className="text-right p-3">${row.totalPaid.toFixed(2)}</td>
-                <td className="text-center p-3">{row.included ? "Yes" : "No"}</td>
-              </tr>
-            ))}
+            {debts.map((d, i) => {
+              // Calculate totals from plan if available
+              const debtPayments = plan?.months.flatMap(m => m.payments.filter(p => p.debtId === d.id)) || [];
+              const totalInterest = debtPayments.reduce((sum, p) => sum + p.interest, 0);
+              const totalPaid = debtPayments.reduce((sum, p) => sum + p.paid, 0);
+              const payoffMonth = plan?.months.find(m => 
+                m.payments.some(p => p.debtId === d.id && p.balanceEnd <= 0.01 && p.paid > 0)
+              );
+              
+              return (
+                <tr key={i} className="border-b hover:bg-muted/50">
+                  <td className="p-3">{d.name}</td>
+                  <td className="text-right p-3">{formatAPR(d.apr)}</td>
+                  <td className="text-right p-3">${d.minPayment.toFixed(2)}</td>
+                  <td className="text-right p-3">${d.balance.toFixed(2)}</td>
+                  <td className="p-3">{payoffMonth ? `Month ${payoffMonth.monthIndex + 1}` : ""}</td>
+                  <td className="text-right p-3">${totalInterest.toFixed(2)}</td>
+                  <td className="text-right p-3">${totalPaid.toFixed(2)}</td>
+                  <td className="text-center p-3">{d.include !== false ? "Yes" : "No"}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </Card>

@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { usePlan } from "@/context/PlanContext";
-import { PlanService, formatAPR } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+// Helper to format APR
+const formatAPR = (apr: number) => `${apr.toFixed(2)}%`;
+
 export default function PrintableSummaryPage() {
-  const { plan, compute } = usePlan();
+  const { plan, compute, debts } = usePlan();
   const navigate = useNavigate();
 
   if (!plan) {
@@ -26,7 +28,28 @@ export default function PrintableSummaryPage() {
     );
   }
 
-  const rows = PlanService.debtsSummaryForPrintable(plan);
+  // Generate debt summary rows
+  const rows = useMemo(() => {
+    return debts.map(d => {
+      const debtPayments = plan.months.flatMap(m => m.payments.filter(p => p.debtId === d.id));
+      const totalInterest = debtPayments.reduce((sum, p) => sum + p.interest, 0);
+      const totalPaid = debtPayments.reduce((sum, p) => sum + p.paid, 0);
+      const payoffMonth = plan.months.find(m => 
+        m.payments.some(p => p.debtId === d.id && p.balanceEnd <= 0.01 && p.paid > 0)
+      );
+      
+      return {
+        creditor: d.name,
+        apr: d.apr,
+        minPayment: d.minPayment,
+        startingBalance: d.balance,
+        payoffDate: payoffMonth ? `Month ${payoffMonth.monthIndex + 1}` : "",
+        totalInterest,
+        totalPaid,
+        included: d.include !== false,
+      };
+    });
+  }, [plan, debts]);
 
   return (
     <div className="container mx-auto p-6">

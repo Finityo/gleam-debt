@@ -1,10 +1,12 @@
 import React, { useMemo } from "react";
 import { usePlan } from "@/context/PlanContext";
-import { formatAPR } from "@/lib/debtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+// Helper to format APR
+const formatAPR = (apr: number) => `${apr.toFixed(2)}%`;
 
 // Simple color picker for pie chart
 function pickColor(name: string): string {
@@ -22,7 +24,7 @@ function pickColor(name: string): string {
 }
 
 export default function DebtVisualizationPage() {
-  const { plan, compute, inputs } = usePlan();
+  const { plan, compute, debts, settings } = usePlan();
   const navigate = useNavigate();
 
   if (!plan) {
@@ -41,30 +43,30 @@ export default function DebtVisualizationPage() {
     );
   }
 
-  // Calculate key totals from computed data (APRs already normalized by engine)
-  const totalDebt = plan.debts
-    .filter(d => d.included)
-    .reduce((sum, d) => sum + d.originalBalance, 0);
+  // Calculate key totals from debts
+  const totalDebt = debts
+    .filter(d => d.include !== false)
+    .reduce((sum, d) => sum + d.balance, 0);
 
-  const totalAvailableCredit = plan.debts
-    .filter(d => !d.included)
-    .reduce((sum, d) => sum + d.originalBalance, 0);
+  const totalAvailableCredit = debts
+    .filter(d => d.include === false)
+    .reduce((sum, d) => sum + d.balance, 0);
 
   const utilization = totalDebt > 0
     ? (totalDebt / (totalDebt + totalAvailableCredit)) * 100
     : 0;
 
-  // Prepare pie chart data from computed plan
+  // Prepare pie chart data from debts
   const pieData = useMemo(() => {
-    const included = plan.debts.filter(d => d.included);
-    const sum = included.reduce((s, d) => s + d.originalBalance, 0);
+    const included = debts.filter(d => d.include !== false);
+    const sum = included.reduce((s, d) => s + d.balance, 0);
     if (sum === 0) return [];
     return included.map(d => ({
       label: d.name,
-      value: ((d.originalBalance / sum) * 100),
+      value: ((d.balance / sum) * 100),
       color: pickColor(d.name),
     }));
-  }, [plan.debts]);
+  }, [debts]);
 
   // Simple Pie SVG
   const radius = 80;
@@ -103,19 +105,19 @@ export default function DebtVisualizationPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <div className="text-sm text-muted-foreground">Extra Monthly Payment</div>
-            <div className="text-2xl font-bold text-foreground">${inputs.extraMonthly}</div>
+            <div className="text-2xl font-bold text-foreground">${settings.extraMonthly}</div>
             <div className="text-xs text-muted-foreground">Applied every month</div>
           </div>
           <div>
             <div className="text-sm text-muted-foreground">One-Time Payment</div>
-            <div className="text-2xl font-bold text-foreground">${inputs.oneTimeExtra}</div>
+            <div className="text-2xl font-bold text-foreground">${settings.oneTimeExtra}</div>
             <div className="text-xs text-muted-foreground">Applied in Month 1 only</div>
           </div>
           <div>
             <div className="text-sm text-muted-foreground">Strategy</div>
-            <div className="text-2xl font-bold text-primary capitalize">{inputs.strategy}</div>
+            <div className="text-2xl font-bold text-primary capitalize">{settings.strategy}</div>
             <div className="text-xs text-muted-foreground">
-              {inputs.strategy === "snowball" ? "Smallest first" : "Highest APR first"}
+              {settings.strategy === "snowball" ? "Smallest first" : "Highest APR first"}
             </div>
           </div>
         </div>
@@ -137,7 +139,7 @@ export default function DebtVisualizationPage() {
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground">Debts in Plan</div>
-          <div className="text-2xl font-bold mt-1">{plan.debts.filter(d => d.included).length}</div>
+          <div className="text-2xl font-bold mt-1">{debts.filter(d => d.include !== false).length}</div>
         </Card>
       </div>
 
@@ -173,15 +175,21 @@ export default function DebtVisualizationPage() {
             </tr>
           </thead>
           <tbody>
-            {plan.debts.map((d, i) => (
-              <tr key={i} className="border-b border-border/50">
-                <td className="p-3">{d.name}</td>
-                <td className="text-right p-3">${d.originalBalance.toFixed(2)}</td>
-                <td className="text-right p-3">${d.minPayment.toFixed(2)}</td>
-                <td className="text-right p-3">{formatAPR(d.apr)}</td>
-                <td className="p-3">{d.payoffDateISO ?? "—"}</td>
-              </tr>
-            ))}
+            {debts.map((d, i) => {
+              const payoffMonth = plan?.months.find(m => 
+                m.payments.some(p => p.debtId === d.id && p.balanceEnd <= 0.01 && p.paid > 0)
+              );
+              
+              return (
+                <tr key={i} className="border-b border-border/50">
+                  <td className="p-3">{d.name}</td>
+                  <td className="text-right p-3">${d.balance.toFixed(2)}</td>
+                  <td className="text-right p-3">${d.minPayment.toFixed(2)}</td>
+                  <td className="text-right p-3">{formatAPR(d.apr)}</td>
+                  <td className="p-3">{payoffMonth ? `Month ${payoffMonth.monthIndex + 1}` : "—"}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </Card>

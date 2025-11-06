@@ -1,14 +1,17 @@
 import React from "react";
 import { usePlan } from "@/context/PlanContext";
-import { formatAPR } from "@/lib/debtPlan";
+import { Debt } from "@/lib/computeDebtPlan";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, CreditCard, TrendingDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+// Helper to format APR
+const formatAPR = (apr: number) => `${apr.toFixed(2)}%`;
+
 export default function MobileViewPage() {
-  const { plan, compute, inputs } = usePlan();
+  const { plan, compute, debts, settings } = usePlan();
   const navigate = useNavigate();
 
   // Helper to get debt type from name
@@ -21,10 +24,7 @@ export default function MobileViewPage() {
   };
 
   // Helper to calculate payoff progress (0% at start, 100% when paid off)
-  const calculateProgress = (debt: typeof plan.debts[0]) => {
-    if (!debt.payoffMonthIndex || debt.payoffMonthIndex === null) return 0;
-    // Progress based on time elapsed vs total time
-    const totalMonths = debt.payoffMonthIndex + 1;
+  const calculateProgress = (debt: Debt) => {
     // For now, show 0% since we're at the start of the plan
     return 0;
   };
@@ -54,15 +54,15 @@ export default function MobileViewPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Strategy</div>
-                <div className="text-xl font-bold text-primary capitalize">{inputs.strategy}</div>
+                <div className="text-xl font-bold text-primary capitalize">{settings.strategy}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Extra Monthly</div>
-                <div className="text-xl font-bold text-foreground">${inputs.extraMonthly}</div>
+                <div className="text-xl font-bold text-foreground">${settings.extraMonthly}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground mb-1">One-Time (Month 1)</div>
-                <div className="text-xl font-bold text-foreground">${inputs.oneTimeExtra}</div>
+                <div className="text-xl font-bold text-foreground">${settings.oneTimeExtra}</div>
               </div>
             </div>
           </CardContent>
@@ -91,10 +91,9 @@ export default function MobileViewPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {plan.debts.filter(d => d.included).map(debt => {
-              const inputDebt = inputs.debts.find(d => d.id === debt.id);
+            {debts.filter(d => d.include !== false).map(debt => {
               const progress = calculateProgress(debt);
-              const dueDay = inputDebt?.dueDay || 15;
+              const dueDay = debt.dueDay || 15;
 
               return (
                 <Card key={debt.id} className="p-6 bg-card/50 backdrop-blur border-primary/10 hover:border-primary/20 transition-all">
@@ -112,7 +111,7 @@ export default function MobileViewPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-foreground">
-                        ${debt.originalBalance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        ${debt.balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {formatAPR(debt.apr)}
