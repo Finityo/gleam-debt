@@ -134,60 +134,125 @@ export default function DebtPlanPage() {
         </div>
       </Card>
 
-      {/* Month 1 Payment Pool Summary */}
-      {plan && (
-        <Card className="p-6 mb-6 bg-gradient-primary/10 border-primary/20">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="text-2xl">💰</span> Month 1 Payment Pool Breakdown
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <div className="text-sm text-muted-foreground">All Minimum Payments</div>
-              <div className="text-2xl font-bold text-foreground">
-                ${totalMins.toFixed(2)}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">+ Extra Monthly</div>
-              <div className="text-2xl font-bold text-accent">
-                +${inputs.extraMonthly.toFixed(2)}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">+ One-Time Payment</div>
-              <div className="text-2xl font-bold text-accent">
-                +${inputs.oneTimeExtra.toFixed(2)}
-              </div>
-            </div>
-            <div className="bg-primary/10 rounded-lg p-3">
-              <div className="text-sm text-muted-foreground">= Total Month 1 Pool</div>
-              <div className="text-3xl font-bold text-primary">
-                ${(totalMins + inputs.extraMonthly + inputs.oneTimeExtra).toFixed(2)}
-              </div>
-            </div>
-          </div>
-          {plan.months[0] && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <div className="text-sm text-muted-foreground mb-2">Month 1 Results:</div>
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Principal Paid: </span>
-                  <span className="font-semibold">${plan.months[0].totals.principal.toFixed(2)}</span>
+      {/* Full Monthly Schedule */}
+      {plan && plan.months.length > 0 && (
+        <>
+          {/* Month 1 Payment Pool Summary */}
+          <Card className="p-6 mb-6 bg-gradient-primary/10 border-primary/20">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <span className="text-2xl">💰</span> Month 1 Payment Pool Breakdown
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <div className="text-sm text-muted-foreground">All Minimum Payments</div>
+                <div className="text-2xl font-bold text-foreground">
+                  ${totalMins.toFixed(2)}
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Interest: </span>
-                  <span className="font-semibold">${plan.months[0].totals.interest.toFixed(2)}</span>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">+ Extra Monthly</div>
+                <div className="text-2xl font-bold text-accent">
+                  +${inputs.extraMonthly.toFixed(2)}
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Debts Closed: </span>
-                  <span className="font-semibold text-success">
-                    {plan.months[0].payments.filter(p => p.closedThisMonth).length}
-                  </span>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">+ One-Time Payment</div>
+                <div className="text-2xl font-bold text-accent">
+                  +${inputs.oneTimeExtra.toFixed(2)}
+                </div>
+              </div>
+              <div className="bg-primary/10 rounded-lg p-3">
+                <div className="text-sm text-muted-foreground">= Total Month 1 Pool</div>
+                <div className="text-3xl font-bold text-primary">
+                  ${(totalMins + inputs.extraMonthly + inputs.oneTimeExtra).toFixed(2)}
                 </div>
               </div>
             </div>
-          )}
-        </Card>
+            {plan.months[0] && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="text-sm text-muted-foreground mb-2">Month 1 Results:</div>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Principal Paid: </span>
+                    <span className="font-semibold">${plan.months[0].totals.principal.toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Interest: </span>
+                    <span className="font-semibold">${plan.months[0].totals.interest.toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Debts Closed: </span>
+                    <span className="font-semibold text-success">
+                      {plan.months[0].payments.filter(p => p.closedThisMonth).length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {/* All Months Timeline */}
+          <Card className="p-6 mb-6">
+            <h3 className="text-xl font-semibold mb-4">📅 Complete Payment Schedule</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Showing all {plan.months.length} months until debt-free
+            </p>
+            <div className="space-y-2 max-h-[500px] overflow-y-auto">
+              {plan.months.map((month) => {
+                const closedDebts = month.payments.filter(p => p.closedThisMonth);
+                return (
+                  <div 
+                    key={month.monthIndex} 
+                    className={`p-4 rounded-lg border ${
+                      closedDebts.length > 0 
+                        ? 'bg-success/10 border-success/30' 
+                        : 'bg-muted/30 border-border'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <span className="font-semibold">{month.monthLabel}</span>
+                        <span className="text-muted-foreground ml-2 text-sm">
+                          (Month {month.monthIndex + 1})
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-muted-foreground">Total Payment</div>
+                        <div className="font-bold">${month.totals.outflow.toFixed(2)}</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Principal: </span>
+                        <span className="font-semibold">${month.totals.principal.toFixed(2)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Interest: </span>
+                        <span className="font-semibold">${month.totals.interest.toFixed(2)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Debts Paid Off: </span>
+                        <span className={`font-semibold ${closedDebts.length > 0 ? 'text-success' : ''}`}>
+                          {closedDebts.length}
+                        </span>
+                      </div>
+                    </div>
+                    {closedDebts.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-success/20">
+                        <div className="text-sm font-semibold text-success">
+                          🎉 Paid Off: {closedDebts.map(p => {
+                            const debt = inputs.debts.find(d => d.id === p.debtId);
+                            return debt?.name;
+                          }).join(", ")}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </>
       )}
 
       <Card className="p-6 mb-6">
