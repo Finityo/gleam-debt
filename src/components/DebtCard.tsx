@@ -3,6 +3,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { CreditCard, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatAPR } from "@/lib/debtPlan";
 
 interface DebtCardProps {
   creditor: string;
@@ -47,7 +48,7 @@ export function DebtCard({
             ${(balance / 100).toLocaleString()}
           </p>
           <p className="text-sm text-muted-foreground">
-            {(apr / 100).toFixed(2)}% APR
+            {formatAPR(apr)}
           </p>
         </div>
       </div>

@@ -9,6 +9,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { useToast } from '@/hooks/use-toast';
 import { DEMO } from '@/config/demo';
 import { mockDebts } from '@/lib/mockData';
+import { formatAPR } from '@/lib/debtPlan';
 
 interface Debt {
   id: string;
@@ -371,7 +372,7 @@ const DebtChart = () => {
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-base truncate">{debt.name}</p>
                         <div className="flex flex-col gap-1 mt-1">
-                          <p className="text-sm text-muted-foreground">APR: {debt.apr}%</p>
+                          <p className="text-sm text-muted-foreground">{formatAPR(debt.apr)}</p>
                           <p className="font-bold text-lg">
                             ${debt.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
