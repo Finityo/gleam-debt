@@ -322,15 +322,16 @@ export interface EngineInputs {
 }
 
 export class PlanService {
-  static compute(inputs: EngineInputs): PlanResult {
+  static compute(inputs: EngineInputs) {
     return computeDebtPlan({
       debts: inputs.debts,
       extraMonthly: inputs.extraMonthly,
       oneTimeExtra: inputs.oneTimeExtra,
       strategy: inputs.strategy ?? "snowball",
-      startDate: inputs.startDate
+      startDate: inputs.startDate,
     });
   }
+  
   static debtsSummaryForPrintable(plan: PlanResult) {
     return plan.debts
       .slice()
@@ -345,6 +346,7 @@ export class PlanService {
         payoffDate:d.payoffDateISO, totalInterest:d.totalInterestPaid, totalPaid:d.totalPaid, included:d.included
       }));
   }
+  
   static calendar(plan: PlanResult) {
     return plan.months.map(m=>({
       monthIndex:m.monthIndex, monthLabel:m.monthLabel, dateISO:m.dateISO,
@@ -356,6 +358,7 @@ export class PlanService {
       })
     }));
   }
+  
   static chartSeriesRemainingPrincipal(plan: PlanResult) {
     const last = new Map<string, number>();
     plan.debts.forEach(d=>{ if(d.included) last.set(d.id, d.originalBalance); });
