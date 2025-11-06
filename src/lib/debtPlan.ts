@@ -138,7 +138,7 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
   const startISO = params.startDate ?? toISODate(new Date());
   const planStart = startOfMonth(new Date(startISO));
 
-  // 🔧 Normalize APRs before doing anything else
+  // ✅ Normalize APRs from imported data
   const debtsAll = applyAPRNormalization(params.debts).map(d => ({
     ...d,
     include: d.include !== false,
@@ -151,18 +151,7 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
       strategy,
       startDateISO: toISODate(planStart),
       months: [],
-      debts: debtsAll.map(d => ({
-        id: d.id,
-        name: d.name,
-        apr: normalizeAPR(d.apr),
-        originalBalance: d.balance,
-        minPayment: d.minPayment,
-        included: !!d.include,
-        payoffMonthIndex: null,
-        payoffDateISO: null,
-        totalInterestPaid: 0,
-        totalPaid: 0,
-      })),
+      debts: [],
       totals: {
         monthsToDebtFree: 0,
         interest: 0,
@@ -174,91 +163,117 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
     };
   }
 
-  const working = debts.map(d => Math.max(0, round2(d.balance)));
-  const rates = debts.map(d => normalizeAPR(d.apr) / 12 / 100);
-  const mins = debts.map(d => Math.max(0, round2(d.minPayment)));
-  const originals = [...working];
+  // --- working state ---
+  const balances = debts.map(d => round2(Math.max(0, d.balance)));
+  const monthlyRates = debts.map(d => normalizeAPR(d.apr) / 12 / 100);
+  const mins = debts.map(d => round2(d.minPayment));
+  const originals = [...balances];
 
-  const baseOutflow = round2(mins.reduce((a,b)=>a+b,0) + (extraMonthly || 0));
+  const baseOutflow = round2(mins.reduce((a, b) => a + b, 0) + (extraMonthly || 0));
 
-  const payoffIdx: (number|null)[] = debts.map(()=>null);
-  const totalIntByDebt = debts.map(()=>0);
-  const totalPaidByDebt = debts.map(()=>0);
+  const payoffIdx: (number | null)[] = debts.map(() => null);
+  const totalIntByDebt = debts.map(() => 0);
+  const totalPaidByDebt = debts.map(() => 0);
 
   const months: PlanMonth[] = [];
   let globalInt = 0;
   let globalPrin = 0;
 
-  for (let m=0;m<maxMonths;m++) {
-    const mdate = addMonths(planStart, m);
-    const interestThis = working.map((bal,i)=> bal>0 ? round2(bal * rates[i]) : 0);
-    for (let i=0;i<working.length;i++) if (working[i]>0) {
-      working[i] = round2(working[i] + interestThis[i]);
-      totalIntByDebt[i] = round2(totalIntByDebt[i] + interestThis[i]);
-      globalInt = round2(globalInt + interestThis[i]);
+  // rolling snowball tracker
+  let currentSnowball = extraMonthly;
+
+  for (let m = 0; m < maxMonths; m++) {
+    const mDate = addMonths(planStart, m);
+    const interestThis = balances.map((bal, i) => (bal > 0 ? round2(bal * monthlyRates[i]) : 0));
+
+    // add interest
+    for (let i = 0; i < balances.length; i++) {
+      if (balances[i] > 0) {
+        balances[i] = round2(balances[i] + interestThis[i]);
+        totalIntByDebt[i] = round2(totalIntByDebt[i] + interestThis[i]);
+        globalInt = round2(globalInt + interestThis[i]);
+      }
     }
 
-    let pool = round2(baseOutflow + (m===0 ? (oneTimeExtra||0) : 0));
+    // Month pool = base minimums + current snowball (+ one-time on month 0)
+    let monthPool = mins.reduce((a, b) => a + b, 0) + currentSnowball;
+    if (m === 0) monthPool += oneTimeExtra || 0;
+    monthPool = round2(monthPool);
 
-    const minApplied = mins.map((min,i)=>{
-      if (working[i]<=0) return 0;
-      const pay = Math.min(min, working[i]);
-      pool = round2(pool - pay);
-      working[i] = round2(working[i] - pay);
+    // apply minimums
+    const minApplied = mins.map((min, i) => {
+      if (balances[i] <= 0) return 0;
+      const pay = Math.min(min, balances[i]);
+      balances[i] = round2(balances[i] - pay);
       totalPaidByDebt[i] = round2(totalPaidByDebt[i] + pay);
+      monthPool = round2(monthPool - pay);
       return pay;
     });
 
-    const order = sortIndex(strategy, debts.map((d,i)=>({ balance: working[i], apr: normalizeAPR(d.apr) })));
-    const extraApplied = debts.map(()=>0);
+    // apply snowball / avalanche extra
+    const order = sortIndex(strategy, debts.map((d, i) => ({ balance: balances[i], apr: normalizeAPR(d.apr) })));
+    const extraApplied = debts.map(() => 0);
+
     for (const idx of order) {
-      if (pool<=0) break;
-      if (working[idx]<=0) continue;
-      const pay = Math.min(working[idx], pool);
+      if (monthPool <= 0) break;
+      if (balances[idx] <= 0) continue;
+      const pay = Math.min(balances[idx], monthPool);
+      balances[idx] = round2(balances[idx] - pay);
       extraApplied[idx] = round2(extraApplied[idx] + pay);
-      working[idx] = round2(working[idx] - pay);
       totalPaidByDebt[idx] = round2(totalPaidByDebt[idx] + pay);
-      pool = round2(pool - pay);
+      monthPool = round2(monthPool - pay);
     }
 
-    let monthOut = 0, monthPrin = 0;
-    const payments: DebtMonthPayment[] = debts.map((d,i)=>{
-      const starting = round2(working[i] + minApplied[i] + extraApplied[i]);
+    // close debts + grow snowball
+    let newSnowAdd = 0;
+    let monthOut = 0;
+    let monthPrin = 0;
+
+    const payments: DebtMonthPayment[] = debts.map((d, i) => {
+      const starting = round2(balances[i] + minApplied[i] + extraApplied[i]);
+      const ending = balances[i];
+      const closed = starting > 0 && ending === 0;
+      if (closed && payoffIdx[i] === null) {
+        payoffIdx[i] = m;
+        newSnowAdd += mins[i]; // rollover min
+      }
       const interest = interestThis[i];
       const totalPaid = round2(minApplied[i] + extraApplied[i]);
-      const ending = working[i];
-      const closed = starting>0 && ending===0;
-      if (closed && payoffIdx[i]===null) payoffIdx[i] = m;
-
       monthOut = round2(monthOut + totalPaid);
       monthPrin = round2(monthPrin + totalPaid);
-
       return {
         debtId: d.id,
         startingBalance: starting,
         interestAccrued: interest,
-        minApplied: round2(minApplied[i]),
-        extraApplied: round2(extraApplied[i]),
+        minApplied: minApplied[i],
+        extraApplied: extraApplied[i],
         totalPaid,
         endingBalance: ending,
-        closedThisMonth: closed
+        closedThisMonth: closed,
       };
     });
 
     globalPrin = round2(globalPrin + monthPrin);
-
     months.push({
       monthIndex: m,
-      monthLabel: monthLabel(mdate),
-      dateISO: toISODate(startOfMonth(mdate)),
+      monthLabel: monthLabel(mDate),
+      dateISO: toISODate(startOfMonth(mDate)),
       payments,
-      totals: { interest: round2(interestThis.reduce((a,b)=>a+b,0)), principal: monthPrin, outflow: monthOut }
+      totals: {
+        interest: round2(interestThis.reduce((a, b) => a + b, 0)),
+        principal: monthPrin,
+        outflow: round2(monthOut),
+      },
     });
 
-    if (working.every(b=>b<=0.000001)) break;
+    // update snowball for next month
+    currentSnowball = round2(currentSnowball + newSnowAdd);
+
+    if (balances.every(b => b <= 0.0001)) break;
   }
 
-  const summaries: DebtSummary[] = debts.map((d,i)=>{
+  // build debt summaries
+  const summaries: DebtSummary[] = debts.map((d, i) => {
     const idx = payoffIdx[i];
     return {
       id: d.id,
@@ -274,6 +289,7 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
     };
   });
 
+  // append excluded
   for (const ex of debtsAll.filter(d => !d.include)) {
     summaries.push({
       id: ex.id,
@@ -290,7 +306,7 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
   }
 
   const monthsToDebtFree =
-    Math.max(...summaries.filter(s=>s.included && s.payoffMonthIndex!==null).map(s=>s.payoffMonthIndex ?? 0)) + 1 || 0;
+    Math.max(...summaries.filter(s => s.included && s.payoffMonthIndex !== null).map(s => s.payoffMonthIndex ?? 0)) + 1 || 0;
 
   return {
     strategy,
@@ -304,7 +320,7 @@ export function computeDebtPlan(params: ComputeParams): PlanResult {
       outflowMonthly: baseOutflow,
       oneTimeApplied: round2(oneTimeExtra || 0),
       totalPaid: round2(globalInt + globalPrin),
-    }
+    },
   };
 }
 
