@@ -47,6 +47,7 @@ const PrintableSummary = lazy(() => import("./pages/PrintableSummary"));
 const MobileView = lazy(() => import("./pages/Mobile"));
 const DebtPlanNew = lazy(() => import("./pages/DebtPlanNew"));
 const DebtChartNew = lazy(() => import("./pages/DebtChartNew"));
+const DebtVisualization = lazy(() => import("./pages/DebtVisualization"));
 
 // ✅ Simple branded loading screen
 const Loader = () => (
@@ -114,6 +115,7 @@ const AppRoutes = () => {
               <Route path="/mobile-view" element={<MobileView />} />
               <Route path="/debt-plan-new" element={<DebtPlanNew />} />
               <Route path="/debt-chart-new" element={<DebtChartNew />} />
+              <Route path="/debt-visualization" element={<DebtVisualization />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
