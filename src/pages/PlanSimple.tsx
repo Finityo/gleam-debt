@@ -9,6 +9,7 @@ import PayoffOrder from "@/components/PayoffOrder";
 import ComparisonCard from "@/components/ComparisonCard";
 import Milestones from "@/components/Milestones";
 import SnowballTimeline from "@/components/SnowballTimeline";
+import ScenarioChart from "@/components/ScenarioChart";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -82,6 +83,8 @@ export default function PlanPage() {
       </p>
 
       <ScenarioSwitcher scenario={scenario} onChange={setScenario} />
+
+      <ScenarioChart debts={debts} settings={settings} />
 
       <DashboardSummary plan={currentPlan} />
 
