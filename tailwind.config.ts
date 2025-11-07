@@ -17,6 +17,17 @@ export default {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
       colors: {
+        finityo: {
+          primary: "#10E7CD",
+          primaryAccent: "#00C2FF",
+          indigo: "#7D41FF",
+          magenta: "#C044FF",
+          bgA: "#0C1222",
+          bgB: "#162840",
+          textMain: "#FFFFFF",
+          textBody: "#C6CED8",
+          warn: "#F8A100",
+        },
         brand: {
           DEFAULT: "hsl(0 0% 0%)",
           soft: "hsl(0 0% 7%)",
@@ -71,6 +82,8 @@ export default {
         'gradient-primary': 'var(--gradient-primary)',
         'gradient-hero': 'var(--gradient-hero)',
         'gradient-card': 'var(--gradient-card)',
+        'finityo-bg': 'linear-gradient(145deg, #162840 0%, #0C1222 100%)',
+        'finityo-cta': 'linear-gradient(90deg, #10E7CD 0%, #00C2FF 100%)',
       },
       boxShadow: {
         'vibrant': 'var(--shadow-vibrant)',
@@ -78,6 +91,7 @@ export default {
         'accent': 'var(--shadow-accent)',
         'card': '0 1px 4px rgba(0,0,0,0.08)',
         'sheet': '0 -8px 24px rgba(0,0,0,0.15)',
+        'glass': '0 0 25px rgba(16,231,205,0.15)',
       },
       borderRadius: {
         lg: "var(--radius)",
