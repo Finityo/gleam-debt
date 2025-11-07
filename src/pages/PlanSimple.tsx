@@ -14,6 +14,7 @@ import PayoffChartWithEvents from "@/components/PayoffChartWithEvents";
 import RemainingStackedChart from "@/components/RemainingStackedChart";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import ScenarioInfo from "@/components/ScenarioInfo";
+import NotesBox from "@/components/NotesBox";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
@@ -89,6 +90,8 @@ export default function PlanPage() {
         <ScenarioSwitcher scenario={scenario} onChange={setScenario} />
         <ScenarioInfo />
       </div>
+
+      <NotesBox />
 
       <ScenarioChart debts={debts} settings={settings} />
 
