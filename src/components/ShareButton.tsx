@@ -75,19 +75,23 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
 
   return (
     <>
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Button
           onClick={handleShareClick}
           disabled={loading}
-          variant="outline"
+          variant={url ? "default" : "outline"}
           size="sm"
+          className="w-full sm:w-auto transition-all duration-200"
         >
           {loading ? (
-            "Creating link..."
+            <>
+              <Share2 className="h-4 w-4 mr-2 animate-pulse" />
+              Creating link...
+            </>
           ) : url ? (
             <>
               <Check className="h-4 w-4 mr-2" />
-              Link copied!
+              Link Created!
             </>
           ) : (
             <>
@@ -98,19 +102,35 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
         </Button>
 
         {url && (
-          <div className="text-xs space-y-1">
-            <a 
-              href={url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline break-all block"
-            >
-              {url}
-            </a>
-            <p className="text-muted-foreground flex items-center gap-1">
+          <div className="rounded-lg border bg-card p-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-start gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Share Link:</p>
+                <a 
+                  href={url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline break-all block transition-colors"
+                >
+                  {url}
+                </a>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="shrink-0 h-8 w-8 p-0"
+                onClick={() => {
+                  navigator.clipboard.writeText(url);
+                  toast.success("Link copied again!");
+                }}
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Lock className="h-3 w-3" />
-              Expires in 90 days
-            </p>
+              <span>Link expires in 90 days</span>
+            </div>
           </div>
         )}
       </div>
