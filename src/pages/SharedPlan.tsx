@@ -15,12 +15,11 @@ import ScenarioCompareChart from "@/components/ScenarioCompareChart";
 import { QRCodeSVG } from "qrcode.react";
 import { exportPlanToPDF } from "@/lib/export/pdf";
 import { exportDebtsToCSV } from "@/lib/export/csv";
-import { FileDown, Lock, Trash2, MessageSquare } from "lucide-react";
+import { FileDown, Lock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { CoachInviteBar } from "@/components/CoachInviteBar";
 import { CoachSuggestDrawer } from "@/components/CoachSuggestDrawer";
 import { CoachSuggestions } from "@/components/CoachSuggestions";
-import { CoachDrawer } from "@/components/CoachDrawer";
 
 
 export default function SharedPlan() {
@@ -34,7 +33,6 @@ export default function SharedPlan() {
   const [pinNeeded, setPinNeeded] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState("");
-  const [openCoach, setOpenCoach] = useState(false);
 
   const coachFromUrl = new URLSearchParams(location.search).get("coach") || "";
 
@@ -297,22 +295,6 @@ export default function SharedPlan() {
           <p className="text-amber-600 dark:text-amber-400">• Personal notes excluded</p>
         )}
       </div>
-
-      {/* Floating Coach Button */}
-      <div className="fixed bottom-4 right-4 z-40">
-        <Button onClick={() => setOpenCoach(true)} size="lg" className="shadow-lg">
-          <MessageSquare className="h-5 w-5 mr-2" />
-          Coach Notes
-        </Button>
-      </div>
-
-      {/* Coach Drawer - Mobile Optimized */}
-      <CoachDrawer
-        planId={id!}
-        coachName={coachFromUrl || "Coach"}
-        open={openCoach}
-        onClose={() => setOpenCoach(false)}
-      />
     </div>
   );
 }
