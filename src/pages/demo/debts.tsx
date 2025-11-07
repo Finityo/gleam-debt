@@ -6,6 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, DollarSign } from "lucide-react";
+import { z } from "zod";
+
+// Validation schemas
+const debtNameSchema = z.string().trim().max(100, "Name must be less than 100 characters");
+const balanceSchema = z.number().min(0, "Balance must be positive").max(1000000000, "Balance too large");
+const aprSchema = z.number().min(0, "APR must be positive").max(100, "APR must be 100% or less");
+const minPaymentSchema = z.number().min(0, "Minimum payment must be positive").max(1000000000, "Payment too large");
 
 export default function DemoDebts() {
   const { debts, updateDebts } = usePlan();
@@ -34,6 +41,9 @@ export default function DemoDebts() {
       debts.map((d) => (d.id === id ? { ...d, ...patch } : d))
     );
   };
+
+  // Helper to display number value (empty string if 0)
+  const displayValue = (val: number) => val === 0 ? "" : val.toString();
 
   return (
     <PageShell>
@@ -66,9 +76,14 @@ export default function DemoDebts() {
                       <Label>Name</Label>
                       <Input
                         value={d.name}
-                        onChange={(e) =>
-                          update(d.id, { name: e.target.value })
-                        }
+                        placeholder="e.g. Credit Card"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const validated = debtNameSchema.safeParse(val);
+                          if (validated.success || val === "") {
+                            update(d.id, { name: val });
+                          }
+                        }}
                       />
                     </div>
 
@@ -79,12 +94,17 @@ export default function DemoDebts() {
                         <Input
                           type="number"
                           className="pl-7"
-                          value={d.balance}
-                          onChange={(e) =>
-                            update(d.id, {
-                              balance: parseFloat(e.target.value) || 0,
-                            })
-                          }
+                          placeholder="0"
+                          value={displayValue(d.balance)}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                            if (!isNaN(val)) {
+                              const validated = balanceSchema.safeParse(val);
+                              if (validated.success) {
+                                update(d.id, { balance: val });
+                              }
+                            }
+                          }}
                         />
                       </div>
                     </div>
@@ -94,10 +114,17 @@ export default function DemoDebts() {
                       <Input
                         type="number"
                         step="0.01"
-                        value={d.apr}
-                        onChange={(e) =>
-                          update(d.id, { apr: parseFloat(e.target.value) || 0 })
-                        }
+                        placeholder="0"
+                        value={displayValue(d.apr)}
+                        onChange={(e) => {
+                          const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                          if (!isNaN(val)) {
+                            const validated = aprSchema.safeParse(val);
+                            if (validated.success) {
+                              update(d.id, { apr: val });
+                            }
+                          }
+                        }}
                       />
                     </div>
 
@@ -108,12 +135,17 @@ export default function DemoDebts() {
                         <Input
                           type="number"
                           className="pl-7"
-                          value={d.minPayment}
-                          onChange={(e) =>
-                            update(d.id, {
-                              minPayment: parseFloat(e.target.value) || 0,
-                            })
-                          }
+                          placeholder="0"
+                          value={displayValue(d.minPayment)}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                            if (!isNaN(val)) {
+                              const validated = minPaymentSchema.safeParse(val);
+                              if (validated.success) {
+                                update(d.id, { minPayment: val });
+                              }
+                            }
+                          }}
                         />
                       </div>
                     </div>

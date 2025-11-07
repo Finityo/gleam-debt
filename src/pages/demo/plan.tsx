@@ -10,10 +10,17 @@ import { useNavigate } from "react-router-dom";
 import { ShareButton } from "@/components/ShareButton";
 import CoachDrawer from "@/components/CoachDrawer";
 import { toast } from "sonner";
+import { z } from "zod";
+
+// Validation schemas
+const extraPaymentSchema = z.number().min(0, "Payment must be positive").max(1000000000, "Amount too large");
 
 export default function DemoPlan() {
   const { debts, settings, plan, updateSettings, compute } = usePlan();
   const navigate = useNavigate();
+
+  // Helper to display number value (empty string if 0)
+  const displayValue = (val: number) => val === 0 ? "" : val.toString();
 
   const submit = () => {
     compute();
@@ -46,12 +53,17 @@ export default function DemoPlan() {
               </Label>
               <Input
                 type="number"
-                value={settings.extraMonthly}
-                onChange={(e) =>
-                  updateSettings({
-                    extraMonthly: parseFloat(e.target.value) || 0,
-                  })
-                }
+                placeholder="0"
+                value={displayValue(settings.extraMonthly)}
+                onChange={(e) => {
+                  const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                  if (!isNaN(val)) {
+                    const validated = extraPaymentSchema.safeParse(val);
+                    if (validated.success) {
+                      updateSettings({ extraMonthly: val });
+                    }
+                  }
+                }}
               />
             </div>
 
@@ -63,12 +75,17 @@ export default function DemoPlan() {
               </Label>
               <Input
                 type="number"
-                value={settings.oneTimeExtra}
-                onChange={(e) =>
-                  updateSettings({
-                    oneTimeExtra: parseFloat(e.target.value) || 0,
-                  })
-                }
+                placeholder="0"
+                value={displayValue(settings.oneTimeExtra)}
+                onChange={(e) => {
+                  const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                  if (!isNaN(val)) {
+                    const validated = extraPaymentSchema.safeParse(val);
+                    if (validated.success) {
+                      updateSettings({ oneTimeExtra: val });
+                    }
+                  }
+                }}
               />
             </div>
 
