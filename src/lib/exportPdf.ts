@@ -9,6 +9,7 @@ import { getPayoffOrder } from "@/lib/payoffOrder";
 import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
 import { comparePlans } from "@/lib/comparePlans";
 import { getMilestones } from "@/lib/milestones";
+import { getBadges } from "@/lib/badges";
 
 export function exportPlanToPDF(
   debts: Debt[],
@@ -140,6 +141,23 @@ export function exportPlanToPDF(
 
   doc.text(`Interest Saved: $${cmp.interestSaved.toFixed(2)}`, margin, cursorY);
   cursorY += 28;
+
+  // --- Achievements ---
+  const badges = getBadges(plan);
+
+  if (badges.length) {
+    doc.setFont("helvetica", "bold");
+    doc.text("Achievements", margin, cursorY);
+    cursorY += 18;
+
+    doc.setFont("helvetica", "normal");
+    badges.forEach((b) => {
+      doc.text(`• ${b.label}`, margin, cursorY);
+      cursorY += 14;
+    });
+
+    cursorY += 20;
+  }
 
   // --- Milestones ---
   const ms = getMilestones(plan);
