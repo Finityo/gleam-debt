@@ -16,7 +16,6 @@ export default function SharedPlan() {
   const [debts, setDebts] = useState<any[]>([]);
   const [notes, setNotes] = useState("");
   const [views, setViews] = useState(0);
-  const [metadata, setMetadata] = useState<any>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -29,7 +28,6 @@ export default function SharedPlan() {
         setDebts(data.debts_data as any[]);
         setNotes(data.notes || "");
         setViews(data.views_count || 0);
-        setMetadata(data.metadata || null);
       } catch (e) {
         setError("Plan not found or expired");
       } finally {
@@ -100,17 +98,8 @@ export default function SharedPlan() {
         </div>
       )}
 
-      <div className="text-center space-y-1 text-xs text-muted-foreground pt-4 border-t">
-        <p>This is a read-only shared plan snapshot</p>
-        {metadata?.sharedAt && (
-          <p>Shared on {new Date(metadata.sharedAt).toLocaleDateString()}</p>
-        )}
-        {metadata?.privacySettings?.debtsAnonymized && (
-          <p className="text-amber-600 dark:text-amber-400">• Debt names have been anonymized</p>
-        )}
-        {metadata?.privacySettings?.notesExcluded && (
-          <p className="text-amber-600 dark:text-amber-400">• Personal notes excluded</p>
-        )}
+      <div className="text-center text-xs text-muted-foreground pt-4">
+        This is a read-only shared plan snapshot
       </div>
     </div>
   );
