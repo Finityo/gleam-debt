@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
 import { PlanProvider } from "@/context/PlanContext";
@@ -110,7 +110,7 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Navigate to="/demo/start" replace />} />
               <Route path="/hero" element={<Hero />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/team-access" element={<TeamAccess />} />
