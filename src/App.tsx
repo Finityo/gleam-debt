@@ -1,14 +1,9 @@
-// ==================== src/App.tsx ====================
-// 🔧 Main Application Entry Point
-// Sets up global providers (React Query, Theme, Tooltip, Toasts)
-// and mounts lazy-loaded route pages for performance.
-// -----------------------------------------------------
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
 import { PlanProvider } from "@/context/PlanContext";
@@ -36,18 +31,20 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <TooltipProvider>
-        <AuthProvider>
-          <AppProvider>
-            <ScenarioProvider>
-              <PlanProvider>
-                <AppWrapper />
-                <NotificationsPanel />
-                <Toaster />
-                <Sonner />
-              </PlanProvider>
-            </ScenarioProvider>
-          </AppProvider>
-        </AuthProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppProvider>
+              <ScenarioProvider>
+                <PlanProvider>
+                  <AppWrapper />
+                  <NotificationsPanel />
+                  <Toaster />
+                  <Sonner />
+                </PlanProvider>
+              </ScenarioProvider>
+            </AppProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

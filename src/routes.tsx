@@ -120,9 +120,8 @@ const DemoLayoutWrapper = () => (
 
 export function AppRoutes() {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<Loader />}>
-        <Routes>
+    <Suspense fallback={<Loader />}>
+      <Routes>
           {/* ===== PUBLIC ROUTES ===== */}
           <Route path="/" element={<Index />} />
           <Route path="/hero" element={<Hero />} />
@@ -187,6 +186,5 @@ export function AppRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-    </BrowserRouter>
   );
 }
