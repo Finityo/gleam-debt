@@ -9,8 +9,6 @@ import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { PlaidTokenMigration } from '@/components/PlaidTokenMigration';
 import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
 import { PlaidAnalytics } from '@/components/PlaidAnalytics';
-import { TrialSubscriptionDialog } from '@/components/TrialSubscriptionDialog';
-import { DemoBanner } from '@/components/DemoBanner';
 import { ActivityLog } from '@/components/ActivityLog';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Share2, Award, MessageSquare, Settings, AlertCircle, CreditCard, Crown } from 'lucide-react';
@@ -168,8 +166,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <DemoBanner />
-      <TrialSubscriptionDialog />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
