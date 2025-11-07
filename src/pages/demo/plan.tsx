@@ -109,6 +109,45 @@ export default function DemoPlan() {
               <NextBack back="/demo/debts" next="/demo/chart" />
             </div>
 
+            {/* Additional Tools */}
+            {plan && (
+              <div className="pt-6 space-y-3">
+                <h3 className="text-sm font-semibold text-finityo-textMain">
+                  Additional Tools
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    className="text-sm"
+                    onClick={() => navigate("/demo/plan/calendar")}
+                  >
+                    Calendar View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="text-sm"
+                    onClick={() => navigate("/demo/plan/summary")}
+                  >
+                    Summary
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="text-sm"
+                    onClick={() => navigate("/demo/plan/compare")}
+                  >
+                    Compare Methods
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="text-sm"
+                    onClick={() => navigate("/demo/plan/import")}
+                  >
+                    Import/Export
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {plan && (
               <div className="pt-10 max-w-md mx-auto">
                 <ShareButton

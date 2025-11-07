@@ -59,6 +59,10 @@ const DemoDebts = lazy(() => import("@/pages/demo/debts"));
 const DemoPlan = lazy(() => import("@/pages/demo/plan"));
 const DemoChart = lazy(() => import("@/pages/demo/chart"));
 const DemoPowerPack = lazy(() => import("@/pages/demo/DemoPlanPowerPack"));
+const DemoCalendar = lazy(() => import("@/pages/demo/plan/calendar"));
+const DemoSummary = lazy(() => import("@/pages/demo/plan/summary"));
+const DemoCompare = lazy(() => import("@/pages/demo/plan/compare"));
+const DemoImportExport = lazy(() => import("@/pages/demo/plan/import"));
 
 // ===== CORE (PUBLIC) =====
 const Index = lazy(() => import("@/pages/index"));
@@ -146,6 +150,10 @@ export function AppRoutes() {
             <Route path="start" element={<DemoStart />} />
             <Route path="debts" element={<DemoDebts />} />
             <Route path="plan" element={<DemoPlan />} />
+            <Route path="plan/calendar" element={<DemoCalendar />} />
+            <Route path="plan/summary" element={<DemoSummary />} />
+            <Route path="plan/compare" element={<DemoCompare />} />
+            <Route path="plan/import" element={<DemoImportExport />} />
             <Route path="chart" element={<DemoChart />} />
             <Route path="power-pack" element={<DemoPowerPack />} />
           </Route>

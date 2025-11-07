@@ -1,0 +1,67 @@
+import { PageShell } from "@/components/PageShell";
+import { usePlan } from "@/context/PlanContext";
+import { PopIn } from "@/components/Animate";
+import { Card } from "@/components/ui/card";
+import { Btn } from "@/components/Btn";
+
+export default function DemoSummaryPage() {
+  const { plan } = usePlan();
+
+  if (!plan) {
+    return (
+      <PageShell>
+        <div className="max-w-3xl mx-auto px-4 py-12 text-center text-finityo-textBody">
+          No plan found — compute first.
+        </div>
+      </PageShell>
+    );
+  }
+
+  return (
+    <PageShell>
+      <div className="max-w-3xl mx-auto px-4 py-10">
+        <h1 className="text-3xl font-bold text-finityo-textMain mb-2">
+          Summary
+        </h1>
+        <p className="text-finityo-textBody mb-8">
+          Key payoff metrics + dates.
+        </p>
+
+        <PopIn>
+          <Card className="p-6 space-y-4 bg-card border border-border">
+            <div>
+              <div className="text-sm text-finityo-textBody">Debt-Free Date</div>
+              <div className="text-2xl font-bold text-finityo-textMain">
+                {plan.debtFreeDate}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-finityo-textBody">Months to Freedom</div>
+              <div className="text-2xl font-bold text-finityo-textMain">
+                {plan.summary.finalMonthIndex + 1}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-finityo-textBody">Total Interest</div>
+              <div className="text-2xl font-bold text-finityo-textMain">
+                ${Math.round(plan.totalInterest).toLocaleString()}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-finityo-textBody">Total Paid</div>
+              <div className="text-2xl font-bold text-finityo-textMain">
+                ${Math.round(plan.totalPaid).toLocaleString()}
+              </div>
+            </div>
+          </Card>
+        </PopIn>
+
+        <div className="pt-8">
+          <Btn variant="outline" onClick={() => history.back()}>
+            Back
+          </Btn>
+        </div>
+      </div>
+    </PageShell>
+  );
+}
