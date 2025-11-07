@@ -21,9 +21,10 @@ import { getPayoffEvents } from "@/lib/payoffEvents";
 type Props = {
   plan: DebtPlan;
   debts: Debt[];
+  showEvents?: boolean;
 };
 
-export default function PayoffChartWithEvents({ plan, debts }: Props) {
+export default function PayoffChartWithEvents({ plan, debts, showEvents = true }: Props) {
   const rem = remainingByMonth(plan);
   const events = getPayoffEvents(plan, debts);
 
@@ -37,7 +38,7 @@ export default function PayoffChartWithEvents({ plan, debts }: Props) {
   return (
     <div className="p-4 border rounded bg-white">
       <h2 className="text-lg font-semibold mb-2">
-        Remaining Balance + Payoff Events
+        Remaining Balance{showEvents ? " + Payoff Events" : ""}
       </h2>
 
       <ResponsiveContainer width="100%" height={300}>
@@ -56,7 +57,7 @@ export default function PayoffChartWithEvents({ plan, debts }: Props) {
           />
 
           {/* Reference lines */}
-          {events.map((e, i) => (
+          {showEvents && events.map((e, i) => (
             <ReferenceLine
               key={i}
               x={e.monthIndex}
@@ -72,11 +73,13 @@ export default function PayoffChartWithEvents({ plan, debts }: Props) {
           ))}
 
           {/* Payoff dots */}
-          <Scatter
-            name="Payoff Events"
-            data={eventData}
-            fill="#d4af37" // gold
-          />
+          {showEvents && (
+            <Scatter
+              name="Payoff Events"
+              data={eventData}
+              fill="#d4af37" // gold
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </div>
