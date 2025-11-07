@@ -27,9 +27,27 @@ export async function getSharedPlan(id: string) {
     if (error) throw error;
     if (!data) throw new Error('Plan not found');
 
-    return data.snapshot as any;
+    return {
+      ...data.snapshot as any,
+      createdAt: data.created_at,
+    };
   } catch (e) {
     console.error("❌ getSharedPlan error:", e);
+    throw e;
+  }
+}
+
+export async function deleteSharedPlan(id: string) {
+  try {
+    const { error } = await supabase
+      .from('public_shares')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error("❌ deleteSharedPlan error:", e);
     throw e;
   }
 }
