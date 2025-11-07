@@ -3,7 +3,7 @@
 // ===================================
 import React from "react";
 import { Debt, UserSettings } from "@/lib/computeDebtPlan";
-import { scenarioCompare } from "@/lib/scenarioCompare";
+import { scenarioCompareWithMilestones } from "@/lib/scenarioCompareMilestones";
 
 type Props = {
   debts: Debt[];
@@ -11,23 +11,36 @@ type Props = {
 };
 
 export default function ScenarioChart({ debts, settings }: Props) {
-  const { snowball, avalanche, minimum } = scenarioCompare(debts, settings);
+  const { snowball, avalanche, minimum, milestones } = scenarioCompareWithMilestones(debts, settings);
+
+  const findHalfway = (msArr: any[]) => {
+    return msArr.find((m) => m.label === "50% Remaining");
+  };
+
+  const half = {
+    snowball: findHalfway(milestones.snowball),
+    avalanche: findHalfway(milestones.avalanche),
+    minimum: null,
+  };
 
   const data = [
     {
       name: "Snowball",
       months: snowball.summary.finalMonthIndex + 1,
       interest: snowball.totalInterest,
+      half: half.snowball?.monthIndex != null ? half.snowball.monthIndex + 1 : null,
     },
     {
       name: "Avalanche",
       months: avalanche.summary.finalMonthIndex + 1,
       interest: avalanche.totalInterest,
+      half: half.avalanche?.monthIndex != null ? half.avalanche.monthIndex + 1 : null,
     },
     {
       name: "Minimum",
       months: minimum.summary.finalMonthIndex + 1,
       interest: minimum.totalInterest,
+      half: null,
     },
   ];
 
@@ -39,6 +52,11 @@ export default function ScenarioChart({ debts, settings }: Props) {
         {data.map((item) => (
           <div key={item.name}>
             <strong>{item.name}:</strong> {item.months} months
+            {item.half && (
+              <span className="text-xs ml-2" style={{ color: "#d4af37" }}>
+                (50% at month {item.half})
+              </span>
+            )}
           </div>
         ))}
       </div>
