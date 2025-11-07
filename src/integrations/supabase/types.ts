@@ -459,7 +459,6 @@ export type Database = {
       }
       plaid_items: {
         Row: {
-          access_token: string | null
           created_at: string
           id: string
           institution_id: string | null
@@ -476,7 +475,6 @@ export type Database = {
           vault_secret_id: string | null
         }
         Insert: {
-          access_token?: string | null
           created_at?: string
           id?: string
           institution_id?: string | null
@@ -493,7 +491,6 @@ export type Database = {
           vault_secret_id?: string | null
         }
         Update: {
-          access_token?: string | null
           created_at?: string
           id?: string
           institution_id?: string | null
@@ -861,6 +858,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_ip_address: { Args: { ip_text: string }; Returns: string }
       log_plaid_api_call: {
         Args: {
           p_endpoint: string
