@@ -87,29 +87,26 @@ export function exportPlanToExcel(
   const planWS = XLSX.utils.aoa_to_sheet(planSheetData);
 
   // ---- Sheet 4: Payoff Order ----
-  const payoffOrder = getPayoffOrder(plan);
-  const payoffOrderSheetData: any[] = [
-    ["Order", "Debt ID", "Debt Name", "Paid Off in Month"],
+  const payoff = getPayoffOrder(plan);
+  const nameMap = Object.fromEntries(debts.map((d) => [d.id, d.name]));
+
+  const payoffSheetData = [
+    ["Rank", "Debt", "Month Paid"],
+    ...payoff.map((p, i) => [
+      i + 1,
+      nameMap[p.debtId] || p.debtId,
+      p.monthIndex,
+    ]),
   ];
 
-  payoffOrder.forEach((item, index) => {
-    const debt = debts.find((d) => d.id === item.debtId);
-    payoffOrderSheetData.push([
-      index + 1,
-      item.debtId,
-      debt?.name || "Unknown",
-      item.monthIndex,
-    ]);
-  });
-
-  const payoffOrderWS = XLSX.utils.aoa_to_sheet(payoffOrderSheetData);
+  const payoffWS = XLSX.utils.aoa_to_sheet(payoffSheetData);
 
   // ---- Build workbook ----
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, debtsWS, "Debts");
   XLSX.utils.book_append_sheet(wb, settingsWS, "Settings");
   XLSX.utils.book_append_sheet(wb, planWS, "Plan");
-  XLSX.utils.book_append_sheet(wb, payoffOrderWS, "Payoff Order");
+  XLSX.utils.book_append_sheet(wb, payoffWS, "Payoff Order");
 
   // ---- Trigger download ----
   XLSX.writeFile(wb, "finityo_payoff_plan.xlsx");
