@@ -2,6 +2,7 @@ import { usePlan } from "@/context/PlanContext";
 import { exportPlanToExcel } from "@/lib/exportExcel";
 import { exportPlanToPDF } from "@/lib/exportPdf";
 import DashboardSummary from "@/components/DashboardSummary";
+import PayoffOrder from "@/components/PayoffOrder";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
@@ -54,6 +55,8 @@ export default function PlanPage() {
       </p>
 
       <DashboardSummary plan={plan} />
+
+      <PayoffOrder plan={plan} debts={debts} />
 
       <Card className="overflow-x-auto">
         <table className="w-full border-collapse">
