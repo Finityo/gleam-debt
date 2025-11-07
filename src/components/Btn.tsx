@@ -21,10 +21,10 @@ export function Btn({
     "px-4 py-2 rounded-base text-sm font-medium transition-colors select-none";
 
   const styles = {
-    primary: "bg-brand text-white hover:bg-brand-soft",
-    outline: "border border-brand-border hover:bg-gray-50",
-    subtle: "text-brand-faded hover:text-brand",
-    danger: "border border-red-300 text-red-700 hover:bg-red-50",
+    primary: "bg-black text-white hover:bg-gray-900 transition-all",
+    outline: "border border-gray-300 hover:bg-gray-50 transition-all",
+    subtle: "text-gray-700 hover:text-black transition-all",
+    danger: "border border-red-300 text-red-700 hover:bg-red-50 transition-all",
   };
 
   return (
