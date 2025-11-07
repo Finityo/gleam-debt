@@ -121,9 +121,11 @@ export default function Profile() {
   return (
     <AppLayout>
       <div className="space-y-6 max-w-2xl mx-auto">
-        <div>
-          <h1 className="text-2xl font-bold">Profile Settings</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+            Profile Settings
+          </h1>
+          <p className="text-sm text-muted-foreground mt-2">
             Manage your account information
           </p>
         </div>
@@ -132,65 +134,65 @@ export default function Profile() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">First Name</label>
+                <label className="text-sm font-medium text-foreground/80">First Name</label>
                 <input
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full border border-brand-border rounded-base p-2 text-sm bg-background text-foreground"
+                  className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Last Name</label>
+                <label className="text-sm font-medium text-foreground/80">Last Name</label>
                 <input
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full border border-brand-border rounded-base p-2 text-sm bg-background text-foreground"
+                  className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
+              <label className="text-sm font-medium text-foreground/80">Email</label>
               <input
                 type="email"
                 value={user?.email || ""}
                 disabled
-                className="w-full border border-brand-border rounded-base p-2 text-sm bg-muted text-muted-foreground"
+                className="w-full border border-border/30 rounded-lg p-3 text-sm bg-muted/30 text-muted-foreground cursor-not-allowed"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground/70">
                 Email cannot be changed
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Phone (optional)</label>
+              <label className="text-sm font-medium text-foreground/80">Phone (optional)</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full border border-brand-border rounded-base p-2 text-sm bg-background text-foreground"
+                className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Address (optional)</label>
+              <label className="text-sm font-medium text-foreground/80">Address (optional)</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full border border-brand-border rounded-base p-2 text-sm bg-background text-foreground"
+                className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">ZIP Code (optional)</label>
+              <label className="text-sm font-medium text-foreground/80">ZIP Code (optional)</label>
               <input
                 type="text"
                 value={zipCode}
                 onChange={(e) => setZipCode(e.target.value)}
-                className="w-full border border-brand-border rounded-base p-2 text-sm bg-background text-foreground"
+                className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               />
             </div>
           </div>
@@ -210,11 +212,11 @@ export default function Profile() {
                     Active until {subscription.formatSubscriptionEnd()}
                   </div>
                 </div>
-                <div className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-medium">
+                <div className="px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-medium">
                   Active
                 </div>
               </div>
-              <Btn onClick={subscription.openCustomerPortal} variant="outline" className="w-full">
+              <Btn onClick={subscription.openCustomerPortal} variant="outline" className="w-full border-primary/30 hover:bg-primary/10 hover:border-primary/50">
                 <CreditCard className="w-4 h-4 mr-2" />
                 Manage Subscription
               </Btn>
@@ -224,7 +226,7 @@ export default function Profile() {
               <div className="text-sm text-muted-foreground">
                 No active subscription. Upgrade to unlock premium features!
               </div>
-              <Btn onClick={() => navigate('/pricing')} className="w-full">
+              <Btn onClick={() => navigate('/pricing')} className="w-full bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 View Plans
               </Btn>
@@ -235,19 +237,23 @@ export default function Profile() {
         <Card title="Account Role">
           <div className="space-y-2">
             <div className="text-sm text-muted-foreground">
-              Current role: <span className="font-medium text-foreground capitalize">{role}</span>
+              Current role: <span className="font-medium text-primary capitalize">{role}</span>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground/70">
               Contact an administrator to change your role
             </p>
           </div>
         </Card>
 
-        <div className="flex items-center gap-3">
-          <Btn onClick={handleSave} disabled={saving}>
+        <div className="flex items-center gap-3 pb-8">
+          <Btn 
+            onClick={handleSave} 
+            disabled={saving}
+            className="bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90"
+          >
             {saving ? "Saving..." : "Save Changes"}
           </Btn>
-          <Btn onClick={handleSignOut} variant="outline">
+          <Btn onClick={handleSignOut} variant="outline" className="border-border/50 hover:bg-accent/10">
             Sign Out
           </Btn>
         </div>

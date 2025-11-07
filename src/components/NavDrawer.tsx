@@ -29,7 +29,8 @@ const links = [
 export function NavDrawer() {
   const { pathname } = useLocation();
   const { user } = useAuth();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <>
@@ -37,34 +38,37 @@ export function NavDrawer() {
       <Button
         variant="ghost"
         size="icon"
-        className="md:hidden fixed top-4 left-4 z-50"
+        className="md:hidden fixed top-4 left-4 z-50 bg-card/80 backdrop-blur-sm"
         onClick={() => setOpen(!open)}
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
 
+      {/* Desktop Toggle Button - Always Visible */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="hidden md:flex fixed top-4 left-4 z-50 bg-card/80 backdrop-blur-sm"
+        onClick={() => setCollapsed(!collapsed)}
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+
       {/* Drawer */}
       <aside
         className={`
-          fixed md:sticky top-0 h-screen border-r bg-card z-40
+          fixed md:sticky top-0 h-screen border-r border-border/50 bg-card/95 backdrop-blur-sm z-40
           transition-all duration-300 ease-in-out
-          ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-          ${open ? "w-60" : "md:w-16"}
+          ${open ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+          ${collapsed ? "md:w-0 md:border-r-0" : "w-60"}
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-6 border-b">
-          <div className={`font-bold text-xl transition-opacity ${open ? "opacity-100" : "md:opacity-0"}`}>
+        <div className="flex items-center justify-between px-4 py-6 border-b border-border/50">
+          <div className={`font-bold text-xl bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent transition-opacity ${collapsed ? "md:opacity-0" : "opacity-100"}`}>
             Finityo
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden md:flex"
-            onClick={() => setOpen(!open)}
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
         </div>
 
         {/* Navigation */}
@@ -81,8 +85,8 @@ export function NavDrawer() {
                   flex items-center gap-3 px-3 py-2 rounded-lg
                   text-sm transition-all duration-200
                   ${active 
-                    ? "bg-primary text-primary-foreground font-medium" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 font-medium" 
+                    : "text-muted-foreground hover:bg-accent/10 hover:text-foreground"
                   }
                 `}
                 onClick={() => {
@@ -91,7 +95,7 @@ export function NavDrawer() {
                 }}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
-                <span className={`transition-opacity ${open ? "opacity-100" : "md:opacity-0 md:w-0"}`}>
+                <span className={`transition-opacity ${collapsed ? "md:opacity-0 md:w-0 md:hidden" : "opacity-100"}`}>
                   {item.label}
                 </span>
               </Link>
@@ -100,34 +104,34 @@ export function NavDrawer() {
         </nav>
 
         {/* Auth section */}
-        <div className="border-t px-3 py-3">
+        <div className="border-t border-border/50 px-3 py-3">
           {user ? (
             <Link
               to="/profile"
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
                 pathname === "/profile"
-                  ? "bg-primary text-primary-foreground font-medium"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 font-medium"
+                  : "text-muted-foreground hover:bg-accent/10 hover:text-foreground"
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) setOpen(false);
               }}
             >
               <User className="h-5 w-5 flex-shrink-0" />
-              <span className={`transition-opacity ${open ? "opacity-100" : "md:opacity-0 md:w-0"}`}>
+              <span className={`transition-opacity ${collapsed ? "md:opacity-0 md:w-0 md:hidden" : "opacity-100"}`}>
                 Profile
               </span>
             </Link>
           ) : (
             <Link
               to="/auth/signin"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-accent/10 hover:text-foreground transition-all duration-200"
               onClick={() => {
                 if (window.innerWidth < 768) setOpen(false);
               }}
             >
               <LogIn className="h-5 w-5 flex-shrink-0" />
-              <span className={`transition-opacity ${open ? "opacity-100" : "md:opacity-0 md:w-0"}`}>
+              <span className={`transition-opacity ${collapsed ? "md:opacity-0 md:w-0 md:hidden" : "opacity-100"}`}>
                 Sign In
               </span>
             </Link>
