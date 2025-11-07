@@ -6,6 +6,7 @@ export function PageShell({ children }: { children: ReactNode }) {
       <header className="border-b border-white/10 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3">
+            <img src="/finityo-icon-final.png" alt="Finityo" className="h-9 w-9" />
             <div className="text-xl font-bold text-finityo-textMain">Finityo</div>
           </a>
           <nav className="flex items-center gap-4 text-sm">

@@ -18,15 +18,17 @@ export default {
       },
       colors: {
         finityo: {
-          primary: "#10E7CD",
-          primaryAccent: "#00C2FF",
-          indigo: "#7D41FF",
-          magenta: "#C044FF",
-          bgA: "#0C1222",
-          bgB: "#162840",
-          textMain: "#FFFFFF",
-          textBody: "#C6CED8",
-          warn: "#F8A100",
+          primary: "hsl(175 93% 49%)", // #10E7CD
+          primaryAccent: "hsl(196 100% 50%)", // #00C2FF
+          indigo: "hsl(262 100% 63%)", // #7D41FF
+          magenta: "hsl(280 100% 63%)", // #C044FF
+          bg: "hsl(214 43% 9%)", // #0C1222
+          bgA: "hsl(214 43% 9%)", // #0C1222
+          bgB: "hsl(212 44% 17%)", // #162840
+          textMain: "hsl(0 0% 100%)", // #FFFFFF
+          textBody: "hsl(210 15% 81%)", // #C6CED8
+          warn: "hsl(38 100% 49%)", // #F8A100
+          cta: "hsl(175 93% 49%)", // #10E7CD
         },
         brand: {
           DEFAULT: "hsl(0 0% 0%)",
