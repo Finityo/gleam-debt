@@ -19,6 +19,13 @@ export const ROUTE_META = [
   { path: "/settings", title: "Settings", protected: true },
 ];
 
+// ===== ROUTE SEARCH UTILITY =====
+export function searchRoutes(q: string) {
+  return ROUTE_META.filter((r) =>
+    r.title.toLowerCase().includes(q.toLowerCase())
+  );
+}
+
 // ===== LOADER =====
 const Loader = () => (
   <div className="flex flex-col items-center justify-center h-screen text-center">
