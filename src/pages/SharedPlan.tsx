@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getSharedPlan, deleteSharedPlan, verifyPin } from "@/live/api/share";
 import { DebtPlan } from "@/lib/computeDebtPlan";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,13 +15,16 @@ import ScenarioCompareChart from "@/components/ScenarioCompareChart";
 import { QRCodeSVG } from "qrcode.react";
 import { exportPlanToPDF } from "@/lib/export/pdf";
 import { exportDebtsToCSV } from "@/lib/export/csv";
-import { FileDown, Lock, Trash2 } from "lucide-react";
+import { FileDown, Lock, Trash2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { CoachInviteBar } from "@/components/CoachInviteBar";
+import { CoachSuggestDrawer } from "@/components/CoachSuggestDrawer";
 
 
 export default function SharedPlan() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [unsharing, setUnsharing] = useState(false);
   const [data, setData] = useState<any>(null);
@@ -29,6 +32,9 @@ export default function SharedPlan() {
   const [pinNeeded, setPinNeeded] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState("");
+  const [openCoach, setOpenCoach] = useState(false);
+
+  const coachFromUrl = new URLSearchParams(location.search).get("coach") || "";
 
   useEffect(() => {
     async function load() {
@@ -188,6 +194,10 @@ export default function SharedPlan() {
   }
 
   const publicUrl = `${window.location.origin}/p/${id}`;
+  
+  // Derive coach drawer inputs
+  const monthsCount = plan?.months?.length ?? 0;
+  const debtsMini = (debts ?? []).map((d: any) => ({ id: d.id, name: d.name }));
 
   return (
     <div className="container mx-auto p-8 space-y-6 pb-20">
@@ -204,6 +214,9 @@ export default function SharedPlan() {
           </Button>
         </div>
       </div>
+
+      {/* Coach Invite */}
+      <CoachInviteBar shareId={id!} />
 
       {/* Share metadata */}
       <div className="text-xs text-muted-foreground space-y-1">
@@ -270,6 +283,24 @@ export default function SharedPlan() {
           <p className="text-amber-600 dark:text-amber-400">• Personal notes excluded</p>
         )}
       </div>
+
+      {/* Floating Coach Button */}
+      <div className="fixed bottom-4 right-4 z-40">
+        <Button onClick={() => setOpenCoach(true)}>
+          <MessageSquare className="h-4 w-4 mr-2" />
+          Coach Notes
+        </Button>
+      </div>
+
+      {/* Coach Drawer */}
+      <CoachSuggestDrawer
+        open={openCoach}
+        onClose={() => setOpenCoach(false)}
+        planId={id!}
+        coachName={coachFromUrl || "Coach"}
+        monthsCount={monthsCount}
+        debts={debtsMini}
+      />
     </div>
   );
 }

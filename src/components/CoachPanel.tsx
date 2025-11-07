@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "./Card";
 import { Btn } from "./Btn";
 import { SectionLabel } from "./SectionLabel";
-import { addCoachComment, getCoachComments, toggleResolved, CoachComment } from "@/lib/coach";
+import { coachAdd, coachGet, coachToggle, CoachComment } from "@/lib/coach";
 
 type Props = {
   planId: string;
@@ -15,7 +15,7 @@ export function CoachPanel({ planId, coachName }: Props) {
 
   useEffect(() => {
     (async () => {
-      setComments(await getCoachComments(planId));
+      setComments(await coachGet(planId));
     })();
   }, [planId]);
 
@@ -27,14 +27,14 @@ export function CoachPanel({ planId, coachName }: Props) {
       text,
       createdAt: new Date().toISOString(),
     };
-    await addCoachComment(planId, c);
-    setComments(await getCoachComments(planId));
+    await coachAdd(planId, c);
+    setComments(await coachGet(planId));
     setText("");
   }
 
   async function toggle(id: string) {
-    await toggleResolved(planId, id);
-    setComments(await getCoachComments(planId));
+    await coachToggle(planId, id);
+    setComments(await coachGet(planId));
   }
 
   return (
