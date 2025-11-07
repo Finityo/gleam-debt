@@ -60,8 +60,14 @@ export default function PayoffChartWithEvents({ plan, debts }: Props) {
             <ReferenceLine
               key={i}
               x={e.monthIndex}
-              stroke="#d4af37"      // gold
-              strokeDasharray="3 3" // dotted
+              stroke="#d4af37"
+              strokeDasharray="3 3"
+              label={{
+                value: e.debtName,
+                position: "top",
+                fill: "#d4af37",
+                fontSize: 10,
+              }}
             />
           ))}
 
