@@ -130,7 +130,7 @@ export default function Profile() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-950/30 via-pink-950/20 to-cyan-950/30 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 shadow-lg hover:shadow-purple-500/20 hover:border-purple-400/40 transition-all duration-300 hover:bg-gradient-to-br hover:from-purple-900/40 hover:via-pink-900/30 hover:to-cyan-900/40">
+        <div className="bg-gradient-to-br from-purple-950/30 via-pink-950/20 to-purple-900/30 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 shadow-lg hover:shadow-purple-500/20 hover:border-purple-400/40 transition-all duration-300 hover:bg-gradient-to-br hover:from-purple-900/40 hover:via-pink-900/30 hover:to-purple-800/40">
           <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">Personal Information</h3>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -199,18 +199,18 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-pink-950/30 via-cyan-950/20 to-purple-950/30 backdrop-blur-sm border border-pink-500/20 rounded-xl p-6 shadow-lg hover:shadow-pink-500/20 hover:border-pink-400/40 transition-all duration-300 hover:bg-gradient-to-br hover:from-pink-900/40 hover:via-cyan-900/30 hover:to-purple-900/40">
-          <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-pink-300 to-cyan-300 bg-clip-text text-transparent">Subscription</h3>
+        <div className="bg-gradient-to-br from-pink-950/30 via-fuchsia-950/20 to-cyan-950/30 backdrop-blur-sm border border-pink-500/20 rounded-xl p-6 shadow-lg hover:shadow-pink-500/20 hover:border-pink-400/40 transition-all duration-300 hover:bg-gradient-to-br hover:from-pink-900/40 hover:via-fuchsia-900/30 hover:to-cyan-900/40">
+          <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-pink-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Subscription</h3>
           {subscription.loading ? (
             <div className="flex items-center justify-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-400"></div>
             </div>
           ) : subscription.subscribed ? (
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-purple-900/20 via-pink-900/20 to-cyan-900/20 border border-purple-500/30 hover:border-pink-400/40 hover:bg-gradient-to-r hover:from-purple-800/30 hover:via-pink-800/30 hover:to-cyan-800/30 transition-all duration-300">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-pink-900/20 via-fuchsia-900/20 to-cyan-900/20 border border-pink-500/30 hover:border-pink-400/40 hover:bg-gradient-to-r hover:from-pink-800/30 hover:via-fuchsia-800/30 hover:to-cyan-800/30 transition-all duration-300">
                 <div>
-                  <div className="font-semibold text-purple-100">{subscription.getTierDisplayName()}</div>
-                  <div className="text-sm text-pink-300/80">
+                  <div className="font-semibold text-pink-100">{subscription.getTierDisplayName()}</div>
+                  <div className="text-sm text-fuchsia-300/80">
                     Active until {subscription.formatSubscriptionEnd()}
                   </div>
                 </div>
@@ -218,7 +218,7 @@ export default function Profile() {
                   Active
                 </div>
               </div>
-              <Btn onClick={subscription.openCustomerPortal} variant="outline" className="w-full border-purple-500/40 bg-slate-900/30 hover:bg-purple-500/10 hover:border-purple-400/60 text-purple-200 hover:text-purple-100 hover:shadow-purple-400/20 transition-all duration-300">
+              <Btn onClick={subscription.openCustomerPortal} variant="outline" className="w-full border-pink-500/40 bg-slate-900/30 hover:bg-pink-500/10 hover:border-pink-400/60 text-pink-200 hover:text-pink-100 hover:shadow-pink-400/20 transition-all duration-300">
                 <CreditCard className="w-4 h-4 mr-2" />
                 Manage Subscription
               </Btn>
@@ -228,7 +228,7 @@ export default function Profile() {
               <div className="text-sm text-pink-300/80 p-4 rounded-lg bg-pink-900/20 border border-pink-500/20">
                 No active subscription. Upgrade to unlock premium features!
               </div>
-              <Btn onClick={() => navigate('/pricing')} className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:opacity-90 hover:shadow-lg hover:shadow-pink-500/30 transition-all duration-300 text-white">
+              <Btn onClick={() => navigate('/pricing')} className="w-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-cyan-500 hover:opacity-90 hover:shadow-lg hover:shadow-pink-500/30 transition-all duration-300 text-white">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 View Plans
               </Btn>
@@ -236,11 +236,11 @@ export default function Profile() {
           )}
         </div>
 
-        <div className="bg-gradient-to-br from-cyan-950/30 via-purple-950/20 to-pink-950/30 backdrop-blur-sm border border-cyan-500/20 rounded-xl p-6 shadow-lg hover:shadow-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 hover:bg-gradient-to-br hover:from-cyan-900/40 hover:via-purple-900/30 hover:to-pink-900/40">
-          <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">Account Role</h3>
-          <div className="space-y-2 p-4 rounded-lg bg-gradient-to-r from-cyan-900/20 to-purple-900/20 border border-cyan-500/30 hover:border-cyan-400/40 hover:bg-gradient-to-r hover:from-cyan-800/30 hover:to-purple-800/30 transition-all duration-300">
+        <div className="bg-gradient-to-br from-cyan-950/30 via-teal-950/20 to-purple-950/30 backdrop-blur-sm border border-cyan-500/20 rounded-xl p-6 shadow-lg hover:shadow-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 hover:bg-gradient-to-br hover:from-cyan-900/40 hover:via-teal-900/30 hover:to-purple-900/40">
+          <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-cyan-300 via-teal-300 to-purple-300 bg-clip-text text-transparent">Account Role</h3>
+          <div className="space-y-2 p-4 rounded-lg bg-gradient-to-r from-cyan-900/20 via-teal-900/20 to-purple-900/20 border border-cyan-500/30 hover:border-cyan-400/40 hover:bg-gradient-to-r hover:from-cyan-800/30 hover:via-teal-800/30 hover:to-purple-800/30 transition-all duration-300">
             <div className="text-sm text-cyan-300/80">
-              Current role: <span className="font-semibold text-cyan-300 capitalize ml-1">{role}</span>
+              Current role: <span className="font-semibold text-teal-300 capitalize ml-1">{role}</span>
             </div>
             <p className="text-xs text-purple-300/60">
               Contact an administrator to change your role
