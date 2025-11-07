@@ -52,6 +52,9 @@ export default function ScenarioChart({ debts, settings }: Props) {
         {data.map((item) => (
           <div key={item.name}>
             █ <strong>{item.name}</strong> {item.months} months
+            <span className="text-sm text-gray-500 ml-3">
+              → Mid: {item.half ?? "—"}
+            </span>
           </div>
         ))}
       </div>
