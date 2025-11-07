@@ -30,7 +30,7 @@ export function exportPlanToExcel(
 
   // ---- Sheet 2: Settings (with Comparison) ----
   const minPlan = computeMinimumOnly(debts);
-  const comparison = comparePlans(plan, minPlan);
+  const cmp = comparePlans(plan, minPlan);
 
   const settingsSheetData = [
     ["Field", "Value"],
@@ -39,12 +39,12 @@ export function exportPlanToExcel(
     ["One-time Extra (Month 1)", settings.oneTimeExtra],
     [""], // Empty row
     ["COMPARISON VS MINIMUM-ONLY", ""],
-    ["Your Debt-Free Date", comparison.debtFreeDateReal],
-    ["Minimum-Only Debt-Free Date", comparison.debtFreeDateMin],
-    ["Months Saved", comparison.monthsSaved],
-    ["Your Total Interest", `$${comparison.interestReal.toFixed(2)}`],
-    ["Minimum-Only Total Interest", `$${comparison.interestMin.toFixed(2)}`],
-    ["Interest Saved", `$${comparison.interestSaved.toFixed(2)}`],
+    ["Your Debt-Free Date", cmp.debtFreeDateReal],
+    ["Minimum-Only Debt-Free Date", cmp.debtFreeDateMin],
+    ["Months Saved", cmp.monthsSaved],
+    ["Your Total Interest", `$${cmp.interestReal.toFixed(2)}`],
+    ["Minimum-Only Total Interest", `$${cmp.interestMin.toFixed(2)}`],
+    ["Interest Saved", `$${cmp.interestSaved.toFixed(2)}`],
   ];
   const settingsWS = XLSX.utils.aoa_to_sheet(settingsSheetData);
 
