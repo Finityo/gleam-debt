@@ -19,7 +19,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { AppProvider } from "@/context/AppStore";
 import { NotificationsPanel } from "@/components/NotificationsPanel";
 import { RequireAuth } from "@/components/RequireAuth";
-import { useDemoMigration } from "@/hooks/useDemoMigration";
+import { NextHandler } from "@/components/NextHandler";
 
 // ===== Finityo Mode Check =====
 console.log("🔍 Finityo Build Mode:", import.meta.env.VITE_MODE);
@@ -118,11 +118,10 @@ const DemoLayoutWrapper = () => (
 
 const AppRoutes = () => {
   useAutoLogout();
-  const { Modal } = useDemoMigration();
   
   return (
     <>
-      <Modal />
+      <NextHandler />
       <Suspense fallback={<Loader />}>
         <Routes>
               {/* Public routes */}
