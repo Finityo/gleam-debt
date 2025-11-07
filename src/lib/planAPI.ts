@@ -7,6 +7,7 @@
 import { AppDB } from "@/live/lovableCloudDB";
 import { computeDebtPlan } from "@/lib/computeDebtPlan";
 import { supabase } from "@/integrations/supabase/client";
+import { uid, hashState } from "@/lib/utils";
 
 export type PlanData = {
   debts: any[];
@@ -232,7 +233,7 @@ export const PlanAPI = {
     data: PlanData,
     changeDescription?: string
   ): Promise<VersionRecord> {
-    const versionId = `v_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const versionId = `v_${Date.now()}_${uid()}`;
 
     const { data: version, error } = await supabase
       .from('user_plan_versions')
@@ -261,6 +262,29 @@ export const PlanAPI = {
       notes: version.notes || '',
       changeDescription: version.change_description || undefined,
     };
+  },
+
+  async shouldSaveVersion(userId: string, newData: PlanData): Promise<boolean> {
+    // Get the most recent version to compare
+    const versions = await this.getVersions(userId, 1);
+    if (versions.length === 0) return true; // No versions yet, save this one
+
+    const lastVersion = versions[0];
+    
+    // Compare state hashes (excluding plan and updatedAt which change on every compute)
+    const lastHash = hashState({
+      debts: lastVersion.debts,
+      settings: lastVersion.settings,
+      notes: lastVersion.notes,
+    });
+    
+    const newHash = hashState({
+      debts: newData.debts,
+      settings: newData.settings,
+      notes: newData.notes,
+    });
+
+    return lastHash !== newHash; // Only save if something meaningful changed
   },
 
   async getVersions(userId: string, limit = 50): Promise<VersionRecord[]> {

@@ -136,7 +136,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
 
   // --------------------------------------------------------------------------
-  // SAVE PLAN: DEMO → localStorage | LIVE → PlanAPI.save + auto-version
+  // SAVE PLAN: DEMO → localStorage | LIVE → PlanAPI.save + smart auto-version
   // --------------------------------------------------------------------------
   const persist = useCallback(
     async (nextDebts: Debt[], nextSettings: UserSettings, nextPlan: DebtPlan | null, changeDesc?: string) => {
@@ -160,10 +160,16 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
       await PlanAPI.save(user.id, planData);
 
-      // Auto-save version for significant changes
+      // Smart auto-save: only create version if something meaningful changed
       if (changeDesc) {
         try {
-          await PlanAPI.saveVersion(user.id, planData, changeDesc);
+          const shouldSave = await PlanAPI.shouldSaveVersion(user.id, planData);
+          if (shouldSave) {
+            await PlanAPI.saveVersion(user.id, planData, changeDesc);
+            console.log('✅ Version saved:', changeDesc);
+          } else {
+            console.log('⏭️ No meaningful changes, skipping version save');
+          }
         } catch (err) {
           console.error('Failed to save version:', err);
         }
