@@ -21,32 +21,32 @@ interface PricingTier {
 
 const PRICING_TIERS: Record<string, PricingTier> = {
   essential: {
-    name: "Essential",
-    price: 4.99,
+    name: "Essentials",
+    price: 2.99,
     interval: "month",
-    priceId: "price_1SKdx9IUysiSR1zwcD37J2yN",
+    priceId: "price_1SQrPIIUysiSR1zwsdPXSRkD",
     description: "Perfect for getting started",
     features: [
-      "Track up to 5 debts",
-      "Basic payoff strategies",
-      "Manual debt entry",
+      "Save your payoff plan",
+      "Share link",
+      "Export your plan",
+      "Basic debt tracking",
       "Progress tracking",
-      "Email support",
     ],
   },
   ultimate: {
     name: "Ultimate",
-    price: 9.99,
+    price: 4.99,
     interval: "month",
-    priceId: "price_1SKe69IUysiSR1zwbpIUwAph",
+    priceId: "price_1SQrPnIUysiSR1zwS8XZ5qqc",
     description: "Complete debt freedom toolkit",
     features: [
+      "Plaid bank sync",
+      "Coach Mode",
+      "Notes + History",
+      "Everything in Essentials",
       "Unlimited debt tracking",
       "All payoff strategies",
-      "Plaid bank integration",
-      "Real-time progress visualization",
-      "Priority support",
-      "Export capabilities",
     ],
     popular: true,
   },
@@ -149,7 +149,7 @@ const Pricing = () => {
     <>
       <SEOHead
         title="Pricing - Finityo"
-        description="Choose the perfect plan for your debt freedom journey. Essential ($4.99/mo), Ultimate ($9.99/mo), or Ultimate Plus ($49.99/year with 58% savings). Start today!"
+        description="Choose the perfect plan for your debt freedom journey. Essentials ($2.99/mo), Ultimate ($4.99/mo), or Ultimate Plus ($49.99/year with 58% savings). Start today!"
       />
       <div className="min-h-screen bg-gradient-to-b from-background to-background/80 py-12 px-4">
         <div className="max-w-7xl mx-auto">
