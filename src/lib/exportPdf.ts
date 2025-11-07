@@ -5,6 +5,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
 import { remainingByMonth } from "@/lib/remaining";
+import { getPayoffOrder } from "@/lib/payoffOrder";
 
 export function exportPlanToPDF(
   debts: Debt[],
@@ -93,6 +94,25 @@ export function exportPlanToPDF(
     headStyles: { fillColor: [0, 0, 0] },
     theme: "striped",
   });
+
+  // --- Payoff Order Table ---
+  const payoffOrder = getPayoffOrder(plan);
+  const debtMap = new Map(debts.map((d) => [d.id, d]));
+
+  if (payoffOrder.length > 0) {
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 24,
+      head: [["Order", "Debt Name", "Month Paid Off"]],
+      body: payoffOrder.map((item, idx) => {
+        const debt = debtMap.get(item.debtId);
+        const debtName = debt?.name || item.debtId;
+        return [idx + 1, debtName, item.monthIndex];
+      }),
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [0, 0, 0] },
+      theme: "striped",
+    });
+  }
 
   // Done
   doc.save("finityo_payoff_summary.pdf");
