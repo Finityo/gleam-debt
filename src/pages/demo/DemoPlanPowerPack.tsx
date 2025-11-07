@@ -12,6 +12,8 @@ import ScenarioChart from "@/components/ScenarioChart";
 import PayoffChartWithEvents from "@/components/PayoffChartWithEvents";
 import NotesBox from "@/components/NotesBox";
 import BadgesBar from "@/components/BadgesBar";
+import { Card } from "@/components/Card";
+import AppLayout from "@/layouts/AppLayout";
 import { toast } from "sonner";
 
 export default function DemoPlanPowerPack() {
@@ -26,61 +28,77 @@ export default function DemoPlanPowerPack() {
 
   if (!plan) {
     return (
-      <OnboardingWizard
-        onFinish={(d, s) => {
-          createScenario("My First Plan", d, s);
-          toast.success("Scenario created! Open Scenarios page to view.");
-        }}
-      />
+      <AppLayout>
+        <OnboardingWizard
+          onFinish={(d, s) => {
+            createScenario("My First Plan", d, s);
+            toast.success("Scenario created! Open Scenarios page to view.");
+          }}
+        />
+      </AppLayout>
     );
   }
 
   const alerts = generateAlerts(plan, debts);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto p-4 pb-20">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Power Pack Demo</h1>
-        <p className="text-sm text-muted-foreground">
-          All features assembled: Budget Sync, Alerts, Calendar, Payment Playbook & more
-        </p>
-      </div>
+    <AppLayout>
+      <div className="space-y-6">
+        <div className="animate-fade-in">
+          <h1 className="text-3xl font-bold mb-2">Power Pack Demo</h1>
+          <p className="text-sm text-muted-foreground">
+            All features assembled: Budget Sync, Alerts, Calendar, Payment Playbook & more
+          </p>
+        </div>
 
-      <BadgesBar plan={plan} />
-      <NotesBox />
+        <BadgesBar plan={plan} />
+        <NotesBox />
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <BudgetSync
-          income={income}
-          bills={bills}
-          onSuggest={(amt) => {
-            updateSettings({ ...settings, extraMonthly: amt });
-            toast.success(`Set monthly extra to $${amt}`);
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card title="Budget Sync">
+            <BudgetSync
+              income={income}
+              bills={bills}
+              onSuggest={(amt) => {
+                updateSettings({ ...settings, extraMonthly: amt });
+                toast.success(`Set monthly extra to $${amt}`);
+              }}
+            />
+          </Card>
+          
+          <Card title="Health Alerts">
+            <AlertsPanel alerts={alerts} />
+          </Card>
+        </div>
+
+        <Card title="Scenario Comparison">
+          <ScenarioChart debts={debts} settings={settings} />
+        </Card>
+
+        <Card title="Payoff Timeline">
+          <PayoffChartWithEvents plan={plan} debts={debts} showEvents />
+        </Card>
+
+        <InteractiveCalendar
+          plan={plan}
+          onApply={(oneOffs) => {
+            console.log("Apply these one-offs into engine:", oneOffs);
+            toast.info(`${oneOffs.length} one-off payments captured (hook to engine as needed)`);
           }}
         />
-        <AlertsPanel alerts={alerts} />
+
+        <PaymentPlaybook plan={plan} debts={debts} />
+
+        <Card title="Backup & Restore">
+          <DataPorter
+            getState={() => ({ debts, settings, notes, bills, income, scenarios })}
+            setState={(obj) => {
+              console.log("Restore payload:", obj);
+              toast.success("Backup loaded (wire to context setters as needed)");
+            }}
+          />
+        </Card>
       </div>
-
-      <ScenarioChart debts={debts} settings={settings} />
-      <PayoffChartWithEvents plan={plan} debts={debts} showEvents />
-
-      <InteractiveCalendar
-        plan={plan}
-        onApply={(oneOffs) => {
-          console.log("Apply these one-offs into engine:", oneOffs);
-          toast.info(`${oneOffs.length} one-off payments captured (hook to engine as needed)`);
-        }}
-      />
-
-      <PaymentPlaybook plan={plan} debts={debts} />
-
-      <DataPorter
-        getState={() => ({ debts, settings, notes, bills, income, scenarios })}
-        setState={(obj) => {
-          console.log("Restore payload:", obj);
-          toast.success("Backup loaded (wire to context setters as needed)");
-        }}
-      />
-    </div>
+    </AppLayout>
   );
 }

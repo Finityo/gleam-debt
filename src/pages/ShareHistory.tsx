@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Share2, Lock, Trash2, ExternalLink, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import AppLayout from "@/layouts/AppLayout";
 
 export default function ShareHistory() {
   const navigate = useNavigate();
@@ -55,28 +56,26 @@ export default function ShareHistory() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-8 space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
+      <AppLayout>
+        <div className="space-y-4 animate-fade-in">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="container mx-auto p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <AppLayout>
+      <div className="space-y-6 animate-fade-in">
         <div>
           <h1 className="text-3xl font-bold">Share History</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Manage all your shared debt payoff plans
           </p>
         </div>
-        <Button onClick={() => navigate("/dashboard")}>
-          Back to Dashboard
-        </Button>
-      </div>
 
       {items.length === 0 && (
         <Card>
@@ -169,6 +168,7 @@ export default function ShareHistory() {
           );
         })}
       </div>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

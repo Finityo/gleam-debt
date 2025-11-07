@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, RefreshCw, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import AppLayout from "@/layouts/AppLayout";
 
 export default function ScenariosPage() {
   const navigate = useNavigate();
@@ -59,18 +60,16 @@ Minimum Only: ${result.minimum.summary.finalMonthIndex + 1} months
   }
 
   return (
-    <div className="container mx-auto p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Scenario Builder</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Create and compare different debt payoff scenarios
-          </p>
+    <AppLayout>
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Scenario Builder</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Create and compare different debt payoff scenarios
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
-        </div>
-      </div>
 
       <div className="flex items-center gap-2">
         <Button onClick={handleCreateScenario}>
@@ -158,6 +157,7 @@ Minimum Only: ${result.minimum.summary.finalMonthIndex + 1} months
           </Card>
         ))}
       </div>
-    </div>
+      </div>
+    </AppLayout>
   );
 }
