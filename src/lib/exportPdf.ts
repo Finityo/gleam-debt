@@ -79,6 +79,21 @@ export function exportPlanToPDF(
     theme: "striped",
   });
 
+  // --- Remaining Balance Table ---
+  const remainSlice = remainingByMonth(plan).slice(0, 12);
+
+  autoTable(doc, {
+    startY: (doc as any).lastAutoTable.finalY + 24,
+    head: [["Month", "Remaining"]],
+    body: remainSlice.map((r) => [
+      r.monthIndex + 1,
+      `$${r.remaining.toFixed(2)}`,
+    ]),
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [0, 0, 0] },
+    theme: "striped",
+  });
+
   // Done
   doc.save("finityo_payoff_summary.pdf");
 }
