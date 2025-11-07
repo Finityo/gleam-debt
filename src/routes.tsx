@@ -6,7 +6,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 // ===== ROUTE METADATA =====
 export const ROUTE_META = [
   { path: "/", title: "Home" },
-  { path: "/demo/start", title: "Try Demo" },
+  { path: "/setup/start", title: "Try Setup" },
   { path: "/pricing", title: "Pricing" },
   { path: "/blog", title: "Blog" },
   { path: "/auth", title: "Sign In" },
@@ -144,8 +144,8 @@ export function AppRoutes() {
           <Route path="/auth/signin" element={<SignIn />} />
           <Route path="/auth/signup" element={<SignUp />} />
           
-          {/* ===== DEMO FLOW (PUBLIC) ===== */}
-          <Route path="/demo" element={<DemoLayoutWrapper />}>
+          {/* ===== SETUP FLOW (PUBLIC) ===== */}
+          <Route path="/setup" element={<DemoLayoutWrapper />}>
             <Route index element={<DemoStart />} />
             <Route path="start" element={<DemoStart />} />
             <Route path="debts" element={<DemoDebts />} />

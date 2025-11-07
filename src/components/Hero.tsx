@@ -13,7 +13,7 @@ export function Hero() {
         Build your payoff plan. See your debt-free date. Share with your coach.
       </p>
 
-      <Btn onClick={() => navigate("/demo/start")}>Try Demo</Btn>
+      <Btn onClick={() => navigate("/setup/start")}>Try Setup</Btn>
     </section>
   );
 }

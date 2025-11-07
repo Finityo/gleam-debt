@@ -30,7 +30,7 @@ export default function DemoPlan() {
       toast("You could save money with Ultimate's Avalanche coaching.");
     }
     
-    navigate("/demo/chart");
+    navigate("/setup/chart");
   };
 
   return (
@@ -123,7 +123,7 @@ export default function DemoPlan() {
                 Compute My Plan
               </Button>
 
-              <NextBack back="/demo/debts" next="/demo/chart" />
+              <NextBack back="/setup/debts" next="/setup/chart" />
             </div>
 
             {/* Additional Tools */}
@@ -136,28 +136,28 @@ export default function DemoPlan() {
                   <Button
                     variant="outline"
                     className="text-sm"
-                    onClick={() => navigate("/demo/plan/calendar")}
+                    onClick={() => navigate("/setup/plan/calendar")}
                   >
                     Calendar View
                   </Button>
                   <Button
                     variant="outline"
                     className="text-sm"
-                    onClick={() => navigate("/demo/plan/summary")}
+                    onClick={() => navigate("/setup/plan/summary")}
                   >
                     Summary
                   </Button>
                   <Button
                     variant="outline"
                     className="text-sm"
-                    onClick={() => navigate("/demo/plan/compare")}
+                    onClick={() => navigate("/setup/plan/compare")}
                   >
                     Compare Methods
                   </Button>
                   <Button
                     variant="outline"
                     className="text-sm"
-                    onClick={() => navigate("/demo/plan/import")}
+                    onClick={() => navigate("/setup/plan/import")}
                   >
                     Import/Export
                   </Button>

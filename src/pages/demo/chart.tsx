@@ -43,7 +43,7 @@ export default function DemoChart() {
       <PageShell>
         <div className="max-w-5xl mx-auto px-4 py-12 text-center text-finityo-textBody">
           No plan calculated. Start with debts.
-          <NextBack back="/demo/start" next="/demo/debts" />
+          <NextBack back="/setup/start" next="/setup/debts" />
         </div>
       </PageShell>
     );
@@ -81,7 +81,7 @@ export default function DemoChart() {
           </Card>
         </PopIn>
 
-        <NextBack back="/demo/plan" next="/demo/start" nextLabel="Start Over" />
+        <NextBack back="/setup/plan" next="/setup/start" nextLabel="Start Over" />
       </div>
     </PageShell>
   );

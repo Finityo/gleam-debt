@@ -34,8 +34,8 @@ export default function Index() {
               <a href="/auth" className="block w-full bg-[#2d1f4a] hover:bg-[#3d2f5a] text-white font-semibold py-4 px-6 rounded-2xl text-center transition-all shadow-lg border border-white/10">
                 Start Free
               </a>
-              <a href="/demo/start" className="block w-full bg-[#1a1126] hover:bg-[#2a2136] text-white font-semibold py-4 px-6 rounded-2xl text-center transition-all shadow-lg border border-white/10">
-                🔑 Try Demo
+              <a href="/setup/start" className="block w-full bg-[#1a1126] hover:bg-[#2a2136] text-white font-semibold py-4 px-6 rounded-2xl text-center transition-all shadow-lg border border-white/10">
+                🔑 Try Setup
               </a>
             </div>
 

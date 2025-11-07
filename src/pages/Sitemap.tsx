@@ -53,11 +53,11 @@ export default function Sitemap() {
       description: "Interactive demo of our debt payoff engine",
       icon: <Rocket className="w-5 h-5" />,
       links: [
-        { path: "/demo", label: "Demo (Quick Access)", description: "Redirects to demo start" },
-        { path: "/demo/start", label: "Demo Start", description: "Begin the demo journey" },
-        { path: "/demo/debts", label: "Demo Debts", description: "Enter sample debts" },
-        { path: "/demo/plan", label: "Demo Plan", description: "Optimize your strategy" },
-        { path: "/demo/chart", label: "Demo Results", description: "View payoff projections" },
+        { path: "/setup", label: "Setup (Quick Access)", description: "Redirects to setup start" },
+        { path: "/setup/start", label: "Setup Start", description: "Begin the setup journey" },
+        { path: "/setup/debts", label: "Setup Debts", description: "Enter sample debts" },
+        { path: "/setup/plan", label: "Setup Plan", description: "Optimize your strategy" },
+        { path: "/setup/chart", label: "Setup Results", description: "View payoff projections" },
       ],
     },
     {

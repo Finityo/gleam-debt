@@ -8,9 +8,9 @@ export default function DemoStart() {
   const { debts, reset } = usePlan();
 
   const handleStart = () => {
-    // For demo, wipe whatever's in memory/local.
+    // For setup, wipe whatever's in memory/local.
     reset();
-    nav("/demo/debts");
+    nav("/setup/debts");
   };
 
   return (
@@ -35,7 +35,7 @@ export default function DemoStart() {
 
         {debts?.length > 0 && (
           <button
-            onClick={() => nav("/demo/debts")}
+            onClick={() => nav("/setup/debts")}
             className="text-xs text-finityo-textBody mt-4 underline"
           >
             Continue where you left off →

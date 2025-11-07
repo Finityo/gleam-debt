@@ -67,7 +67,7 @@ const Hero = () => {
                 className="bg-white text-primary hover:bg-white/90 hover:shadow-2xl transition-all text-lg px-8 py-6 font-semibold group"
                 onClick={() => {
                   trackEvent('demo_cta_click');
-                  navigate('/demo/start');
+                  navigate('/setup/start');
                 }}
               >
                 <Zap className="w-5 h-5 mr-2 group-hover:animate-pulse" />

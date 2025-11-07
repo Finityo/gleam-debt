@@ -32,7 +32,7 @@ export default function SharedPlan() {
         </p>
 
         <button
-          onClick={() => nav("/demo/start")}
+          onClick={() => nav("/setup/start")}
           className="mt-6 text-blue-400 underline"
         >
           Try Finityo

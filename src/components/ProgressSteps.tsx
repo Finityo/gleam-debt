@@ -2,10 +2,10 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 
 const steps = [
-  { path: "/demo/start", label: "Start" },
-  { path: "/demo/debts", label: "Debts" },
-  { path: "/demo/plan",  label: "Compute" },
-  { path: "/demo/chart", label: "Results" },
+  { path: "/setup/start", label: "Start" },
+  { path: "/setup/debts", label: "Debts" },
+  { path: "/setup/plan",  label: "Compute" },
+  { path: "/setup/chart", label: "Results" },
 ];
 
 export default function ProgressSteps() {

@@ -10,7 +10,7 @@ export function PageShell({ children }: { children: ReactNode }) {
             <div className="text-xl font-bold text-finityo-textMain">Finityo</div>
           </a>
           <nav className="flex items-center gap-4 text-sm">
-            <a href="/demo/start" className="hover:text-white transition-colors">Demo</a>
+            <a href="/setup/start" className="hover:text-white transition-colors">Setup</a>
             <a href="/pricing" className="hover:text-white transition-colors">Pricing</a>
             <a href="/auth/signin" className="hover:text-white px-3 py-1 border border-white/20 rounded-lg transition-colors">
               Sign in

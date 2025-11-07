@@ -20,7 +20,7 @@ const links = [
   { to: "/", label: "Home", icon: Home },
   { to: "/debts", label: "Debts", icon: Calculator },
   { to: "/debt-plan", label: "Plan", icon: Calendar },
-  { to: "/demo/power-pack", label: "Power Pack", icon: Activity },
+  { to: "/setup/power-pack", label: "Power Pack", icon: Activity },
   { to: "/scenarios", label: "Scenarios", icon: Layers },
   { to: "/share/history", label: "Shares", icon: Share2 },
   { to: "/settings", label: "Settings", icon: Settings },

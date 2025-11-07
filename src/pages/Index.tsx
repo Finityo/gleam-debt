@@ -38,9 +38,9 @@ export default function Index() {
                 Start Free
               </Btn>
             </a>
-            <a href="/demo/start" className="w-full sm:w-auto">
+            <a href="/setup/start" className="w-full sm:w-auto">
               <Btn variant="outline" className="w-full h-12 text-base border-[hsl(var(--border))] hover:bg-white/5">
-                🚀 Try the Demo
+                🚀 Try the Setup
               </Btn>
             </a>
           </div>

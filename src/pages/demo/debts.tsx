@@ -165,7 +165,7 @@ export default function DemoDebts() {
               ))}
             </div>
 
-            <NextBack back="/demo/start" next="/demo/plan" />
+            <NextBack back="/setup/start" next="/setup/plan" />
           </div>
         </PopIn>
       </div>
