@@ -11,6 +11,7 @@ import Milestones from "@/components/Milestones";
 import SnowballTimeline from "@/components/SnowballTimeline";
 import ScenarioChart from "@/components/ScenarioChart";
 import PayoffChartWithEvents from "@/components/PayoffChartWithEvents";
+import RemainingStackedChart from "@/components/RemainingStackedChart";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import ScenarioInfo from "@/components/ScenarioInfo";
 import { Button } from "@/components/ui/button";
@@ -92,6 +93,8 @@ export default function PlanPage() {
       <ScenarioChart debts={debts} settings={settings} />
 
       <PayoffChartWithEvents plan={currentPlan} debts={debts} />
+
+      <RemainingStackedChart plan={currentPlan} debts={debts} />
 
       <DashboardSummary plan={currentPlan} />
 
