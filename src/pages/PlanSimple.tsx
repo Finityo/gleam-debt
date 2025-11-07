@@ -21,7 +21,7 @@ import { ArrowLeft, Download, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function PlanPage() {
-  const { debts, settings, plan, compute } = usePlan();
+  const { debts, settings, plan, compute, notes } = usePlan();
   const navigate = useNavigate();
   const [scenario, setScenario] = useState<Scenario>("snowball");
 
@@ -69,7 +69,7 @@ export default function PlanPage() {
         </Button>
         
         <div className="flex gap-2">
-          <Button onClick={() => exportPlanToPDF(debts, settings, currentPlan)}>
+          <Button onClick={() => exportPlanToPDF(debts, settings, currentPlan, notes)}>
             <FileText className="mr-2 h-4 w-4" />
             Download PDF
           </Button>

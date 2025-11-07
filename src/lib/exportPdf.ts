@@ -13,7 +13,8 @@ import { getMilestones } from "@/lib/milestones";
 export function exportPlanToPDF(
   debts: Debt[],
   settings: UserSettings,
-  plan: DebtPlan
+  plan: DebtPlan,
+  notes?: string
 ) {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   const margin = 32;
@@ -162,6 +163,18 @@ export function exportPlanToPDF(
     headStyles: { fillColor: [0, 0, 0] },
     theme: "striped",
   });
+
+  // --- Notes ---
+  if (notes && notes.trim().length) {
+    doc.setFont("helvetica", "bold");
+    doc.text("My Notes", margin, (doc as any).lastAutoTable?.finalY + 32 || cursorY);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+
+    const wrapped = doc.splitTextToSize(notes, 540);
+    doc.text(wrapped, margin, (doc as any).lastAutoTable?.finalY + 50 || cursorY + 18);
+  }
 
   // Done
   doc.save("finityo_payoff_summary.pdf");
