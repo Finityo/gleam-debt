@@ -108,11 +108,9 @@ const Dashboard = () => {
           .select('item_id, vault_secret_id, access_token')
           .eq('user_id', user.id);
         
-        if (!itemsError && items) {
-          const unmigrated = items
-            .filter(item => !item.vault_secret_id && item.access_token)
-            .map(item => item.item_id);
-          setUnmigratedItemIds(unmigrated);
+        if (!itemsError && items && items.length > 0) {
+          // Token migration check disabled - access_token column removed in security migration
+          setUnmigratedItemIds([]);
           
           // Show toast notification if unmigrated tokens detected
           if (unmigrated.length > 0) {

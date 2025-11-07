@@ -1,0 +1,41 @@
+FINITYO_CODEBASE_v1
+├── package.json
+├── vite.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+├── .env (DO NOT COMMIT - contains secrets)
+├── src/
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── index.css (THEME TOKENS HERE)
+│   ├── pages/
+│   │   ├── demo/ (PUBLIC DEMO FLOW)
+│   │   │   ├── DemoStart.tsx
+│   │   │   ├── DemoDebts.tsx
+│   │   │   ├── DemoPlan.tsx
+│   │   │   └── DemoChart.tsx
+│   │   ├── auth/
+│   │   │   ├── SignIn.tsx
+│   │   │   └── SignUp.tsx
+│   │   ├── Index.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── Pricing.tsx
+│   │   └── SharedPlan.tsx (public /p/:id)
+│   ├── components/
+│   │   ├── PageShell.tsx (NEW UNIFIED SHELL)
+│   │   ├── FinityoLogo.tsx
+│   │   └── ui/ (shadcn components)
+│   ├── context/
+│   │   ├── AuthContext.tsx
+│   │   ├── DemoPlanContext.tsx
+│   │   └── PlanContext.tsx
+│   └── lib/ (business logic)
+├── public/
+│   ├── finityo-icon-final.png (UPDATED LOGO)
+│   └── favicon.png
+└── DEV_HANDOFF/ (THIS FOLDER)
+    ├── README_FINITYO.md
+    ├── ROUTES_MAP.md
+    ├── THEME_NOTES.md
+    ├── MIGRATION_NOTES.md
+    └── STRIPE_NOTES.md
