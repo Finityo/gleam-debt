@@ -74,7 +74,7 @@ export default function PlanPage() {
             Download PDF
           </Button>
           
-          <Button onClick={() => exportPlanToExcel(debts, settings, currentPlan)} variant="outline">
+          <Button onClick={() => exportPlanToExcel(debts, settings, currentPlan, notes)} variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Download Excel
           </Button>

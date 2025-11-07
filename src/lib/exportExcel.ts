@@ -12,7 +12,8 @@ import { getMilestones } from "@/lib/milestones";
 export function exportPlanToExcel(
   debts: Debt[],
   settings: UserSettings,
-  plan: DebtPlan
+  plan: DebtPlan,
+  notes?: string
 ) {
   // ---- Sheet 1: Debts ----
   const debtsSheetData = [
@@ -116,6 +117,14 @@ export function exportPlanToExcel(
 
   const milestoneWS = XLSX.utils.aoa_to_sheet(milestoneSheetData);
 
+  // ---- Sheet 6: Notes ----
+  const notesSheetData = [
+    ["Notes"],
+    ...(notes ? notes.split("\n").map((line) => [line]) : [[""]]),
+  ];
+
+  const notesWS = XLSX.utils.aoa_to_sheet(notesSheetData);
+
   // ---- Build workbook ----
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, debtsWS, "Debts");
@@ -123,6 +132,7 @@ export function exportPlanToExcel(
   XLSX.utils.book_append_sheet(wb, planWS, "Plan");
   XLSX.utils.book_append_sheet(wb, payoffWS, "Payoff Order");
   XLSX.utils.book_append_sheet(wb, milestoneWS, "Milestones");
+  XLSX.utils.book_append_sheet(wb, notesWS, "Notes");
 
   // ---- Trigger download ----
   XLSX.writeFile(wb, "finityo_payoff_plan.xlsx");
