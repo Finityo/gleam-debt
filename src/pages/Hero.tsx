@@ -3,8 +3,6 @@ import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Wallet, TrendingDown, Target, Zap, ArrowRight } from "lucide-react";
-import heroImage from "@/assets/hero-financial-freedom.jpg";
-import finityoIcon from "@/assets/finityo-app-icon.png";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -20,11 +18,7 @@ const Hero = () => {
       <div className="min-h-screen bg-gradient-to-br from-primary via-primary-dark to-secondary overflow-hidden">
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center px-4 py-20">
-          {/* Background Image with Overlay */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center opacity-20"
-            style={{ backgroundImage: `url(${heroImage})` }}
-          />
+          {/* Gradient Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary-dark/90 to-secondary/90" />
 
           {/* Content */}
@@ -32,11 +26,7 @@ const Hero = () => {
             {/* Logo */}
             <div className="mb-8 flex justify-center">
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center p-4">
-                <img 
-                  src={finityoIcon} 
-                  alt="Finityo Icon" 
-                  className="w-full h-full object-contain drop-shadow-2xl"
-                />
+                <Wallet className="w-16 h-16 md:w-20 md:h-20 text-white" />
               </div>
             </div>
 
