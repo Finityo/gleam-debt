@@ -31,6 +31,8 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
   const [url, setUrl] = useState("");
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
+  const [excludeNotes, setExcludeNotes] = useState(false);
+  const [anonymizeDebts, setAnonymizeDebts] = useState(false);
 
   const handleShareClick = () => {
     setShowPrivacyDialog(true);
@@ -48,7 +50,31 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
       setShowPrivacyDialog(false);
 
       const badges = getBadges(plan);
-      const snapshot = { debts, settings, plan, notes, badges };
+      
+      // Apply privacy controls
+      const processedDebts = anonymizeDebts 
+        ? debts.map((debt, idx) => ({ ...debt, name: `Debt ${idx + 1}` }))
+        : debts;
+      
+      const processedNotes = excludeNotes ? "" : notes;
+      
+      // Create snapshot with metadata
+      const snapshot = { 
+        debts: processedDebts, 
+        settings, 
+        plan, 
+        notes: processedNotes, 
+        badges,
+        metadata: {
+          version: "0.0.0", // from package.json
+          sharedAt: new Date().toISOString(),
+          privacySettings: {
+            notesExcluded: excludeNotes,
+            debtsAnonymized: anonymizeDebts
+          }
+        }
+      };
+      
       const { id } = await shareSnapshot(snapshot);
 
       const link = `${window.location.origin}/p/${id}`;
@@ -182,7 +208,39 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
                   </AlertDescription>
                 </Alert>
 
-                <div className="flex items-start space-x-2 pt-2">
+                <div className="space-y-3 pt-2 border-t">
+                  <p className="text-sm font-semibold text-foreground">Privacy Options:</p>
+                  
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="anonymize-debts" 
+                      checked={anonymizeDebts}
+                      onCheckedChange={(checked) => setAnonymizeDebts(checked === true)}
+                    />
+                    <Label 
+                      htmlFor="anonymize-debts" 
+                      className="text-sm font-normal cursor-pointer leading-tight"
+                    >
+                      Anonymize debt names (replaces names like "Chase Credit Card" with "Debt 1", "Debt 2", etc.)
+                    </Label>
+                  </div>
+
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="exclude-notes" 
+                      checked={excludeNotes}
+                      onCheckedChange={(checked) => setExcludeNotes(checked === true)}
+                    />
+                    <Label 
+                      htmlFor="exclude-notes" 
+                      className="text-sm font-normal cursor-pointer leading-tight"
+                    >
+                      Exclude personal notes from share
+                    </Label>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2 pt-4 border-t">
                   <Checkbox 
                     id="privacy-consent" 
                     checked={consentChecked}
