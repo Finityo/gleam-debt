@@ -12,6 +12,7 @@ export interface SubscriptionStatus {
 
 export const TIER_FEATURES = {
   essential: {
+    name: 'Essentials',
     maxDebts: 5,
     plaidIntegration: false,
     exportCapabilities: false,
@@ -19,6 +20,7 @@ export const TIER_FEATURES = {
     prioritySupport: false,
   },
   ultimate: {
+    name: 'Ultimate',
     maxDebts: Infinity,
     plaidIntegration: true,
     exportCapabilities: true,
@@ -26,6 +28,7 @@ export const TIER_FEATURES = {
     prioritySupport: true,
   },
   ultimate_plus: {
+    name: 'Ultimate Plus',
     maxDebts: Infinity,
     plaidIntegration: true,
     exportCapabilities: true,
@@ -33,6 +36,7 @@ export const TIER_FEATURES = {
     prioritySupport: true,
   },
   trial: {
+    name: 'Trial',
     maxDebts: Infinity,
     plaidIntegration: true,
     exportCapabilities: true,
@@ -106,10 +110,46 @@ export const useSubscription = () => {
     return currentDebtCount < maxDebts;
   };
 
+  const getTierDisplayName = (): string | null => {
+    if (!status.tier) return null;
+    return TIER_FEATURES[status.tier]?.name || status.tier;
+  };
+
+  const formatSubscriptionEnd = (): string | null => {
+    if (!status.subscription_end) return null;
+    
+    try {
+      return new Date(status.subscription_end).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return null;
+    }
+  };
+
+  const openCustomerPortal = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+    }
+  };
+
   return {
     ...status,
     checkSubscription,
     hasFeature,
     canAddDebt,
+    getTierDisplayName,
+    formatSubscriptionEnd,
+    openCustomerPortal,
   };
 };

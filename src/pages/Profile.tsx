@@ -6,10 +6,13 @@ import { Card } from "@/components/Card";
 import AppLayout from "@/layouts/AppLayout";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useSubscription } from "@/hooks/useSubscription";
+import { ExternalLink, CreditCard } from "lucide-react";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const subscription = useSubscription();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [firstName, setFirstName] = useState("");
@@ -191,6 +194,42 @@ export default function Profile() {
               />
             </div>
           </div>
+        </Card>
+
+        <Card title="Subscription">
+          {subscription.loading ? (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : subscription.subscribed ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-semibold text-foreground">{subscription.getTierDisplayName()}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Active until {subscription.formatSubscriptionEnd()}
+                  </div>
+                </div>
+                <div className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-medium">
+                  Active
+                </div>
+              </div>
+              <Btn onClick={subscription.openCustomerPortal} variant="outline" className="w-full">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Manage Subscription
+              </Btn>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                No active subscription. Upgrade to unlock premium features!
+              </div>
+              <Btn onClick={() => navigate('/pricing')} className="w-full">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                View Plans
+              </Btn>
+            </div>
+          )}
         </Card>
 
         <Card title="Account Role">

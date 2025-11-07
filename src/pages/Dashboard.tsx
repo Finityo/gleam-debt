@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { PlaidTokenMigration } from '@/components/PlaidTokenMigration';
@@ -11,12 +12,13 @@ import { PlaidAnalytics } from '@/components/PlaidAnalytics';
 import { TrialSubscriptionDialog } from '@/components/TrialSubscriptionDialog';
 import { DemoBanner } from '@/components/DemoBanner';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Share2, Award, MessageSquare, Settings, AlertCircle } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Share2, Award, MessageSquare, Settings, AlertCircle, CreditCard, Crown } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
 import { PlanVersionHistory } from '@/components/PlanVersionHistory';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
 import { AppDB } from '@/live/lovableCloudDB';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface Account {
   id: string;
@@ -44,8 +46,10 @@ const Dashboard = () => {
   const [showPlaidLink, setShowPlaidLink] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [planData, setPlanData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const subscription = useSubscription();
 
   const handlePrint = () => {
     window.print();
@@ -91,6 +95,15 @@ const Dashboard = () => {
     try {
       const data = await AppDB.get(userId);
       setPlanData(data);
+      
+      // Load profile data
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      setProfileData(profile);
     } catch (error) {
       logError('Dashboard - Load Plan Data', error);
     }
@@ -161,7 +174,9 @@ const Dashboard = () => {
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-4xl font-bold text-foreground">Dashboard</h1>
-              <p className="text-muted-foreground mt-2">Welcome to your Finityo workspace</p>
+              <p className="text-muted-foreground mt-2">
+                Welcome back{profileData?.first_name ? `, ${profileData.first_name}` : ''}
+              </p>
             </div>
             <div className="flex gap-2 no-print">
               <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
@@ -174,6 +189,57 @@ const Dashboard = () => {
               </Button>
             </div>
           </div>
+
+          {/* Subscription Status Banner */}
+          {!subscription.loading && (
+            <Card className="mb-6 border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {subscription.subscribed ? (
+                      <>
+                        <Crown className="w-6 h-6 text-primary" />
+                        <div>
+                          <div className="font-semibold text-foreground flex items-center gap-2">
+                            {subscription.getTierDisplayName()} Plan
+                            <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20">
+                              Active
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Renews {subscription.formatSubscriptionEnd()}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="w-6 h-6 text-muted-foreground" />
+                        <div>
+                          <div className="font-semibold text-foreground">Free Plan</div>
+                          <div className="text-sm text-muted-foreground">
+                            Upgrade to unlock premium features
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    {subscription.subscribed ? (
+                      <Button variant="outline" size="sm" onClick={subscription.openCustomerPortal}>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Manage
+                      </Button>
+                    ) : (
+                      <Button size="sm" onClick={() => navigate('/pricing')}>
+                        <Crown className="w-4 h-4 mr-2" />
+                        Upgrade
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Quick Stats */}
           {planData?.debts?.length > 0 && (
