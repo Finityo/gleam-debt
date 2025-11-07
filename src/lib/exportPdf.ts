@@ -4,6 +4,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
+import { remainingByMonth } from "@/lib/remaining";
 
 export function exportPlanToPDF(
   debts: Debt[],
@@ -54,6 +55,7 @@ export function exportPlanToPDF(
 
   // --- First 12 months table ---
   const firstMonths = plan.months.slice(0, 12);
+  const remain = remainingByMonth(plan);
 
   autoTable(doc, {
     startY: cursorY,
@@ -63,7 +65,7 @@ export function exportPlanToPDF(
         (a, p) => a + p.principal,
         0
       );
-      const totalRemaining = m.payments.reduce((a, p) => a + p.balanceEnd, 0);
+      const totalRemaining = remain[m.monthIndex]?.remaining ?? 0;
       return [
         m.monthIndex + 1,
         `$${m.totalPaid.toFixed(2)}`,
