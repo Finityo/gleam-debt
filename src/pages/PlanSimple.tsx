@@ -12,6 +12,7 @@ import SnowballTimeline from "@/components/SnowballTimeline";
 import ScenarioChart from "@/components/ScenarioChart";
 import PayoffChartWithEvents from "@/components/PayoffChartWithEvents";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
+import ScenarioInfo from "@/components/ScenarioInfo";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
@@ -83,7 +84,10 @@ export default function PlanPage() {
         Debt-Free Date: {currentPlan.debtFreeDate}
       </p>
 
-      <ScenarioSwitcher scenario={scenario} onChange={setScenario} />
+      <div className="flex items-center gap-3 flex-wrap">
+        <ScenarioSwitcher scenario={scenario} onChange={setScenario} />
+        <ScenarioInfo />
+      </div>
 
       <ScenarioChart debts={debts} settings={settings} />
 
