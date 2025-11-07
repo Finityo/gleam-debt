@@ -1,18 +1,23 @@
+import { useState } from "react";
 import { usePlan } from "@/context/PlanContext";
 import { exportPlanToExcel } from "@/lib/exportExcel";
 import { exportPlanToPDF } from "@/lib/exportPdf";
 import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
+import { computeDebtPlan } from "@/lib/computeDebtPlan";
 import DashboardSummary from "@/components/DashboardSummary";
 import PayoffOrder from "@/components/PayoffOrder";
 import ComparisonCard from "@/components/ComparisonCard";
+import ScenarioSelector from "@/components/ScenarioSelector";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Scenario } from "@/types/scenario";
 
 export default function PlanPage() {
   const { debts, settings, plan, compute } = usePlan();
   const navigate = useNavigate();
+  const [scenario, setScenario] = useState<Scenario>("snowball");
 
   if (!plan) {
     return (
@@ -30,7 +35,23 @@ export default function PlanPage() {
     );
   }
 
-  const minPlan = computeMinimumOnly(debts);
+  // Compute all three plans
+  const snowballPlan = settings.strategy === "snowball" 
+    ? plan 
+    : computeDebtPlan(debts, { ...settings, strategy: "snowball" });
+  
+  const avalanchePlan = settings.strategy === "avalanche" 
+    ? plan 
+    : computeDebtPlan(debts, { ...settings, strategy: "avalanche" });
+  
+  const minimumPlan = computeMinimumOnly(debts);
+
+  // Select the displayed plan based on scenario
+  const displayedPlan = scenario === "snowball" 
+    ? snowballPlan 
+    : scenario === "avalanche" 
+    ? avalanchePlan 
+    : minimumPlan;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -41,12 +62,12 @@ export default function PlanPage() {
         </Button>
         
         <div className="flex gap-2">
-          <Button onClick={() => exportPlanToPDF(debts, settings, plan)}>
+          <Button onClick={() => exportPlanToPDF(debts, settings, displayedPlan)}>
             <FileText className="mr-2 h-4 w-4" />
             Download PDF
           </Button>
           
-          <Button onClick={() => exportPlanToExcel(debts, settings, plan)} variant="outline">
+          <Button onClick={() => exportPlanToExcel(debts, settings, displayedPlan)} variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Download Excel
           </Button>
@@ -55,14 +76,16 @@ export default function PlanPage() {
       
       <h1 className="text-3xl font-bold mb-2">Payoff Plan</h1>
       <p className="text-lg text-muted-foreground mb-6">
-        Debt-Free Date: {plan.debtFreeDate}
+        Debt-Free Date: {displayedPlan.debtFreeDate}
       </p>
 
-      <DashboardSummary plan={plan} />
+      <ScenarioSelector scenario={scenario} setScenario={setScenario} />
 
-      <ComparisonCard plan={plan} minOnlyPlan={minPlan} />
+      <DashboardSummary plan={displayedPlan} />
 
-      <PayoffOrder plan={plan} debts={debts} />
+      <ComparisonCard plan={displayedPlan} minOnlyPlan={minimumPlan} scenario={scenario} />
+
+      <PayoffOrder plan={displayedPlan} debts={debts} />
 
       <Card className="overflow-x-auto">
         <table className="w-full border-collapse">
@@ -75,7 +98,7 @@ export default function PlanPage() {
             </tr>
           </thead>
           <tbody>
-            {plan.months.map((m) => (
+            {displayedPlan.months.map((m) => (
               <tr key={m.monthIndex} className="border-b hover:bg-muted/50">
                 <td className="p-3">{m.monthIndex + 1}</td>
                 <td className="text-right p-3">${m.totalPaid.toFixed(2)}</td>
@@ -92,9 +115,9 @@ export default function PlanPage() {
       <Card className="p-6 mt-6">
         <h3 className="text-lg font-semibold mb-2">Summary</h3>
         <div className="grid gap-2">
-          <p>Total Months: {plan.months.length}</p>
-          <p>Total Interest: ${plan.totalInterest.toFixed(2)}</p>
-          <p>Total Paid: ${plan.totalPaid.toFixed(2)}</p>
+          <p>Total Months: {displayedPlan.months.length}</p>
+          <p>Total Interest: ${displayedPlan.totalInterest.toFixed(2)}</p>
+          <p>Total Paid: ${displayedPlan.totalPaid.toFixed(2)}</p>
         </div>
       </Card>
     </div>
