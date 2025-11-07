@@ -1,11 +1,12 @@
 import finityoIcon from "@/assets/finityo-app-icon.png";
+import { cn } from "@/lib/utils";
 
-export function FinityoLogo() {
+export function FinityoLogo({ className }: { className?: string }) {
   return (
     <img
       src={finityoIcon}
       alt="Finityo"
-      className="h-9 w-9"
+      className={cn("h-9 w-9", className)}
     />
   );
 }
