@@ -8,6 +8,7 @@ import { getPayoffOrder } from "@/lib/payoffOrder";
 import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
 import { comparePlans } from "@/lib/comparePlans";
 import { getMilestones } from "@/lib/milestones";
+import { getBadges } from "@/lib/badges";
 
 export function exportPlanToExcel(
   debts: Debt[],
@@ -117,7 +118,17 @@ export function exportPlanToExcel(
 
   const milestoneWS = XLSX.utils.aoa_to_sheet(milestoneSheetData);
 
-  // ---- Sheet 6: Notes ----
+  // ---- Sheet 6: Badges ----
+  const badges = getBadges(plan);
+
+  const badgesSheetData = [
+    ["Badge", "Month"],
+    ...badges.map((b) => [b.label, b.monthIndex + 1]),
+  ];
+
+  const badgesWS = XLSX.utils.aoa_to_sheet(badgesSheetData);
+
+  // ---- Sheet 7: Notes ----
   const notesSheetData = [
     ["Notes"],
     ...(notes ? notes.split("\n").map((line) => [line]) : [[""]]),
@@ -132,6 +143,7 @@ export function exportPlanToExcel(
   XLSX.utils.book_append_sheet(wb, planWS, "Plan");
   XLSX.utils.book_append_sheet(wb, payoffWS, "Payoff Order");
   XLSX.utils.book_append_sheet(wb, milestoneWS, "Milestones");
+  XLSX.utils.book_append_sheet(wb, badgesWS, "Badges");
   XLSX.utils.book_append_sheet(wb, notesWS, "Notes");
 
   // ---- Trigger download ----
