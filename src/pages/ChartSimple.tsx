@@ -1,5 +1,5 @@
 import { usePlan } from "@/context/PlanContext";
-import { remainingByMonth } from "@/lib/computeDebtPlan";
+import { remainingByMonth } from "@/lib/remaining";
 import { MyChart } from "@/components/MyChart";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

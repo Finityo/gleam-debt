@@ -1,3 +1,6 @@
+// ===================================
+// src/lib/remaining.ts
+// ===================================
 import { DebtPlan } from "@/lib/computeDebtPlan";
 
 export function remainingByMonth(plan: DebtPlan) {
