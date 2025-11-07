@@ -1,17 +1,67 @@
-// ===================================
-// src/context/PlanContext.tsx
-// ===================================
-import React, { createContext, useContext, useEffect, useState } from "react";
+// ============================================================================
+// UNIFIED PLAN PROVIDER — DEMO + LIVE
+// Finityo — 2025
+//
+// DEMO MODE  → localStorage only
+// LIVE MODE  → AppDB (Lovable Cloud) + fallback local
+//
+// - Debts
+// - Settings
+// - Notes
+// - Plan (compute)
+// - Sync on change
+// - Auto-load after login
+// ============================================================================
+
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback
+} from "react";
+
 import {
   Debt,
   UserSettings,
   DebtPlan,
   computeDebtPlan,
-  saveLocal,
-  loadLocal,
 } from "@/lib/computeDebtPlan";
 
+import { useAuth } from "@/context/AuthContext";
+import { AppDB } from "@/live/lovableCloudDB";
+
+// ---- local storage helpers (demo only) ----
+const LS_KEY = "finityo:planData";
+const LS_NOTES = "finityo:notes";
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveLocal(data: any) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+  } catch {}
+}
+
+function clearLocal() {
+  try {
+    localStorage.removeItem(LS_KEY);
+  } catch {}
+}
+
+
+// ============================================================================
+// CONTEXT SHAPE
+// ============================================================================
 type PlanContextType = {
+  demoMode: boolean;
   debts: Debt[];
   settings: UserSettings;
   plan: DebtPlan | null;
@@ -20,15 +70,22 @@ type PlanContextType = {
   setSettings: React.Dispatch<React.SetStateAction<UserSettings>>;
   setPlan: React.Dispatch<React.SetStateAction<DebtPlan | null>>;
   setNotes: React.Dispatch<React.SetStateAction<string>>;
-  updateDebts: (debts: Debt[]) => void;
-  updateSettings: (next: Partial<UserSettings>) => void;
-  compute: () => void;
-  reset: () => void;
+  updateDebts: (next: Debt[]) => Promise<void>;
+  updateSettings: (next: Partial<UserSettings>) => Promise<void>;
+  compute: () => Promise<void>;
+  reset: () => Promise<void>;
 };
 
 const PlanContext = createContext<PlanContextType | null>(null);
 
+
+// ============================================================================
+// PROVIDER
+// ============================================================================
 export function PlanProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const demoMode = !user; // no user = demo
+
   const [debts, setDebts] = useState<Debt[]>([]);
   const [settings, setSettings] = useState<UserSettings>({
     extraMonthly: 0,
@@ -38,51 +95,128 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const [plan, setPlan] = useState<DebtPlan | null>(null);
   const [notes, setNotes] = useState<string>("");
 
-  // Load from localStorage
+  // Load notes persistence
   useEffect(() => {
-    const saved = loadLocal();
-    if (saved) {
-      setDebts(saved.debts);
-      setSettings(saved.settings);
-      tryCompute(saved.debts, saved.settings);
-    }
-    const savedNotes = localStorage.getItem("finityo:notes");
-    if (savedNotes !== null) setNotes(savedNotes);
+    const n = localStorage.getItem(LS_NOTES);
+    if (n != null) setNotes(n);
   }, []);
 
-  // Persist notes to localStorage
   useEffect(() => {
-    localStorage.setItem("finityo:notes", notes);
+    localStorage.setItem(LS_NOTES, notes);
   }, [notes]);
 
-  // Save + re-compute
-  const tryCompute = (d: Debt[], s: UserSettings) => {
+  // --------------------------------------------------------------------------
+  // LOAD PLAN (DEMO or LIVE)
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    (async () => {
+      // DEMO
+      if (demoMode) {
+        const saved = loadLocal();
+        if (saved) {
+          setDebts(saved.debts ?? []);
+          setSettings(saved.settings ?? settings);
+          const p = computeDebtPlan(saved.debts ?? [], saved.settings ?? settings);
+          setPlan(p);
+        }
+        return;
+      }
+
+      // LIVE
+      const row = await AppDB.get(user.id);
+      if (row) {
+        setDebts(row.debts ?? []);
+        setSettings(row.settings ?? settings);
+        setNotes(row.notes ?? "");
+        setPlan(row.plan ?? null);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demoMode, user?.id]);
+
+
+  // --------------------------------------------------------------------------
+  // SAVE PLAN: DEMO → localStorage | LIVE → AppDB.put
+  // --------------------------------------------------------------------------
+  const persist = useCallback(
+    async (nextDebts: Debt[], nextSettings: UserSettings, nextPlan: DebtPlan | null) => {
+      // DEMO
+      if (demoMode) {
+        saveLocal({
+          debts: nextDebts,
+          settings: nextSettings,
+        });
+        return;
+      }
+
+      // LIVE
+      await AppDB.put(user.id, {
+        debts: nextDebts,
+        settings: nextSettings,
+        notes,
+        plan: nextPlan,
+        updatedAt: new Date().toISOString(),
+      });
+    },
+    [demoMode, notes, user?.id]
+  );
+
+
+  // --------------------------------------------------------------------------
+  // COMPUTE + SYNC
+  // --------------------------------------------------------------------------
+  const compute = useCallback(async () => {
     try {
-      const p = computeDebtPlan(d, s);
+      const p = computeDebtPlan(debts, settings);
       setPlan(p);
-      saveLocal({ debts: d, settings: s });
+      await persist(debts, settings, p);
     } catch (err) {
       console.error("❌ compute error:", err);
     }
-  };
+  }, [debts, settings, persist]);
 
-  // Public API
-  const updateDebts = (nextDebts: Debt[]) => {
-    setDebts(nextDebts);
-    tryCompute(nextDebts, settings);
-  };
 
-  const updateSettings = (patch: Partial<UserSettings>) => {
-    const next = { ...settings, ...patch };
-    setSettings(next);
-    tryCompute(debts, next);
-  };
+  // --------------------------------------------------------------------------
+  // UPDATE DEBTS
+  // --------------------------------------------------------------------------
+  const updateDebts = useCallback(
+    async (next: Debt[]) => {
+      setDebts(next);
+      try {
+        const p = computeDebtPlan(next, settings);
+        setPlan(p);
+        await persist(next, settings, p);
+      } catch (err) {
+        console.error("❌ compute error:", err);
+      }
+    },
+    [settings, persist]
+  );
 
-  const compute = () => {
-    tryCompute(debts, settings);
-  };
 
-  const reset = () => {
+  // --------------------------------------------------------------------------
+  // UPDATE SETTINGS
+  // --------------------------------------------------------------------------
+  const updateSettings = useCallback(
+    async (patch: Partial<UserSettings>) => {
+      const next = { ...settings, ...patch };
+      setSettings(next);
+      try {
+        const p = computeDebtPlan(debts, next);
+        setPlan(p);
+        await persist(debts, next, p);
+      } catch (err) {
+        console.error("❌ compute error:", err);
+      }
+    },
+    [debts, settings, persist]
+  );
+
+
+  // --------------------------------------------------------------------------
+  // RESET
+  // --------------------------------------------------------------------------
+  const reset = useCallback(async () => {
     setDebts([]);
     setSettings({
       extraMonthly: 0,
@@ -90,16 +224,33 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       strategy: "snowball",
     });
     setPlan(null);
-    saveLocal({ debts: [], settings: {
-      extraMonthly: 0,
-      oneTimeExtra: 0,
-      strategy: "snowball",
-    }});
-  };
 
+    if (demoMode) {
+      clearLocal();
+      return;
+    }
+
+    await AppDB.put(user.id, {
+      debts: [],
+      settings: {
+        extraMonthly: 0,
+        oneTimeExtra: 0,
+        strategy: "snowball",
+      },
+      notes: "",
+      plan: null,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [demoMode, user?.id]);
+
+
+  // --------------------------------------------------------------------------
+  // FINAL VALUE
+  // --------------------------------------------------------------------------
   return (
     <PlanContext.Provider
       value={{
+        demoMode,
         debts,
         settings,
         plan,
@@ -119,10 +270,12 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+
+// ============================================================================
+// HOOK
+// ============================================================================
 export function usePlan() {
   const ctx = useContext(PlanContext);
-  if (!ctx) {
-    throw new Error("usePlan must be used inside <PlanProvider>");
-  }
+  if (!ctx) throw new Error("usePlan must be used inside <PlanProvider>");
   return ctx;
 }
