@@ -16,7 +16,7 @@ export default function SnowballTimeline({ plan }: Props) {
 
   return (
     <div className="p-4 border rounded space-y-3 max-w-md bg-white">
-      <h2 className="text-lg font-semibold">Snowball Growth</h2>
+      <h2 className="text-lg font-semibold">Snowball Pool Growth</h2>
 
       <ul className="list-inside space-y-1">
         {data
@@ -27,7 +27,7 @@ export default function SnowballTimeline({ plan }: Props) {
           })
           .map((p, i) => (
             <li key={i}>
-              Month {p.monthIndex + 1}: ${p.amount.toFixed(2)}
+              Month {p.monthIndex + 1} → ${p.amount.toFixed(2)}
             </li>
           ))}
       </ul>
