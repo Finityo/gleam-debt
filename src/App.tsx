@@ -67,6 +67,7 @@ const DemoStart = lazy(() => import("./pages/demo/DemoStart"));
 const DemoDebts = lazy(() => import("./pages/demo/DemoDebts"));
 const DemoPlan = lazy(() => import("./pages/demo/DemoPlan"));
 const DemoChart = lazy(() => import("./pages/demo/DemoChart"));
+const DemoPlanPowerPack = lazy(() => import("./pages/demo/DemoPlanPowerPack"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
 
 // ✅ Simple branded loading screen
@@ -161,6 +162,7 @@ const AppRoutes = () => {
                 <Route path="debts" element={<DemoDebts />} />
                 <Route path="plan" element={<DemoPlan />} />
                 <Route path="chart" element={<DemoChart />} />
+                <Route path="power-pack" element={<DemoPlanPowerPack />} />
               </Route>
               
               <Route path="/sitemap" element={<Sitemap />} />

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
 import { computeDebtPlan } from "@/lib/computeDebtPlan";
+import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
 
 export type Scenario = {
   id: string;
@@ -25,6 +26,13 @@ type ScenarioCtx = {
 const ScenarioContext = createContext<ScenarioCtx>(null as any);
 const LS_KEY = "finityo:scenarios";
 const genId = () => Math.random().toString(36).slice(2, 10);
+
+function comparePlans(debts: Debt[], base: UserSettings): { snowball: DebtPlan; avalanche: DebtPlan; minimum: DebtPlan } {
+  const snowball = computeDebtPlan(debts, { ...base, strategy: "snowball" });
+  const avalanche = computeDebtPlan(debts, { ...base, strategy: "avalanche" });
+  const minimum = computeMinimumOnly(debts);
+  return { snowball, avalanche, minimum };
+}
 
 export function ScenarioProvider({ children }: { children: React.ReactNode }) {
   const [scenarios, setScenarios] = useState<Scenario[]>(() => {
@@ -84,16 +92,7 @@ export function ScenarioProvider({ children }: { children: React.ReactNode }) {
   function compareCurrent() {
     const cur = scenarios.find((s) => s.id === currentId);
     if (!cur) return null;
-
-    const snowball = computeDebtPlan(cur.debts, { ...cur.settings, strategy: "snowball" });
-    const avalanche = computeDebtPlan(cur.debts, { ...cur.settings, strategy: "avalanche" });
-    const minimum = computeDebtPlan(cur.debts, {
-      ...cur.settings,
-      extraMonthly: 0,
-      oneTimeExtra: 0,
-    });
-
-    return { snowball, avalanche, minimum };
+    return comparePlans(cur.debts, cur.settings);
   }
 
   const value: ScenarioCtx = {
