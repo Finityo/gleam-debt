@@ -110,7 +110,7 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-              <Route path="/" element={<Navigate to="/demo/start" replace />} />
+              <Route path="/" element={<Dashboard />} />
               <Route path="/hero" element={<Hero />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/team-access" element={<TeamAccess />} />
