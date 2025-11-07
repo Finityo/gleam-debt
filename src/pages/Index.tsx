@@ -2,6 +2,7 @@ import { PageShell } from "@/components/PageShell";
 import { Btn } from "@/components/Btn";
 import { Card } from "@/components/Card";
 import { SEOHead } from "@/components/SEOHead";
+import { FinityoLogo } from "@/components/FinityoLogo";
 
 export default function Index() {
   return (
@@ -12,9 +13,7 @@ export default function Index() {
       />
       
       <section className="mx-auto max-w-5xl px-4 pt-20 pb-12 text-center">
-        <div className="w-28 h-28 mx-auto mb-6 bg-gradient-to-br from-finityo-primary to-finityo-primaryAccent rounded-2xl flex items-center justify-center">
-          <span className="text-4xl font-bold text-black">F</span>
-        </div>
+        <FinityoLogo className="w-28 h-28 mx-auto mb-6" />
 
         <h1 className="text-4xl md:text-5xl font-bold text-finityo-textMain">
           Debt Simplified.
@@ -26,21 +25,18 @@ export default function Index() {
 
         <div className="mt-8 flex items-center justify-center gap-4">
           <a href="/demo/start">
-            <Btn variant="primary" className="bg-finityo-cta text-black shadow-glass">
-              🚀 Try the Demo
-            </Btn>
+            <Btn variant="primary">🚀 Try the Demo</Btn>
           </a>
+
           <a href="/pricing">
-            <Btn variant="outline" className="bg-transparent border border-finityo-textBody text-finityo-textBody hover:text-white">
-              Learn More
-            </Btn>
+            <Btn variant="outline">Learn More</Btn>
           </a>
         </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-4 pb-20">
         <div className="grid md:grid-cols-2 gap-4">
-          <Card title="Essentials — $2.99/mo" className="bg-white/5 backdrop-blur border border-white/10">
+          <Card title="Essentials — $2.99/mo">
             <ul className="text-sm list-disc pl-5 space-y-1 text-finityo-textBody">
               <li>Save your payoff plan</li>
               <li>Share link</li>
@@ -48,7 +44,7 @@ export default function Index() {
             </ul>
           </Card>
 
-          <Card title="Ultimate — $4.99/mo" className="bg-white/5 backdrop-blur border border-white/10">
+          <Card title="Ultimate — $4.99/mo">
             <ul className="text-sm list-disc pl-5 space-y-1 text-finityo-textBody">
               <li>Bank sync (Plaid)</li>
               <li>Coach Mode</li>
