@@ -103,7 +103,7 @@ export default function DemoPlan() {
             </div>
 
             {plan && (
-              <div className="pt-10">
+              <div className="pt-10 max-w-md mx-auto">
                 <ShareButton
                   snapshot={{
                     debts,
@@ -113,10 +113,10 @@ export default function DemoPlan() {
                 />
               </div>
             )}
-
-            <CoachDrawer plan={plan} />
           </div>
         </PopIn>
+
+        <CoachDrawer plan={plan} />
       </div>
     </PageShell>
   );
