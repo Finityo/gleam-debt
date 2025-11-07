@@ -102,12 +102,27 @@ export function exportPlanToExcel(
 
   const payoffWS = XLSX.utils.aoa_to_sheet(payoffSheetData);
 
+  // ---- Sheet 5: Milestones ----
+  const ms = getMilestones(plan);
+
+  const milestoneSheetData = [
+    ["Milestone", "Month", "Remaining"],
+    ...ms.map((m) => [
+      m.label,
+      m.monthIndex + 1,
+      m.remaining,
+    ]),
+  ];
+
+  const milestoneWS = XLSX.utils.aoa_to_sheet(milestoneSheetData);
+
   // ---- Build workbook ----
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, debtsWS, "Debts");
   XLSX.utils.book_append_sheet(wb, settingsWS, "Settings");
   XLSX.utils.book_append_sheet(wb, planWS, "Plan");
   XLSX.utils.book_append_sheet(wb, payoffWS, "Payoff Order");
+  XLSX.utils.book_append_sheet(wb, milestoneWS, "Milestones");
 
   // ---- Trigger download ----
   XLSX.writeFile(wb, "finityo_payoff_plan.xlsx");
