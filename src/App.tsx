@@ -9,12 +9,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
 import { PlanProvider } from "@/context/PlanContext";
 import { DemoPlanProvider } from "@/context/DemoPlanContext";
 import { ScenarioProvider } from "@/context/ScenarioContext";
+import { AppProvider } from "@/context/AppStore";
+import { NotificationsPanel } from "@/components/NotificationsPanel";
 
 // ===== Finityo Mode Check =====
 console.log("🔍 Finityo Build Mode:", import.meta.env.VITE_MODE);
@@ -61,6 +63,7 @@ const ChartSimple = lazy(() => import("./pages/ChartSimple"));
 const SharedPlan = lazy(() => import("./pages/SharedPlan"));
 const ShareHistory = lazy(() => import("./pages/ShareHistory"));
 const Scenarios = lazy(() => import("./pages/Scenarios"));
+const Settings = lazy(() => import("./pages/Settings"));
 
 // Demo pages
 const DemoStart = lazy(() => import("./pages/demo/DemoStart"));
@@ -114,7 +117,7 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-              <Route path="/" element={<Hero />} />
+              <Route path="/" element={<Index />} />
               <Route path="/hero" element={<Hero />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/team-access" element={<TeamAccess />} />
@@ -154,6 +157,7 @@ const AppRoutes = () => {
               <Route path="/p/:id" element={<SharedPlan />} />
               <Route path="/share/history" element={<ShareHistory />} />
               <Route path="/scenarios" element={<Scenarios />} />
+              <Route path="/settings" element={<Settings />} />
               
               {/* Demo routes with shared context provider */}
               <Route path="/demo" element={<DemoLayoutWrapper />}>
@@ -176,32 +180,22 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <TooltipProvider>
-        <ScenarioProvider>
-          <PlanProvider>
-            {/* ✅ Build Mode Indicator */}
-            {import.meta.env.VITE_MODE === "demo" && (
-              <div className="fixed top-2 right-2 px-3 py-1 bg-amber-500/80 text-black rounded-full text-xs z-50">
-                DEMO MODE
-              </div>
-            )}
-            {import.meta.env.VITE_MODE === "live" && (
-              <div className="fixed top-2 right-2 px-3 py-1 bg-emerald-600/80 text-white rounded-full text-xs z-50">
-                LIVE MODE
-              </div>
-            )}
-
-            {/* ✅ Toast Systems */}
-            <Toaster />
-            <Sonner />
-
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </PlanProvider>
-        </ScenarioProvider>
+        <AppProvider>
+          <ScenarioProvider>
+            <PlanProvider>
+              <BrowserRouter>
+                <AppRoutes />
+                <NotificationsPanel />
+              </BrowserRouter>
+              <Toaster />
+              <Sonner />
+            </PlanProvider>
+          </ScenarioProvider>
+        </AppProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
 
 export default App;
+

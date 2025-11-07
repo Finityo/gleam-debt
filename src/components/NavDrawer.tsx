@@ -10,17 +10,18 @@ import {
   Calendar,
   Menu,
   X,
+  Activity,
 } from "lucide-react";
 import { Button } from "./ui/button";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/demo/debts", label: "Debts", icon: Calculator },
+  { to: "/debts", label: "Debts", icon: Calculator },
   { to: "/demo/plan", label: "Plan", icon: Calendar },
-  { to: "/demo/power-pack", label: "Power Pack", icon: Layers },
+  { to: "/demo/power-pack", label: "Power Pack", icon: Activity },
   { to: "/scenarios", label: "Scenarios", icon: Layers },
   { to: "/share/history", label: "Shares", icon: Share2 },
-  { to: "/dashboard", label: "Dashboard", icon: BadgeCheck },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function NavDrawer() {
