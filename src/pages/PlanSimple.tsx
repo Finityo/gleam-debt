@@ -8,6 +8,7 @@ import DashboardSummary from "@/components/DashboardSummary";
 import PayoffOrder from "@/components/PayoffOrder";
 import ComparisonCard from "@/components/ComparisonCard";
 import Milestones from "@/components/Milestones";
+import SnowballTimeline from "@/components/SnowballTimeline";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -85,6 +86,8 @@ export default function PlanPage() {
       <DashboardSummary plan={currentPlan} />
 
       <Milestones plan={currentPlan} />
+
+      <SnowballTimeline plan={currentPlan} />
 
       <ComparisonCard plan={currentPlan} minOnlyPlan={minimumPlan} scenario={scenario} />
 
