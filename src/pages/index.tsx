@@ -10,9 +10,9 @@ export default function Index() {
         
         {/* Hero Section */}
         <div className="mb-8">
-          <div className="bg-[#5b3ba0]/60 backdrop-blur-lg rounded-[2.5rem] p-8 shadow-2xl border border-white/10">
-            <div className="mx-auto mb-6 h-20 w-20 rounded-2xl bg-gradient-to-br from-[#ff006b] via-[#7f5af0] to-[#00d4ff] shadow-lg grid place-items-center border border-white/20">
-              <img src="/finityo-icon-final.png" alt="Finityo" className="h-12 w-12 rounded-xl" />
+          <div className="bg-white/10 backdrop-blur-2xl rounded-[3rem] p-10 shadow-[0_20px_70px_rgba(0,0,0,0.3),0_0_40px_rgba(139,92,246,0.2)] border border-white/20 hover:shadow-[0_25px_80px_rgba(0,0,0,0.4),0_0_60px_rgba(139,92,246,0.3)] transition-all duration-500">
+            <div className="mx-auto mb-6 h-24 w-24 rounded-3xl bg-gradient-to-br from-[#ff006b] via-[#7f5af0] to-[#00d4ff] shadow-[0_10px_40px_rgba(127,90,240,0.4)] grid place-items-center border-2 border-white/30 hover:scale-105 transition-transform duration-300">
+              <img src="/finityo-icon-final.png" alt="Finityo" className="h-14 w-14 rounded-2xl" />
             </div>
 
             <div className="flex justify-center mb-6">
@@ -31,10 +31,10 @@ export default function Index() {
             </p>
 
             <div className="space-y-3 mb-6">
-              <a href="/auth" className="block w-full bg-[#2d1f4a] hover:bg-[#3d2f5a] text-white font-semibold py-4 px-6 rounded-2xl text-center transition-all shadow-lg border border-white/10">
+              <a href="/auth" className="block w-full bg-white/15 hover:bg-white/20 text-white font-semibold py-5 px-6 rounded-3xl text-center transition-all shadow-[0_8px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)] border border-white/20 hover:scale-[1.02] duration-300">
                 Start Free
               </a>
-              <a href="/setup/start" className="block w-full bg-[#1a1126] hover:bg-[#2a2136] text-white font-semibold py-4 px-6 rounded-2xl text-center transition-all shadow-lg border border-white/10">
+              <a href="/setup/start" className="block w-full bg-white/10 hover:bg-white/15 text-white font-semibold py-5 px-6 rounded-3xl text-center transition-all shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] border border-white/15 hover:scale-[1.02] duration-300">
                 🔑 Try Setup
               </a>
             </div>
@@ -71,7 +71,7 @@ export default function Index() {
 
         {/* Secret Playbook */}
         <div className="mb-8">
-          <div className="bg-[#2d1f4a]/80 backdrop-blur-lg rounded-3xl p-8 border border-white/10">
+          <div className="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/20 shadow-[0_15px_60px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_70px_rgba(0,0,0,0.4)] transition-all duration-500">
             <h2 className="text-2xl font-bold text-white text-center mb-4">
               Secret Playbook for Faster Payoff
             </h2>
@@ -107,7 +107,7 @@ export default function Index() {
 
         {/* Social Proof */}
         <div className="mb-8">
-          <div className="bg-[#2d1f4a]/80 backdrop-blur-lg rounded-3xl p-6 border border-white/10 text-center">
+          <div className="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-6 border border-white/20 text-center shadow-[0_12px_50px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_60px_rgba(0,0,0,0.4)] transition-all duration-300">
             <div className="flex justify-center mb-3">
               {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />)}
             </div>
@@ -119,7 +119,7 @@ export default function Index() {
         {/* How It Works */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-white text-center mb-6">Faster Payoff Works</h2>
-          <div className="bg-[#2d1f4a]/80 backdrop-blur-lg rounded-3xl p-8 border border-white/10 space-y-6">
+          <div className="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/20 space-y-6 shadow-[0_15px_60px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_70px_rgba(0,0,0,0.4)] transition-all duration-500">
             <Step number={1} title="Add Your Debts" description="Import from your bank with Plaid or enter manually" />
             <Step number={2} title="Choose Your Strategy" description="Snowball, Avalanche, or custom approach" />
             <Step number={3} title="Track Progress" description="See your payoff calendar and debt-free date" />
@@ -129,12 +129,12 @@ export default function Index() {
 
         {/* Psychology */}
         <div className="mb-8">
-          <div className="bg-[#2d1f4a]/80 backdrop-blur-lg rounded-3xl p-8 border border-white/10">
+          <div className="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/20 shadow-[0_15px_60px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_70px_rgba(0,0,0,0.4)] transition-all duration-500">
             <h3 className="text-xl font-bold text-white mb-4 text-center">Better Psychology</h3>
             <p className="text-white/80 text-sm leading-relaxed text-center mb-4">
               Debt payoff isn't just math—it's mindset. Finityo helps you build momentum with quick wins while showing long-term savings.
             </p>
-            <div className="bg-white/10 rounded-2xl p-4">
+            <div className="bg-white/10 rounded-3xl p-4 shadow-[0_5px_20px_rgba(0,0,0,0.2)]">
               <p className="text-white text-xs italic">"I paid off $15K in 10 months using the snowball method. Those early wins kept me going!" - Alex T.</p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function Index() {
 
         {/* Email Capture */}
         <div className="mb-8">
-          <div className="bg-[#0f766e] backdrop-blur-lg rounded-3xl p-8 border border-white/10">
+          <div className="bg-gradient-to-br from-[#0f766e] to-[#14b8a6] backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/20 shadow-[0_20px_70px_rgba(15,118,110,0.4)] hover:shadow-[0_25px_80px_rgba(15,118,110,0.5)] transition-all duration-500">
             <h3 className="text-xl font-bold text-white mb-4 text-center">Avoid Junk!</h3>
             <p className="text-white/90 text-sm text-center mb-6">
               Get debt-free tips, not spam. Unsubscribe anytime.
@@ -151,9 +151,9 @@ export default function Index() {
               <input 
                 type="email" 
                 placeholder="Enter your email" 
-                className="w-full px-4 py-3 rounded-xl bg-white/90 text-gray-900 placeholder-gray-500 border-0 focus:ring-2 focus:ring-white"
+                className="w-full px-4 py-3 rounded-2xl bg-white/90 text-gray-900 placeholder-gray-500 border-0 focus:ring-2 focus:ring-white shadow-[0_5px_20px_rgba(0,0,0,0.2)]"
               />
-              <button className="w-full bg-white hover:bg-gray-100 text-[#0f766e] font-semibold py-3 px-6 rounded-xl transition-all">
+              <button className="w-full bg-white hover:bg-gray-100 text-[#0f766e] font-semibold py-3 px-6 rounded-2xl transition-all shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.3)] hover:scale-[1.02] duration-300">
                 Subscribe
               </button>
             </div>
@@ -162,10 +162,10 @@ export default function Index() {
 
         {/* Final CTA */}
         <div className="mb-8">
-          <div className="bg-gradient-to-br from-[#ff006b] to-[#7f5af0] rounded-3xl p-8 border border-white/20 text-center">
+          <div className="bg-gradient-to-br from-[#ff006b] via-[#7f5af0] to-[#a855f7] rounded-[2.5rem] p-8 border-2 border-white/30 text-center shadow-[0_20px_70px_rgba(127,90,240,0.5)] hover:shadow-[0_25px_80px_rgba(127,90,240,0.6)] hover:scale-[1.01] transition-all duration-500">
             <h2 className="text-2xl font-bold text-white mb-4">Ready to Become Debt-Free?</h2>
             <p className="text-white/90 text-sm mb-6">Start your journey today. No credit card required.</p>
-            <a href="/auth" className="inline-block bg-white hover:bg-gray-100 text-[#7f5af0] font-bold py-4 px-8 rounded-2xl transition-all shadow-lg">
+            <a href="/auth" className="inline-block bg-white hover:bg-gray-100 text-[#7f5af0] font-bold py-4 px-8 rounded-3xl transition-all shadow-[0_10px_40px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.4)] hover:scale-105 duration-300">
               Start Free Now
             </a>
           </div>
@@ -188,7 +188,7 @@ export default function Index() {
 
 function TestimonialCard({ stars, text, author }: { stars: number; text: string; author: string }) {
   return (
-    <div className="bg-[#2d1f4a]/80 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+    <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.25)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.35)] hover:scale-[1.02] transition-all duration-300">
       <div className="flex gap-1 mb-3">
         {Array.from({ length: stars }).map((_, i) => (
           <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
@@ -211,7 +211,7 @@ function FeatureItem({ icon, text }: { icon: React.ReactNode; text: string }) {
 
 function InfoCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
-    <div className="bg-[#2d1f4a]/80 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+    <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.25)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.35)] hover:scale-[1.02] transition-all duration-300">
       <div className="text-white mb-3">{icon}</div>
       <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
       <p className="text-white/80 text-sm leading-relaxed">{description}</p>
