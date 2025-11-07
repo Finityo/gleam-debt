@@ -20,9 +20,10 @@ export async function getSharedPlan(id: string) {
       .from('shared_plans')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error('Plan not found');
 
     // Increment view count
     await supabase.rpc('increment_shared_plan_views', { p_plan_id: id });
