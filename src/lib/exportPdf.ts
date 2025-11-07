@@ -140,6 +140,29 @@ export function exportPlanToPDF(
   doc.text(`Interest Saved: $${cmp.interestSaved.toFixed(2)}`, margin, cursorY);
   cursorY += 28;
 
+  // --- Milestones ---
+  const ms = getMilestones(plan);
+
+  cursorY += 10;
+  doc.setFont("helvetica", "bold");
+  doc.text("Milestones", margin, cursorY);
+  cursorY += 18;
+
+  doc.setFont("helvetica", "normal");
+
+  autoTable(doc, {
+    startY: cursorY,
+    head: [["Milestone", "Month", "Remaining"]],
+    body: ms.map((m) => [
+      m.label,
+      m.monthIndex + 1,
+      `$${m.remaining.toFixed(2)}`,
+    ]),
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [0, 0, 0] },
+    theme: "striped",
+  });
+
   // Done
   doc.save("finityo_payoff_summary.pdf");
 }
