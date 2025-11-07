@@ -1,6 +1,7 @@
 import { usePlan } from "@/context/PlanContext";
 import { exportPlanToExcel } from "@/lib/exportExcel";
 import { exportPlanToPDF } from "@/lib/exportPdf";
+import DashboardSummary from "@/components/DashboardSummary";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
@@ -27,7 +28,7 @@ export default function PlanPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between mb-4">
         <Button variant="ghost" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -51,6 +52,8 @@ export default function PlanPage() {
       <p className="text-lg text-muted-foreground mb-6">
         Debt-Free Date: {plan.debtFreeDate}
       </p>
+
+      <DashboardSummary plan={plan} />
 
       <Card className="overflow-x-auto">
         <table className="w-full border-collapse">
