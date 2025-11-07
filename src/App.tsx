@@ -57,6 +57,7 @@ const DebtVisualization = lazy(() => import("./pages/DebtVisualization"));
 const DebtsNew = lazy(() => import("./pages/DebtsNew"));
 const PlanSimple = lazy(() => import("./pages/PlanSimple"));
 const ChartSimple = lazy(() => import("./pages/ChartSimple"));
+const SharedPlan = lazy(() => import("./pages/SharedPlan"));
 
 // Demo pages
 const DemoStart = lazy(() => import("./pages/demo/DemoStart"));
@@ -146,6 +147,7 @@ const AppRoutes = () => {
               <Route path="/debts-new" element={<DebtsNew />} />
               <Route path="/plan-simple" element={<PlanSimple />} />
               <Route path="/chart-simple" element={<ChartSimple />} />
+              <Route path="/p/:id" element={<SharedPlan />} />
               
               {/* Demo routes with shared context provider */}
               <Route path="/demo" element={<DemoLayoutWrapper />}>
