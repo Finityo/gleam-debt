@@ -51,12 +51,7 @@ export default function ScenarioChart({ debts, settings }: Props) {
       <div className="space-y-2">
         {data.map((item) => (
           <div key={item.name}>
-            <strong>{item.name}:</strong> {item.months} months
-            {item.half && (
-              <span className="text-xs ml-2" style={{ color: "#d4af37" }}>
-                (50% at month {item.half})
-              </span>
-            )}
+            █ <strong>{item.name}</strong> {item.months} months
           </div>
         ))}
       </div>
