@@ -4,6 +4,7 @@ import { exportPlanToExcel } from "@/lib/exportExcel";
 import { exportPlanToPDF } from "@/lib/exportPdf";
 import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
 import { computeDebtPlan, Scenario } from "@/lib/computeDebtPlan";
+import { getDebtStats } from "@/lib/debtStats";
 import DashboardSummary from "@/components/DashboardSummary";
 import PayoffOrder from "@/components/PayoffOrder";
 import ComparisonCard from "@/components/ComparisonCard";
@@ -16,6 +17,7 @@ import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import ScenarioInfo from "@/components/ScenarioInfo";
 import NotesBox from "@/components/NotesBox";
 import BadgesBar from "@/components/BadgesBar";
+import DebtDrawer from "@/components/DebtDrawer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
@@ -25,6 +27,7 @@ export default function PlanPage() {
   const { debts, settings, plan, compute, notes } = usePlan();
   const navigate = useNavigate();
   const [scenario, setScenario] = useState<Scenario>("snowball");
+  const [selectedDebt, setSelectedDebt] = useState<any | null>(null);
 
   if (!plan) {
     return (
@@ -60,6 +63,7 @@ export default function PlanPage() {
   }
 
   const minimumPlan = computeMinimumOnly(debts);
+  const debtStats = getDebtStats(currentPlan, debts);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -112,6 +116,24 @@ export default function PlanPage() {
 
       <PayoffOrder plan={currentPlan} debts={debts} />
 
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Debt Details</h3>
+        <div className="grid gap-2">
+          {debtStats.map((d) => (
+            <div
+              key={d.id}
+              onClick={() => setSelectedDebt(d)}
+              className="p-3 border rounded cursor-pointer hover:bg-muted/50 transition-colors"
+            >
+              <div className="font-medium">{d.name}</div>
+              <div className="text-sm text-muted-foreground">
+                ${d.balance.toFixed(2)} • {d.apr}% APR • Interest Paid: ${d.interestPaid.toFixed(2)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       <Card className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
@@ -145,6 +167,12 @@ export default function PlanPage() {
           <p>Total Paid: ${currentPlan.totalPaid.toFixed(2)}</p>
         </div>
       </Card>
+
+      <DebtDrawer
+        open={!!selectedDebt}
+        debt={selectedDebt}
+        onClose={() => setSelectedDebt(null)}
+      />
     </div>
   );
 }
