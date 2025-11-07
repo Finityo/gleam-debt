@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ArrowLeft, Download, Info, ChevronDown, Printer, CheckCircle2, XCircle } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
 import { DemoBanner } from '@/components/DemoBanner';
+import { PlanVersionButton } from '@/components/PlanVersionButton';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/logger';
@@ -381,6 +382,13 @@ const DebtPlan = () => {
       <DemoBanner />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-xl font-semibold text-finityo-textMain">
+              Your Plan
+            </h1>
+            <PlanVersionButton />
+          </div>
+          
           <div className="flex justify-between items-start">
             <div>
               <div className="flex gap-2 no-print">
@@ -398,7 +406,7 @@ const DebtPlan = () => {
                   Debt Management
                 </Button>
               </div>
-              <h1 className="text-4xl font-bold text-foreground">Your Debt Payoff Plan</h1>
+              <h2 className="text-4xl font-bold text-foreground">Your Debt Payoff Plan</h2>
               <p className="text-muted-foreground mt-2">
                 Review your personalized debt payoff strategy
               </p>
