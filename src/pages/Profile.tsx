@@ -130,36 +130,37 @@ export default function Profile() {
           </p>
         </div>
 
-        <Card title="Personal Information">
+        <div className="bg-gradient-to-br from-card/40 via-card/60 to-card/40 backdrop-blur-sm border border-border/30 rounded-xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">Personal Information</h3>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground/80">First Name</label>
+                <label className="text-sm font-medium text-foreground/90">First Name</label>
                 <input
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  className="w-full border border-primary/20 rounded-xl p-3 text-sm bg-background/50 backdrop-blur-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/40 transition-all shadow-sm"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground/80">Last Name</label>
+                <label className="text-sm font-medium text-foreground/90">Last Name</label>
                 <input
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  className="w-full border border-primary/20 rounded-xl p-3 text-sm bg-background/50 backdrop-blur-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/40 transition-all shadow-sm"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80">Email</label>
+              <label className="text-sm font-medium text-foreground/90">Email</label>
               <input
                 type="email"
                 value={user?.email || ""}
                 disabled
-                className="w-full border border-border/30 rounded-lg p-3 text-sm bg-muted/30 text-muted-foreground cursor-not-allowed"
+                className="w-full border border-border/20 rounded-xl p-3 text-sm bg-muted/20 backdrop-blur-sm text-muted-foreground cursor-not-allowed shadow-sm"
               />
               <p className="text-xs text-muted-foreground/70">
                 Email cannot be changed
@@ -167,93 +168,95 @@ export default function Profile() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80">Phone (optional)</label>
+              <label className="text-sm font-medium text-foreground/90">Phone (optional)</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className="w-full border border-primary/20 rounded-xl p-3 text-sm bg-background/50 backdrop-blur-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/40 transition-all shadow-sm"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80">Address (optional)</label>
+              <label className="text-sm font-medium text-foreground/90">Address (optional)</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className="w-full border border-primary/20 rounded-xl p-3 text-sm bg-background/50 backdrop-blur-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/40 transition-all shadow-sm"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80">ZIP Code (optional)</label>
+              <label className="text-sm font-medium text-foreground/90">ZIP Code (optional)</label>
               <input
                 type="text"
                 value={zipCode}
                 onChange={(e) => setZipCode(e.target.value)}
-                className="w-full border border-border/50 rounded-lg p-3 text-sm bg-card/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className="w-full border border-primary/20 rounded-xl p-3 text-sm bg-background/50 backdrop-blur-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/40 transition-all shadow-sm"
               />
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card title="Subscription">
+        <div className="bg-gradient-to-br from-card/40 via-card/60 to-card/40 backdrop-blur-sm border border-border/30 rounded-xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">Subscription</h3>
           {subscription.loading ? (
             <div className="flex items-center justify-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : subscription.subscribed ? (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-primary/5 via-accent/5 to-secondary/5 border border-primary/20">
                 <div>
                   <div className="font-semibold text-foreground">{subscription.getTierDisplayName()}</div>
                   <div className="text-sm text-muted-foreground">
                     Active until {subscription.formatSubscriptionEnd()}
                   </div>
                 </div>
-                <div className="px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-medium">
+                <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-medium shadow-sm">
                   Active
                 </div>
               </div>
-              <Btn onClick={subscription.openCustomerPortal} variant="outline" className="w-full border-primary/30 hover:bg-primary/10 hover:border-primary/50">
+              <Btn onClick={subscription.openCustomerPortal} variant="outline" className="w-full border-primary/30 bg-background/30 hover:bg-primary/10 hover:border-primary/50">
                 <CreditCard className="w-4 h-4 mr-2" />
                 Manage Subscription
               </Btn>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground p-4 rounded-lg bg-muted/10 border border-border/20">
                 No active subscription. Upgrade to unlock premium features!
               </div>
-              <Btn onClick={() => navigate('/pricing')} className="w-full bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90">
+              <Btn onClick={() => navigate('/pricing')} className="w-full bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90 shadow-lg">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 View Plans
               </Btn>
             </div>
           )}
-        </Card>
+        </div>
 
-        <Card title="Account Role">
-          <div className="space-y-2">
+        <div className="bg-gradient-to-br from-card/40 via-card/60 to-card/40 backdrop-blur-sm border border-border/30 rounded-xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">Account Role</h3>
+          <div className="space-y-2 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20">
             <div className="text-sm text-muted-foreground">
-              Current role: <span className="font-medium text-primary capitalize">{role}</span>
+              Current role: <span className="font-semibold text-primary capitalize ml-1">{role}</span>
             </div>
             <p className="text-xs text-muted-foreground/70">
               Contact an administrator to change your role
             </p>
           </div>
-        </Card>
+        </div>
 
         <div className="flex items-center gap-3 pb-8">
           <Btn 
             onClick={handleSave} 
             disabled={saving}
-            className="bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90"
+            className="bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90 shadow-lg"
           >
             {saving ? "Saving..." : "Save Changes"}
           </Btn>
-          <Btn onClick={handleSignOut} variant="outline" className="border-border/50 hover:bg-accent/10">
+          <Btn onClick={handleSignOut} variant="outline" className="border-border/50 bg-background/30 hover:bg-accent/10 shadow-sm">
             Sign Out
           </Btn>
         </div>
