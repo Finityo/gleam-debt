@@ -91,85 +91,79 @@ export function ActivityLog({ userId, limit = 10 }: { userId: string; limit?: nu
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-gradient-to-br from-indigo-950/40 via-violet-950/30 to-purple-900/40 backdrop-blur-sm border border-indigo-500/30 rounded-xl p-6 shadow-lg hover:shadow-indigo-500/20 hover:border-indigo-400/50 transition-all duration-300">
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="w-5 h-5 text-indigo-300" />
+          <h3 className="text-xl font-semibold bg-gradient-to-r from-indigo-300 to-violet-300 bg-clip-text text-transparent">Recent Activity</h3>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400"></div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="w-5 h-5" />
+    <div className="bg-gradient-to-br from-indigo-950/40 via-violet-950/30 to-purple-900/40 backdrop-blur-sm border border-indigo-500/30 rounded-xl p-6 shadow-lg hover:shadow-indigo-500/20 hover:border-indigo-400/50 transition-all duration-300 hover:bg-gradient-to-br hover:from-indigo-900/50 hover:via-violet-900/40 hover:to-purple-800/50">
+      <div className="mb-4">
+        <h3 className="text-xl font-semibold bg-gradient-to-r from-indigo-300 to-violet-300 bg-clip-text text-transparent flex items-center gap-2 mb-2">
+          <Clock className="w-5 h-5 text-indigo-300" />
           Recent Activity
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-sm text-violet-300/70">
           Track all changes to your debt payoff plan
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {activities.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">No activity yet. Start by adding debts to your plan.</p>
-          </div>
-        ) : (
-          <ScrollArea className="h-[400px] pr-4">
-            <div className="space-y-3">
-              {activities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex-shrink-0 mt-1">
-                    {getActivityIcon(activity.change_description)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">
-                          {activity.change_description || 'Plan updated'}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs">
-                            {activity.debts_count} debts
+        </p>
+      </div>
+      {activities.length === 0 ? (
+        <div className="text-center py-8 text-indigo-300/70">
+          <p className="text-sm">No activity yet. Start by adding debts to your plan.</p>
+        </div>
+      ) : (
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="space-y-3">
+            {activities.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex gap-3 p-3 rounded-lg border border-indigo-500/30 bg-indigo-900/20 hover:bg-indigo-800/30 hover:border-indigo-400/40 transition-all duration-200"
+              >
+                <div className="flex-shrink-0 mt-1">
+                  {getActivityIcon(activity.change_description)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-indigo-100">
+                        {activity.change_description || 'Plan updated'}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs bg-indigo-500/10 border-indigo-500/30 text-indigo-300">
+                          {activity.debts_count} debts
+                        </Badge>
+                        <Badge variant="outline" className="text-xs capitalize bg-violet-500/10 border-violet-500/30 text-violet-300">
+                          {activity.strategy}
+                        </Badge>
+                        {activity.extra_monthly > 0 && (
+                          <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/30 text-purple-300">
+                            +${activity.extra_monthly}/mo
                           </Badge>
-                          <Badge variant="outline" className="text-xs capitalize">
-                            {activity.strategy}
+                        )}
+                        {activity.one_time > 0 && (
+                          <Badge variant="outline" className="text-xs bg-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-300">
+                            ${activity.one_time} one-time
                           </Badge>
-                          {activity.extra_monthly > 0 && (
-                            <Badge variant="outline" className="text-xs">
-                              +${activity.extra_monthly}/mo
-                            </Badge>
-                          )}
-                          {activity.one_time > 0 && (
-                            <Badge variant="outline" className="text-xs">
-                              ${activity.one_time} one-time
-                            </Badge>
-                          )}
-                        </div>
+                        )}
                       </div>
-                      <time className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
-                      </time>
                     </div>
+                    <time className="text-xs text-violet-300/60 whitespace-nowrap">
+                      {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+                    </time>
                   </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        )}
-      </CardContent>
-    </Card>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
   );
 }
