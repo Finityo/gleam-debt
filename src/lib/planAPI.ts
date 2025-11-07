@@ -96,7 +96,8 @@ export const PlanAPI = {
       debts?: any[];
       settings?: any;
       notes?: string;
-    }
+    },
+    changeDescription?: string
   ): Promise<PlanData> {
     const prev = (await AppDB.get(userId)) ?? {
       debts: [],
@@ -123,8 +124,8 @@ export const PlanAPI = {
 
     await AppDB.put(userId, payload);
     
-    // Auto-log version after write+compute
-    await this.logVersion(userId);
+    // Auto-log version after write+compute with description
+    await this.logVersion(userId, changeDescription);
 
     return payload;
   },
@@ -227,9 +228,9 @@ export const PlanAPI = {
   },
 
   // -------------------------------------------------------------------------
-  // VERSIONING (inline in user_plan_data)
+  // VERSIONING (inline in user_plan_data + separate table for activity log)
   // -------------------------------------------------------------------------
-  async logVersion(userId: string): Promise<void> {
+  async logVersion(userId: string, changeDescription?: string): Promise<void> {
     const row = (await AppDB.get(userId)) ?? null;
     if (!row) return;
 
@@ -250,11 +251,29 @@ export const PlanAPI = {
       return; // identical → skip
     }
 
+    // Save to inline versions
     await AppDB.put(userId, {
       ...row,
       versions: [...versions, record],
       updatedAt: new Date().toISOString(),
     });
+
+    // Also save to separate table for activity log
+    try {
+      await supabase
+        .from('user_plan_versions')
+        .insert({
+          user_id: userId,
+          version_id: record.versionId,
+          debts: record.debts,
+          settings: record.settings,
+          plan: record.plan,
+          notes: record.notes,
+          change_description: changeDescription || 'Plan updated',
+        });
+    } catch (error) {
+      console.error('Error saving version to activity log:', error);
+    }
   },
 
   async listVersions(userId: string): Promise<VersionRecord[]> {

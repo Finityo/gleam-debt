@@ -11,6 +11,7 @@ import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
 import { PlaidAnalytics } from '@/components/PlaidAnalytics';
 import { TrialSubscriptionDialog } from '@/components/TrialSubscriptionDialog';
 import { DemoBanner } from '@/components/DemoBanner';
+import { ActivityLog } from '@/components/ActivityLog';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Share2, Award, MessageSquare, Settings, AlertCircle, CreditCard, Crown } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
@@ -386,32 +387,37 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Start Guide */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Quick Start Guide</CardTitle>
-              <CardDescription>Follow these steps to get started with Finityo</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ol className="space-y-3 text-sm">
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">1</span>
-                  <span>Add your debts manually or import from your bank using Plaid</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">2</span>
-                  <span>Configure your debt plan and choose between Snowball or Avalanche strategy</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">3</span>
-                  <span>Track your progress with visualizations and calendar view</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">4</span>
-                  <span>Export, share, and get AI advisor tips to stay on track</span>
-                </li>
-              </ol>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6 md:grid-cols-2 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Start Guide</CardTitle>
+                <CardDescription>Follow these steps to get started with Finityo</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ol className="space-y-3 text-sm">
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">1</span>
+                    <span>Add your debts manually or import from your bank using Plaid</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">2</span>
+                    <span>Configure your debt plan and choose between Snowball or Avalanche strategy</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">3</span>
+                    <span>Track your progress with visualizations and calendar view</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">4</span>
+                    <span>Export, share, and get AI advisor tips to stay on track</span>
+                  </li>
+                </ol>
+              </CardContent>
+            </Card>
+
+            {/* Activity Log */}
+            {user && <ActivityLog userId={user.id} limit={8} />}
+          </div>
         </div>
 
         {accounts.length > 0 && (
