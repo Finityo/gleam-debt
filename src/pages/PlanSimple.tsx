@@ -7,6 +7,7 @@ import { computeDebtPlan, Scenario } from "@/lib/computeDebtPlan";
 import DashboardSummary from "@/components/DashboardSummary";
 import PayoffOrder from "@/components/PayoffOrder";
 import ComparisonCard from "@/components/ComparisonCard";
+import MilestonesCard from "@/components/MilestonesCard";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -82,6 +83,8 @@ export default function PlanPage() {
       <ScenarioSwitcher scenario={scenario} onChange={setScenario} />
 
       <DashboardSummary plan={currentPlan} />
+
+      <MilestonesCard plan={currentPlan} />
 
       <ComparisonCard plan={currentPlan} minOnlyPlan={minimumPlan} scenario={scenario} />
 
