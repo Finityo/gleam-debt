@@ -7,13 +7,14 @@ export default function ScenarioInfo() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block text-center">
       <button
         onClick={() => setOpen(!open)}
         className="text-gray-600"
       >
         ⓘ
       </button>
+      <p className="text-xs text-gray-500">Strategy info</p>
 
       {open && (
         <div className="absolute z-10 mt-2 w-64 p-3 bg-white border rounded shadow text-sm space-y-2">
