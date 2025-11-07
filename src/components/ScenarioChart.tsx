@@ -53,6 +53,7 @@ export default function ScenarioChart({ debts, settings }: Props) {
           <Tooltip formatter={(v) => Math.round(Number(v))} />
           <Legend />
           <Bar dataKey="months" fill="#000000" />
+          <Bar dataKey="interest" fill="#d0a331" />
         </BarChart>
       </ResponsiveContainer>
     </div>
