@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { DollarSign, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ShareButton } from "@/components/ShareButton";
+import CoachDrawer from "@/components/CoachDrawer";
 
 export default function DemoPlan() {
-  const { settings, updateSettings, compute } = usePlan();
+  const { debts, settings, plan, updateSettings, compute } = usePlan();
   const navigate = useNavigate();
 
   const submit = () => {
@@ -90,13 +92,29 @@ export default function DemoPlan() {
               </button>
             </div>
 
-            {/* Next */}
-            <Button className="w-full h-14 text-lg" onClick={submit}>
-              <Zap className="w-5 h-5 mr-2" />
-              Compute My Plan
-            </Button>
+            {/* Bottom actions */}
+            <div className="space-y-6 pt-6">
+              <Button className="w-full h-14 text-lg" onClick={submit}>
+                <Zap className="w-5 h-5 mr-2" />
+                Compute My Plan
+              </Button>
 
-            <NextBack back="/demo/debts" next="/demo/chart" />
+              <NextBack back="/demo/debts" next="/demo/chart" />
+            </div>
+
+            {plan && (
+              <div className="pt-10">
+                <ShareButton
+                  snapshot={{
+                    debts,
+                    settings,
+                    plan,
+                  }}
+                />
+              </div>
+            )}
+
+            <CoachDrawer plan={plan} />
           </div>
         </PopIn>
       </div>
