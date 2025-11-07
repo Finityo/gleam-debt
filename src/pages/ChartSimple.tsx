@@ -1,14 +1,26 @@
+import { useState, useEffect } from "react";
 import { usePlan } from "@/context/PlanContext";
 import { remainingByMonth } from "@/lib/remaining";
 import { MyChart } from "@/components/MyChart";
+import PayoffChartWithEvents from "@/components/PayoffChartWithEvents";
+import ChartEventsToggle from "@/components/ChartEventsToggle";
+import RemainingStackedChart from "@/components/RemainingStackedChart";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+const LS_KEY = "finityo:showPayoffEvents";
+
 export default function ChartPage() {
-  const { plan, compute } = usePlan();
+  const { plan, debts, compute } = usePlan();
   const navigate = useNavigate();
+  const [showEvents, setShowEvents] = useState(true);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved !== null) setShowEvents(saved === "true");
+  }, []);
 
   if (!plan) {
     return (
@@ -29,19 +41,26 @@ export default function ChartPage() {
   const data = remainingByMonth(plan);
 
   return (
-    <div className="container mx-auto p-6">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
-      </Button>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={() => navigate(-1)}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        <ChartEventsToggle value={showEvents} onChange={setShowEvents} />
+      </div>
       
-      <h1 className="text-3xl font-bold mb-6">Debt Payoff Chart</h1>
+      <h1 className="text-3xl font-bold">Debt Payoff Charts</h1>
+
+      <PayoffChartWithEvents plan={plan} debts={debts} showEvents={showEvents} />
+
+      <RemainingStackedChart plan={plan} debts={debts} />
       
       <Card className="p-6">
         <MyChart data={data} />
       </Card>
 
-      <Card className="p-6 mt-6">
+      <Card className="p-6">
         <h3 className="text-lg font-semibold mb-2">Details</h3>
         <div className="grid gap-2">
           <p>Starting Balance: ${data[0]?.remaining.toFixed(2) || "0.00"}</p>
