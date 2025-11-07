@@ -1,8 +1,10 @@
 import { usePlan } from "@/context/PlanContext";
 import { exportPlanToExcel } from "@/lib/exportExcel";
 import { exportPlanToPDF } from "@/lib/exportPdf";
+import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
 import DashboardSummary from "@/components/DashboardSummary";
 import PayoffOrder from "@/components/PayoffOrder";
+import ComparisonCard from "@/components/ComparisonCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
@@ -27,6 +29,8 @@ export default function PlanPage() {
       </div>
     );
   }
+
+  const minPlan = computeMinimumOnly(debts);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -55,6 +59,8 @@ export default function PlanPage() {
       </p>
 
       <DashboardSummary plan={plan} />
+
+      <ComparisonCard plan={plan} minOnlyPlan={minPlan} />
 
       <PayoffOrder plan={plan} debts={debts} />
 
