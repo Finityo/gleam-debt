@@ -18,6 +18,7 @@ import ScenarioInfo from "@/components/ScenarioInfo";
 import NotesBox from "@/components/NotesBox";
 import BadgesBar from "@/components/BadgesBar";
 import DebtDrawer from "@/components/DebtDrawer";
+import JournalTimeline from "@/components/JournalTimeline";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
@@ -167,6 +168,8 @@ export default function PlanPage() {
           <p>Total Paid: ${currentPlan.totalPaid.toFixed(2)}</p>
         </div>
       </Card>
+
+      <JournalTimeline plan={currentPlan} debts={debts} />
 
       <DebtDrawer
         open={!!selectedDebt}
