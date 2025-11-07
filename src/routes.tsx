@@ -3,6 +3,22 @@ import { Suspense, lazy } from "react";
 import { DemoPlanProvider } from "@/context/DemoPlanContext";
 import { RequireAuth } from "@/components/RequireAuth";
 
+// ===== ROUTE METADATA =====
+export const ROUTE_META = [
+  { path: "/", title: "Home" },
+  { path: "/demo/start", title: "Try Demo" },
+  { path: "/pricing", title: "Pricing" },
+  { path: "/blog", title: "Blog" },
+  { path: "/auth", title: "Sign In" },
+  { path: "/dashboard", title: "Dashboard", protected: true },
+  { path: "/debts", title: "Manage Debts", protected: true },
+  { path: "/debt-plan", title: "Debt Plan", protected: true },
+  { path: "/debt-chart", title: "Payoff Chart", protected: true },
+  { path: "/visualization", title: "Debt Visualization", protected: true },
+  { path: "/scenarios", title: "Scenarios", protected: true },
+  { path: "/settings", title: "Settings", protected: true },
+];
+
 // ===== LOADER =====
 const Loader = () => (
   <div className="flex flex-col items-center justify-center h-screen text-center">
