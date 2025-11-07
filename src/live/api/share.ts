@@ -53,7 +53,7 @@ export async function getSharedPlan(id: string) {
       ...data.snapshot as any,
       createdAt: data.created_at,
       expiresAt: data.expires_at,
-      requiresPin: !!data.pin_hash,
+      requiresPin: !!(data as any).pin_hash,
     };
   } catch (e) {
     console.error("❌ getSharedPlan error:", e);
@@ -71,10 +71,10 @@ export async function verifyPin(id: string, pin: string): Promise<boolean> {
 
     if (error) throw error;
     if (!data) return false;
-    if (!data.pin_hash) return true; // No PIN required
+    if (!(data as any).pin_hash) return true; // No PIN required
 
     const hash = await sha256Hex(String(pin));
-    return hash === data.pin_hash;
+    return hash === (data as any).pin_hash;
   } catch (e) {
     console.error("❌ verifyPin error:", e);
     return false;
@@ -106,13 +106,13 @@ export async function listShares(): Promise<ShareListItem[]> {
     if (error) throw error;
     if (!data) return [];
 
-    return data.map((row) => ({
+    return data.map((row: any) => ({
       id: row.id,
       createdAt: row.created_at,
       expiresAt: row.expires_at,
       requiresPin: !!row.pin_hash,
-      title: (row.snapshot as any)?.plan?.debtFreeDate
-        ? `Plan → Debt-free ${(row.snapshot as any).plan.debtFreeDate}`
+      title: row.snapshot?.plan?.debtFreeDate
+        ? `Plan → Debt-free ${row.snapshot.plan.debtFreeDate}`
         : "Shared Plan",
     }));
   } catch (e) {

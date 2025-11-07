@@ -35,6 +35,7 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
   const [excludeNotes, setExcludeNotes] = useState(false);
   const [anonymizeDebts, setAnonymizeDebts] = useState(false);
   const [expirationDays, setExpirationDays] = useState(90);
+  const [pin, setPin] = useState("");
 
   const handleShareClick = () => {
     setShowPrivacyDialog(true);
@@ -80,6 +81,7 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
         includeNotes: !excludeNotes,
         createdAt: new Date().toISOString(),
         expiresAt,
+        pin: pin || undefined, // Add PIN if provided
         metadata: {
           privacySettings: {
             notesExcluded: excludeNotes,
@@ -264,6 +266,25 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
                       min={0}
                       className="w-full"
                     />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="share-pin" className="text-sm font-normal flex items-center gap-2">
+                      <Lock className="h-3 w-3" />
+                      PIN Protection (optional)
+                    </Label>
+                    <Input
+                      id="share-pin"
+                      type="password"
+                      value={pin}
+                      onChange={(e) => setPin(e.target.value)}
+                      placeholder="4-8 digits"
+                      maxLength={8}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Require a PIN to view this plan
+                    </p>
                   </div>
                 </div>
 

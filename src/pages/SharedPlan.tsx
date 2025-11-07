@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getSharedPlan, deleteSharedPlan } from "@/live/api/share";
+import { getSharedPlan, deleteSharedPlan, verifyPin } from "@/live/api/share";
 import { DebtPlan } from "@/lib/computeDebtPlan";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import PayoffChartWithEvents from "@/components/PayoffChartWithEvents";
 import DashboardSummary from "@/components/DashboardSummary";
 import Milestones from "@/components/Milestones";
@@ -11,6 +13,10 @@ import BadgesBar from "@/components/BadgesBar";
 import JournalTimeline from "@/components/JournalTimeline";
 import ScenarioCompareChart from "@/components/ScenarioCompareChart";
 import { QRCodeSVG } from "qrcode.react";
+import { exportPlanToPDF } from "@/lib/export/pdf";
+import { exportDebtsToCSV } from "@/lib/export/csv";
+import { FileDown, Lock, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 
 export default function SharedPlan() {
@@ -20,6 +26,9 @@ export default function SharedPlan() {
   const [unsharing, setUnsharing] = useState(false);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState("");
+  const [pinNeeded, setPinNeeded] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pinError, setPinError] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -27,7 +36,11 @@ export default function SharedPlan() {
 
       try {
         const snapshot = await getSharedPlan(id);
-        setData(snapshot);
+        if (snapshot.requiresPin) {
+          setPinNeeded(true);
+        } else {
+          setData(snapshot);
+        }
       } catch (e) {
         setError("Plan not found or expired");
       } finally {
@@ -38,18 +51,55 @@ export default function SharedPlan() {
     load();
   }, [id]);
 
+  async function handlePinSubmit() {
+    if (!id) return;
+    
+    setPinError("");
+    try {
+      const isValid = await verifyPin(id, pin);
+      if (!isValid) {
+        setPinError("Incorrect PIN");
+        toast.error("Incorrect PIN");
+        return;
+      }
+      
+      // Load plan after successful PIN
+      const snapshot = await getSharedPlan(id);
+      setData(snapshot);
+      setPinNeeded(false);
+      toast.success("Access granted");
+    } catch (e) {
+      setPinError("Verification failed");
+      toast.error("Verification failed");
+    }
+  }
+
   async function handleUnshare() {
     if (!id) return;
     
     try {
       setUnsharing(true);
       await deleteSharedPlan(id);
+      toast.success("Share link removed");
       navigate("/");
     } catch (e) {
       console.error("Unshare error:", e);
+      toast.error("Failed to remove share");
     } finally {
       setUnsharing(false);
     }
+  }
+
+  function handleExportPDF() {
+    if (!data) return;
+    exportPlanToPDF(data);
+    toast.success("PDF exported successfully");
+  }
+
+  function handleExportCSV() {
+    if (!data) return;
+    exportDebtsToCSV(data);
+    toast.success("CSV exported successfully");
   }
 
   if (loading) {
@@ -57,6 +107,40 @@ export default function SharedPlan() {
       <div className="container mx-auto p-8 space-y-4">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (pinNeeded) {
+    return (
+      <div className="container mx-auto p-8">
+        <div className="max-w-md mx-auto space-y-6">
+          <div className="flex items-center gap-3">
+            <Lock className="h-8 w-8 text-muted-foreground" />
+            <div>
+              <h1 className="text-2xl font-semibold">This plan is protected</h1>
+              <p className="text-sm text-muted-foreground">Enter the PIN to view this plan</p>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="pin">PIN</Label>
+            <Input
+              id="pin"
+              type="password"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              placeholder="Enter PIN"
+              maxLength={8}
+              onKeyDown={(e) => e.key === "Enter" && handlePinSubmit()}
+            />
+            {pinError && <p className="text-sm text-destructive">{pinError}</p>}
+          </div>
+          
+          <Button onClick={handlePinSubmit} className="w-full">
+            View Plan
+          </Button>
+        </div>
       </div>
     );
   }
@@ -107,8 +191,18 @@ export default function SharedPlan() {
 
   return (
     <div className="container mx-auto p-8 space-y-6 pb-20">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h1 className="text-3xl font-bold">Shared Debt Payoff Plan</h1>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleExportPDF} variant="outline" size="sm">
+            <FileDown className="h-4 w-4 mr-2" />
+            Export PDF
+          </Button>
+          <Button onClick={handleExportCSV} variant="outline" size="sm">
+            <FileDown className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Share metadata */}
@@ -160,6 +254,7 @@ export default function SharedPlan() {
         variant="destructive"
         size="sm"
       >
+        <Trash2 className="h-4 w-4 mr-2" />
         {unsharing ? "Removing..." : "Unshare / Remove Link"}
       </Button>
 

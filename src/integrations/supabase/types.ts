@@ -687,18 +687,21 @@ export type Database = {
           created_at: string
           expires_at: string | null
           id: string
+          pin_hash: string | null
           snapshot: Json
         }
         Insert: {
           created_at?: string
           expires_at?: string | null
           id?: string
+          pin_hash?: string | null
           snapshot: Json
         }
         Update: {
           created_at?: string
           expires_at?: string | null
           id?: string
+          pin_hash?: string | null
           snapshot?: Json
         }
         Relationships: []
