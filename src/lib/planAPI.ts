@@ -122,6 +122,10 @@ export const PlanAPI = {
     };
 
     await AppDB.put(userId, payload);
+    
+    // Auto-log version after write+compute
+    await this.logVersion(userId);
+
     return payload;
   },
 
