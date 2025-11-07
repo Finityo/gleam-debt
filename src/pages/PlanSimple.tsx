@@ -15,6 +15,7 @@ import RemainingStackedChart from "@/components/RemainingStackedChart";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import ScenarioInfo from "@/components/ScenarioInfo";
 import NotesBox from "@/components/NotesBox";
+import BadgesBar from "@/components/BadgesBar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
@@ -85,6 +86,8 @@ export default function PlanPage() {
       <p className="text-lg text-muted-foreground mb-6">
         Debt-Free Date: {currentPlan.debtFreeDate}
       </p>
+
+      <BadgesBar plan={currentPlan} />
 
       <div className="flex items-center gap-3 flex-wrap">
         <ScenarioSwitcher scenario={scenario} onChange={setScenario} />
