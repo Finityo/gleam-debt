@@ -52,22 +52,29 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
       const badges = getBadges(plan);
       
       // Apply privacy controls
+      // Apply privacy controls
       const processedDebts = anonymizeDebts 
         ? debts.map((debt, idx) => ({ ...debt, name: `Debt ${idx + 1}` }))
         : debts;
       
-      const processedNotes = excludeNotes ? "" : notes;
+      const processedNotes = excludeNotes ? null : notes;
       
-      // Create snapshot with metadata
+      // Calculate expiration (90 days from now)
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 90);
+      
+      // Create snapshot with exact structure
       const snapshot = { 
         debts: processedDebts, 
         settings, 
         plan, 
-        notes: processedNotes, 
+        notes: processedNotes,
         badges,
+        includeNotes: !excludeNotes,
+        createdAt: new Date().toISOString(),
+        expiresAt: expiresAt.toISOString(),
+        version: 1,
         metadata: {
-          version: "0.0.0", // from package.json
-          sharedAt: new Date().toISOString(),
           privacySettings: {
             notesExcluded: excludeNotes,
             debtsAnonymized: anonymizeDebts
