@@ -120,21 +120,24 @@ export function exportPlanToPDF(
   const minPlan = computeMinimumOnly(debts);
   const cmp = comparePlans(plan, minPlan);
 
-  autoTable(doc, {
-    startY: (doc as any).lastAutoTable.finalY + 24,
-    head: [["Comparison vs Minimum-Only", ""]],
-    body: [
-      ["Debt-Free (Plan)", cmp.debtFreeDateReal],
-      ["Debt-Free (Min Only)", cmp.debtFreeDateMin],
-      ["Months Saved", cmp.monthsSaved],
-      ["Interest (Plan)", `$${cmp.interestReal.toFixed(2)}`],
-      ["Interest (Min Only)", `$${cmp.interestMin.toFixed(2)}`],
-      ["Interest Saved", `$${cmp.interestSaved.toFixed(2)}`],
-    ],
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [0, 0, 0] },
-    theme: "striped",
-  });
+  cursorY = (doc as any).lastAutoTable.finalY + 24;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Minimum-Only Comparison", margin, cursorY);
+  cursorY += 18;
+
+  doc.setFont("helvetica", "normal");
+  doc.text(`Debt-Free (Plan): ${cmp.debtFreeDateReal}`, margin, cursorY);
+  cursorY += 14;
+
+  doc.text(`Debt-Free (Min Only): ${cmp.debtFreeDateMin}`, margin, cursorY);
+  cursorY += 14;
+
+  doc.text(`Months Saved: ${cmp.monthsSaved}`, margin, cursorY);
+  cursorY += 14;
+
+  doc.text(`Interest Saved: $${cmp.interestSaved.toFixed(2)}`, margin, cursorY);
+  cursorY += 28;
 
   // Done
   doc.save("finityo_payoff_summary.pdf");
