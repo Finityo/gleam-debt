@@ -21,6 +21,7 @@ export type Debt = {
   minPayment: number;   // dollars
   dueDay?: number;      // 1..28 optional
   include?: boolean;    // default true
+  category?: string;    // optional category
 };
 
 export type Strategy = "snowball" | "avalanche";
