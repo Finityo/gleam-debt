@@ -3,9 +3,11 @@ import { Drawer } from "@/components/ui/drawer";
 import { Btn } from "@/components/Btn";
 import { Lightbulb } from "lucide-react";
 import { DebtPlan } from "@/lib/computeDebtPlan";
+import { useUpgrade } from "@/hooks/useUpgrade";
 
 export default function CoachDrawer({ plan }: { plan: DebtPlan | null }) {
   const [open, setOpen] = useState(false);
+  const { upgrade, loading } = useUpgrade();
 
   if (!plan) return null;
 
@@ -46,9 +48,23 @@ export default function CoachDrawer({ plan }: { plan: DebtPlan | null }) {
             ))}
           </ul>
 
-          <Btn variant="cta" className="w-full mt-4" onClick={() => setOpen(false)}>
-            Close
-          </Btn>
+          <div className="pt-4 space-y-3">
+            <Btn
+              variant="cta"
+              className="w-full"
+              onClick={() => {
+                setOpen(false);
+                upgrade("ultimate");
+              }}
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "Unlock Ultimate — $4.99/mo"}
+            </Btn>
+
+            <Btn variant="outline" className="w-full" onClick={() => setOpen(false)}>
+              Close
+            </Btn>
+          </div>
         </div>
       </Drawer>
     </>
