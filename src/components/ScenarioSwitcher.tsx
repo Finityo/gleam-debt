@@ -2,7 +2,7 @@
 // src/components/ScenarioSwitcher.tsx
 // ===================================
 import React from "react";
-import { Scenario } from "@/types/scenario";
+import { Scenario } from "@/lib/computeDebtPlan";
 
 type Props = {
   scenario: Scenario;

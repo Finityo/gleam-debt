@@ -25,6 +25,8 @@ export type Debt = {
 
 export type Strategy = "snowball" | "avalanche";
 
+export type Scenario = "snowball" | "avalanche" | "minimum";
+
 export type UserSettings = {
   extraMonthly: number;     // recurring extra dollars
   oneTimeExtra: number;     // applied in Month 1
