@@ -1,13 +1,11 @@
-import { useState, useEffect } from "react";
-import { PlanAPI, type VersionRecord } from "@/lib/planAPI";
-import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
+import { type VersionRecord } from "@/lib/planAPI";
 import { usePlan } from "@/context/PlanContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { History, RotateCcw, Trash2, Clock, GitCompare } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { History, RotateCcw, Clock, GitCompare } from "lucide-react";
 import { VersionComparison } from "@/components/VersionComparison";
 import {
   Dialog,
@@ -19,71 +17,26 @@ import {
 } from "@/components/ui/dialog";
 
 export function PlanVersionHistory() {
-  const { user } = useAuth();
-  const { demoMode, compute } = usePlan();
-  const [versions, setVersions] = useState<VersionRecord[]>([]);
+  const { demoMode, history, restore } = usePlan();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<VersionRecord | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [compareVersion, setCompareVersion] = useState<VersionRecord | null>(null);
 
-  useEffect(() => {
-    if (!user || demoMode) return;
-    loadVersions();
-
-    // Subscribe to realtime updates for user_plan_data
-    const channel = supabase
-      .channel('plan-data-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'user_plan_data',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          loadVersions();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, demoMode]);
-
-  async function loadVersions() {
-    if (!user) return;
+  async function restoreVersion(versionId: string) {
     try {
       setLoading(true);
-      const data = await PlanAPI.listVersions(user.id);
-      setVersions(data.reverse()); // newest first
-    } catch (err) {
-      console.error('Failed to load versions:', err);
-      toast.error('Failed to load version history');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function restoreVersion(versionId: string) {
-    if (!user) return;
-    try {
-      await PlanAPI.restoreVersion(user.id, versionId);
-      await compute();
+      await restore(versionId);
       toast.success('Version restored successfully');
       setOpen(false);
       setSelectedVersion(null);
     } catch (err) {
       console.error('Failed to restore version:', err);
       toast.error('Failed to restore version');
+    } finally {
+      setLoading(false);
     }
-  }
-
-  async function deleteVersion(versionId: string) {
-    toast.info('Version deletion not yet implemented for inline storage');
   }
 
   if (demoMode) {
@@ -130,13 +83,13 @@ export function PlanVersionHistory() {
                 </p>
               )}
 
-              {!loading && versions.length === 0 && (
+              {!loading && history.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   No versions saved yet
                 </p>
               )}
 
-              {versions.map((version) => (
+              {history.map((version) => (
                 <button
                   key={version.versionId}
                   onClick={() => {
@@ -202,7 +155,7 @@ export function PlanVersionHistory() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Version Details</h3>
-                  {versions.length > 1 && !compareMode && (
+                  {history.length > 1 && !compareMode && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -274,16 +227,10 @@ export function PlanVersionHistory() {
                     <Button
                       onClick={() => restoreVersion(selectedVersion.versionId)}
                       className="flex-1"
+                      disabled={loading}
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
                       Restore This Version
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => deleteVersion(selectedVersion.versionId)}
-                    >
-                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 )}

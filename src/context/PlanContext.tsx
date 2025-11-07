@@ -29,7 +29,8 @@ import {
 } from "@/lib/computeDebtPlan";
 
 import { useAuth } from "@/context/AuthContext";
-import { PlanAPI } from "@/lib/planAPI";
+import { PlanAPI, type VersionRecord } from "@/lib/planAPI";
+import { supabase } from "@/integrations/supabase/client";
 
 // ---- local storage helpers (demo only) ----
 const LS_KEY = "finityo:planData";
@@ -66,6 +67,7 @@ type PlanContextType = {
   settings: UserSettings;
   plan: DebtPlan | null;
   notes: string;
+  history: VersionRecord[];
   setDebts: React.Dispatch<React.SetStateAction<Debt[]>>;
   setSettings: React.Dispatch<React.SetStateAction<UserSettings>>;
   setPlan: React.Dispatch<React.SetStateAction<DebtPlan | null>>;
@@ -74,6 +76,7 @@ type PlanContextType = {
   updateSettings: (next: Partial<UserSettings>) => Promise<void>;
   compute: () => Promise<void>;
   reset: () => Promise<void>;
+  restore: (versionId: string) => Promise<void>;
 };
 
 const PlanContext = createContext<PlanContextType | null>(null);
@@ -94,6 +97,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   });
   const [plan, setPlan] = useState<DebtPlan | null>(null);
   const [notes, setNotes] = useState<string>("");
+  const [history, setHistory] = useState<VersionRecord[]>([]);
 
   // Load notes persistence
   useEffect(() => {
@@ -130,8 +134,48 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         setNotes(row.notes ?? "");
         setPlan(row.plan ?? null);
       }
+
+      // Load version history
+      try {
+        const versions = await PlanAPI.listVersions(user.id);
+        setHistory(versions.reverse()); // newest first
+      } catch (err) {
+        console.error('Failed to load version history:', err);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demoMode, user?.id]);
+
+  // --------------------------------------------------------------------------
+  // REALTIME VERSION HISTORY UPDATES
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    if (demoMode || !user?.id) return;
+
+    const channel = supabase
+      .channel('plan-data-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_plan_data',
+          filter: `user_id=eq.${user.id}`,
+        },
+        async () => {
+          try {
+            const versions = await PlanAPI.listVersions(user.id);
+            setHistory(versions.reverse());
+          } catch (err) {
+            console.error('Failed to reload version history:', err);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [demoMode, user?.id]);
 
 
@@ -236,6 +280,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       strategy: "snowball",
     });
     setPlan(null);
+    setHistory([]);
 
     if (demoMode) {
       clearLocal();
@@ -243,6 +288,33 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     }
 
     await PlanAPI.clear(user.id);
+  }, [demoMode, user?.id]);
+
+  // --------------------------------------------------------------------------
+  // RESTORE VERSION
+  // --------------------------------------------------------------------------
+  const restore = useCallback(async (versionId: string) => {
+    if (demoMode) {
+      console.warn('Version restore not available in demo mode');
+      return;
+    }
+
+    try {
+      const restored = await PlanAPI.restoreVersion(user.id, versionId);
+      if (restored) {
+        setDebts(restored.debts ?? []);
+        setSettings(restored.settings ?? { extraMonthly: 0, oneTimeExtra: 0, strategy: 'snowball' });
+        setNotes(restored.notes ?? '');
+        setPlan(restored.plan ?? null);
+        
+        // Reload version history
+        const versions = await PlanAPI.listVersions(user.id);
+        setHistory(versions.reverse());
+      }
+    } catch (err) {
+      console.error('Failed to restore version:', err);
+      throw err;
+    }
   }, [demoMode, user?.id]);
 
 
@@ -257,6 +329,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         settings,
         plan,
         notes,
+        history,
         setDebts,
         setSettings,
         setPlan,
@@ -265,6 +338,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         updateSettings,
         compute,
         reset,
+        restore,
       }}
     >
       {children}
