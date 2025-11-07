@@ -9,6 +9,7 @@ import { DollarSign, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ShareButton } from "@/components/ShareButton";
 import CoachDrawer from "@/components/CoachDrawer";
+import { toast } from "sonner";
 
 export default function DemoPlan() {
   const { debts, settings, plan, updateSettings, compute } = usePlan();
@@ -16,6 +17,12 @@ export default function DemoPlan() {
 
   const submit = () => {
     compute();
+    
+    // Check if high interest and suggest upgrade
+    if (plan && plan.totalInterest > plan.totalPaid * 0.4) {
+      toast("You could save money with Ultimate's Avalanche coaching.");
+    }
+    
     navigate("/demo/chart");
   };
 
