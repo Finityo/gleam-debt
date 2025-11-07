@@ -6,6 +6,8 @@ import autoTable from "jspdf-autotable";
 import { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
 import { remainingByMonth } from "@/lib/remaining";
 import { getPayoffOrder } from "@/lib/payoffOrder";
+import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
+import { comparePlans } from "@/lib/comparePlans";
 
 export function exportPlanToPDF(
   debts: Debt[],
@@ -97,22 +99,42 @@ export function exportPlanToPDF(
 
   // --- Payoff Order Table ---
   const payoffOrder = getPayoffOrder(plan);
-  const debtMap = new Map(debts.map((d) => [d.id, d]));
+  const nameMap = Object.fromEntries(debts.map((d) => [d.id, d.name]));
 
   if (payoffOrder.length > 0) {
     autoTable(doc, {
       startY: (doc as any).lastAutoTable.finalY + 24,
-      head: [["Order", "Debt Name", "Month Paid Off"]],
-      body: payoffOrder.map((item, idx) => {
-        const debt = debtMap.get(item.debtId);
-        const debtName = debt?.name || item.debtId;
-        return [idx + 1, debtName, item.monthIndex];
-      }),
+      head: [["Rank", "Debt", "Month Paid"]],
+      body: payoffOrder.map((p, i) => [
+        i + 1,
+        nameMap[p.debtId] || p.debtId,
+        p.monthIndex,
+      ]),
       styles: { fontSize: 10 },
       headStyles: { fillColor: [0, 0, 0] },
       theme: "striped",
     });
   }
+
+  // --- Minimum-Only Comparison ---
+  const minPlan = computeMinimumOnly(debts);
+  const cmp = comparePlans(plan, minPlan);
+
+  autoTable(doc, {
+    startY: (doc as any).lastAutoTable.finalY + 24,
+    head: [["Comparison vs Minimum-Only", ""]],
+    body: [
+      ["Debt-Free (Plan)", cmp.debtFreeDateReal],
+      ["Debt-Free (Min Only)", cmp.debtFreeDateMin],
+      ["Months Saved", cmp.monthsSaved],
+      ["Interest (Plan)", `$${cmp.interestReal.toFixed(2)}`],
+      ["Interest (Min Only)", `$${cmp.interestMin.toFixed(2)}`],
+      ["Interest Saved", `$${cmp.interestSaved.toFixed(2)}`],
+    ],
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [0, 0, 0] },
+    theme: "striped",
+  });
 
   // Done
   doc.save("finityo_payoff_summary.pdf");
