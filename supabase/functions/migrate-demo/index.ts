@@ -4,6 +4,134 @@ import { corsHeaders } from '../_shared/cors.ts';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+// ============================================================================
+// PLAN API (embedded for edge function use)
+// ============================================================================
+
+function computeDebtPlan(debts: any[], settings: any) {
+  // Stub - actual computation happens client-side or via separate function
+  // For migration, we don't need to compute, just store
+  return null;
+}
+
+function nowISO() {
+  return new Date().toISOString();
+}
+
+const PlanAPI = {
+  async get(supabase: any, userId: string) {
+    const { data, error } = await supabase
+      .from('user_plan_data')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error || !data) return {
+      debts: [],
+      settings: { extraMonthly: 0, oneTimeExtra: 0, strategy: 'snowball' },
+      notes: '',
+      plan: null,
+      updatedAt: nowISO(),
+    };
+
+    return {
+      debts: (data.debts as any) || [],
+      settings: (data.settings as any) || { extraMonthly: 0, oneTimeExtra: 0, strategy: 'snowball' },
+      notes: (data.notes as string) || '',
+      plan: (data.plan as any) || null,
+      updatedAt: data.updated_at,
+    };
+  },
+
+  async put(supabase: any, userId: string, payload: any) {
+    const { error } = await supabase
+      .from('user_plan_data')
+      .upsert({
+        user_id: userId,
+        debts: payload.debts as any,
+        settings: payload.settings as any,
+        notes: payload.notes,
+        plan: payload.plan as any,
+        updated_at: payload.updatedAt,
+      } as any, {
+        onConflict: 'user_id',
+      });
+
+    if (error) throw error;
+  },
+
+  async merge(supabase: any, userId: string, incoming: any) {
+    const current = await this.get(supabase, userId);
+
+    // debt signature to detect dupes
+    const sig = (d: any) =>
+      `${d.name}|${Math.round(d.balance)}|${Math.round(d.apr * 100)}`;
+
+    const seen = new Set(current.debts.map(sig));
+
+    const mergedDebts = [
+      ...current.debts,
+      ...(incoming.debts ?? []).filter((d: any) => {
+        const s = sig(d);
+        if (seen.has(s)) return false;
+        seen.add(s);
+        return true;
+      }),
+    ];
+
+    const mergedSettings = {
+      ...current.settings,
+      ...(incoming.settings ?? {}),
+    };
+
+    const mergedNotes = incoming.notes || current.notes || '';
+
+    const plan = computeDebtPlan(mergedDebts, mergedSettings);
+
+    const payload = {
+      debts: mergedDebts,
+      settings: mergedSettings,
+      notes: mergedNotes,
+      plan,
+      updatedAt: nowISO(),
+      migratedFrom: incoming.migratedFrom ?? 'demo',
+      migratedMode: 'merge',
+    };
+
+    await this.put(supabase, userId, payload);
+    return payload;
+  },
+
+  async replace(supabase: any, userId: string, incoming: any) {
+    const debts = incoming.debts ?? [];
+    const settings = incoming.settings ?? {
+      extraMonthly: 0,
+      oneTimeExtra: 0,
+      strategy: 'snowball',
+    };
+    const notes = incoming.notes ?? '';
+
+    const plan = computeDebtPlan(debts, settings);
+
+    const payload = {
+      debts,
+      settings,
+      notes,
+      plan,
+      updatedAt: nowISO(),
+      migratedFrom: incoming.migratedFrom ?? 'demo',
+      migratedMode: 'replace',
+    };
+
+    await this.put(supabase, userId, payload);
+    return payload;
+  },
+};
+
+// ============================================================================
+// EDGE FUNCTION HANDLER
+// ============================================================================
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -32,48 +160,25 @@ Deno.serve(async (req) => {
     // Normalize incoming demo data
     const incoming = normalizeDemoPayload(demo);
 
-    // Get current user plan data
-    const { data: currentPlan } = await supabase
-      .from('user_plan_data')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    let result;
 
-    let finalDebts = incoming.debts;
-    let finalSettings = incoming.settings;
-    let finalNotes = incoming.notes || '';
-
-    // Handle merge vs replace
-    if (mode === 'merge' && currentPlan) {
-      const currentDebts = currentPlan.debts || [];
-      finalDebts = mergeDebts(currentDebts, incoming.debts);
-      finalSettings = { ...currentPlan.settings, ...incoming.settings };
-      finalNotes = [currentPlan.notes, incoming.notes].filter(Boolean).join('\n\n---\n\n');
+    // Handle merge vs replace vs fresh
+    if (mode === 'fresh') {
+      // Just clear - client will handle redirect
+      console.log('[migrate-demo] Fresh start - no data to migrate');
+      result = { ok: true, mode: 'fresh' };
+    } else if (mode === 'merge') {
+      result = await PlanAPI.merge(supabase, user.id, incoming);
+      console.log(`[migrate-demo] Merged ${result.debts.length} debts`);
     } else if (mode === 'replace') {
-      // Replace mode keeps incoming data as-is
-      finalDebts = incoming.debts;
-      finalSettings = incoming.settings;
-      finalNotes = incoming.notes || '';
+      result = await PlanAPI.replace(supabase, user.id, incoming);
+      console.log(`[migrate-demo] Replaced with ${result.debts.length} debts`);
+    } else {
+      throw new Error('Invalid mode');
     }
 
-    // Update user plan data (unified table)
-    const { error: planError } = await supabase
-      .from('user_plan_data')
-      .upsert({
-        user_id: user.id,
-        debts: finalDebts,
-        settings: finalSettings,
-        notes: finalNotes,
-        plan: null, // Will be recomputed on client
-        updated_at: new Date().toISOString(),
-      });
-
-    if (planError) throw planError;
-
-    console.log(`[migrate-demo] Successfully migrated ${finalDebts.length} debts`);
-
     return new Response(
-      JSON.stringify({ ok: true }),
+      JSON.stringify({ ok: true, result }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
@@ -88,7 +193,10 @@ Deno.serve(async (req) => {
   }
 });
 
-// Helper functions
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
 function normalizeDemoPayload(demo: any) {
   const debts = Array.isArray(demo?.debts) 
     ? demo.debts.map(sanitizeDebt).filter(Boolean) 
@@ -127,21 +235,4 @@ function toNum(x: any) {
 function clampInt(n: any, min: number, max: number) {
   n = Math.floor(Number(n) || min);
   return Math.max(min, Math.min(max, n));
-}
-
-function mergeDebts(current: any[], incoming: any[]) {
-  const seen = new Set(
-    current.map((d: any) => 
-      `${d.name}|${Math.round(d.balance)}|${Math.round(d.apr * 100)}`
-    )
-  );
-
-  const newDebts = incoming.filter((d: any) => {
-    const sig = `${d.name}|${Math.round(d.balance)}|${Math.round(d.apr * 100)}`;
-    if (seen.has(sig)) return false;
-    seen.add(sig);
-    return true;
-  });
-
-  return [...current, ...newDebts];
 }

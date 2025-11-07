@@ -29,7 +29,7 @@ import {
 } from "@/lib/computeDebtPlan";
 
 import { useAuth } from "@/context/AuthContext";
-import { AppDB } from "@/live/lovableCloudDB";
+import { PlanAPI } from "@/lib/planAPI";
 
 // ---- local storage helpers (demo only) ----
 const LS_KEY = "finityo:planData";
@@ -123,7 +123,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       }
 
       // LIVE
-      const row = await AppDB.get(user.id);
+      const row = await PlanAPI.get(user.id);
       if (row) {
         setDebts(row.debts ?? []);
         setSettings(row.settings ?? settings);
@@ -136,7 +136,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
 
   // --------------------------------------------------------------------------
-  // SAVE PLAN: DEMO → localStorage | LIVE → AppDB.put
+  // SAVE PLAN: DEMO → localStorage | LIVE → PlanAPI.save
   // --------------------------------------------------------------------------
   const persist = useCallback(
     async (nextDebts: Debt[], nextSettings: UserSettings, nextPlan: DebtPlan | null) => {
@@ -150,7 +150,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       }
 
       // LIVE
-      await AppDB.put(user.id, {
+      await PlanAPI.save(user.id, {
         debts: nextDebts,
         settings: nextSettings,
         notes,
@@ -230,17 +230,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    await AppDB.put(user.id, {
-      debts: [],
-      settings: {
-        extraMonthly: 0,
-        oneTimeExtra: 0,
-        strategy: "snowball",
-      },
-      notes: "",
-      plan: null,
-      updatedAt: new Date().toISOString(),
-    });
+    await PlanAPI.clear(user.id);
   }, [demoMode, user?.id]);
 
 
