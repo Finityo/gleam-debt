@@ -109,17 +109,8 @@ const Dashboard = () => {
           .eq('user_id', user.id);
         
         if (!itemsError && items && items.length > 0) {
-          // Token migration check disabled - access_token column removed in security migration
+          // Token migration complete - access_token column removed in security migration
           setUnmigratedItemIds([]);
-          
-          // Show toast notification if unmigrated tokens detected
-          if (unmigrated.length > 0) {
-            toast({
-              title: '🔒 Security Upgrade Available',
-              description: `${unmigrated.length} bank connection(s) can be upgraded to encrypted storage. Please upgrade to ensure full account management capabilities.`,
-              duration: 10000,
-            });
-          }
         }
       }
     } catch (error: any) {
