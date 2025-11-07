@@ -10,6 +10,7 @@ import ComparisonCard from "@/components/ComparisonCard";
 import Milestones from "@/components/Milestones";
 import SnowballTimeline from "@/components/SnowballTimeline";
 import ScenarioChart from "@/components/ScenarioChart";
+import PayoffChartWithEvents from "@/components/PayoffChartWithEvents";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -85,6 +86,8 @@ export default function PlanPage() {
       <ScenarioSwitcher scenario={scenario} onChange={setScenario} />
 
       <ScenarioChart debts={debts} settings={settings} />
+
+      <PayoffChartWithEvents plan={currentPlan} debts={debts} />
 
       <DashboardSummary plan={currentPlan} />
 
