@@ -13,7 +13,16 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+      },
       colors: {
+        brand: {
+          DEFAULT: "hsl(0 0% 0%)",
+          soft: "hsl(0 0% 7%)",
+          faded: "hsl(0 0% 47%)",
+          border: "hsl(220 13% 91%)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -67,11 +76,13 @@ export default {
         'vibrant': 'var(--shadow-vibrant)',
         'glow': 'var(--shadow-glow)',
         'accent': 'var(--shadow-accent)',
+        'card': '0 1px 4px rgba(0,0,0,0.08)',
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        base: "0.6rem",
       },
       keyframes: {
         "accordion-down": {

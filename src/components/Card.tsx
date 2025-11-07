@@ -1,4 +1,3 @@
-import { Card as ShadCard, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { ReactNode } from "react";
 
 type Props = {
@@ -8,24 +7,12 @@ type Props = {
   className?: string;
 };
 
-export function Card({ title, children, actions, className }: Props) {
+export function Card({ title, children, actions, className = "" }: Props) {
   return (
-    <ShadCard className={`animate-fade-in ${className || ""}`}>
-      {title && (
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
-      )}
-      
-      <CardContent className="space-y-4">
-        {children}
-        
-        {actions && (
-          <div className="pt-2 flex gap-2 border-t">
-            {actions}
-          </div>
-        )}
-      </CardContent>
-    </ShadCard>
+    <div className={`bg-card border border-brand-border shadow-card rounded-base p-4 space-y-3 animate-fade-in ${className}`}>
+      {title && <div className="font-semibold text-base text-card-foreground">{title}</div>}
+      <div>{children}</div>
+      {actions && <div className="pt-2 flex gap-2">{actions}</div>}
+    </div>
   );
 }
