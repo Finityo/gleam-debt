@@ -31,10 +31,10 @@ export default function Index() {
             </p>
 
             <div className="space-y-3 mb-6">
-              <a href="/auth" className="block w-full bg-white/15 hover:bg-white/20 text-white font-semibold py-5 px-6 rounded-3xl text-center transition-all shadow-[0_8px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)] border border-white/20 hover:scale-[1.02] duration-300">
+              <a href="/auth" className="block w-full bg-white/15 hover:bg-white/20 text-white font-semibold py-5 px-6 rounded-3xl text-center transition-all shadow-[0_8px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.35),0_0_60px_rgba(139,92,246,0.6)] border border-white/20 hover:scale-[1.02] active:scale-[0.98] duration-300">
                 Start Free
               </a>
-              <a href="/setup/start" className="block w-full bg-white/10 hover:bg-white/15 text-white font-semibold py-5 px-6 rounded-3xl text-center transition-all shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] border border-white/15 hover:scale-[1.02] duration-300">
+              <a href="/setup/start" className="block w-full bg-white/10 hover:bg-white/15 text-white font-semibold py-5 px-6 rounded-3xl text-center transition-all shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3),0_0_60px_rgba(236,72,153,0.6)] border border-white/15 hover:scale-[1.02] active:scale-[0.98] duration-300">
                 🔑 Try Setup
               </a>
             </div>
@@ -153,7 +153,7 @@ export default function Index() {
                 placeholder="Enter your email" 
                 className="w-full px-4 py-3 rounded-2xl bg-white/90 text-gray-900 placeholder-gray-500 border-0 focus:ring-2 focus:ring-white shadow-[0_5px_20px_rgba(0,0,0,0.2)]"
               />
-              <button className="w-full bg-white hover:bg-gray-100 text-[#0f766e] font-semibold py-3 px-6 rounded-2xl transition-all shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.3)] hover:scale-[1.02] duration-300">
+              <button className="w-full bg-white hover:bg-gray-100 text-[#0f766e] font-semibold py-3 px-6 rounded-2xl transition-all shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.3),0_0_60px_rgba(20,184,166,0.8)] hover:scale-[1.02] active:scale-[0.98] duration-300">
                 Subscribe
               </button>
             </div>
@@ -165,7 +165,7 @@ export default function Index() {
           <div className="bg-gradient-to-br from-[#ff006b] via-[#7f5af0] to-[#a855f7] rounded-[2.5rem] p-8 border-2 border-white/30 text-center shadow-[0_20px_70px_rgba(127,90,240,0.5)] hover:shadow-[0_25px_80px_rgba(127,90,240,0.6)] hover:scale-[1.01] transition-all duration-500">
             <h2 className="text-2xl font-bold text-white mb-4">Ready to Become Debt-Free?</h2>
             <p className="text-white/90 text-sm mb-6">Start your journey today. No credit card required.</p>
-            <a href="/auth" className="inline-block bg-white hover:bg-gray-100 text-[#7f5af0] font-bold py-4 px-8 rounded-3xl transition-all shadow-[0_10px_40px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.4)] hover:scale-105 duration-300">
+            <a href="/auth" className="inline-block bg-white hover:bg-gray-100 text-[#7f5af0] font-bold py-4 px-8 rounded-3xl transition-all shadow-[0_10px_40px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.4),0_0_80px_rgba(255,0,107,0.7)] hover:scale-105 active:scale-[0.98] duration-300">
               Start Free Now
             </a>
           </div>
