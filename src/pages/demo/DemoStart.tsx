@@ -1,37 +1,47 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageShell } from "@/components/PageShell";
-import { Btn, Card } from "@/components/ui";
+import { Btn } from "@/components/Btn";
+import { usePlan } from "@/context/PlanContext";
 
 export default function DemoStart() {
   const nav = useNavigate();
+  const { debts, reset } = usePlan();
 
-  // Auto-redirect if demo data exists
-  useEffect(() => {
-    try {
-      const d = JSON.parse(localStorage.getItem("finityo:demoDebts") ?? "null");
-      if (Array.isArray(d) && d.length > 0) {
-        nav("/demo/debts");
-      }
-    } catch {}
-  }, [nav]);
+  const handleStart = () => {
+    // For demo, wipe whatever's in memory/local.
+    reset();
+    nav("/demo/debts");
+  };
 
   return (
     <PageShell>
-      <div className="max-w-lg mx-auto px-4 pt-12 pb-10">
-        <Card>
-          <h1 className="text-2xl text-finityo-textMain font-semibold mb-3">
-            Try Finityo Demo
-          </h1>
-          <p className="text-sm text-finityo-textBody mb-6">
-            No signup needed. Load sample debts and see your payoff plan.
-          </p>
+      <section className="max-w-lg mx-auto px-4 pt-16 pb-20 text-center">
+        <h1 className="text-4xl font-bold text-finityo-textMain mb-4">
+          Try Finityo Demo
+        </h1>
 
-          <Btn onClick={() => nav("/demo/debts")} variant="primary" className="w-full">
-            Start Demo
-          </Btn>
-        </Card>
-      </div>
+        <p className="text-finityo-textBody mb-10">
+          Load sample debts and see how the debt payoff engine works — no signup
+          required.
+        </p>
+
+        <Btn
+          variant="cta"
+          className="w-full h-12 text-lg"
+          onClick={handleStart}
+        >
+          🚀 Start Demo
+        </Btn>
+
+        {debts?.length > 0 && (
+          <button
+            onClick={() => nav("/demo/debts")}
+            className="text-xs text-finityo-textBody mt-4 underline"
+          >
+            Continue where you left off →
+          </button>
+        )}
+      </section>
     </PageShell>
   );
 }

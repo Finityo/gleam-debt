@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 type BtnProps = {
   children: ReactNode;
   onClick?: () => void;
-  variant?: "primary" | "outline" | "subtle" | "danger";
+  variant?: "primary" | "outline" | "subtle" | "danger" | "cta";
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
   className?: string;
@@ -25,6 +25,7 @@ export function Btn({
     outline: "border border-gray-300 hover:bg-gray-50 transition-all",
     subtle: "text-gray-700 hover:text-black transition-all",
     danger: "border border-red-300 text-red-700 hover:bg-red-50 transition-all",
+    cta: "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:scale-105 active:scale-95 shadow-lg transition-all",
   };
 
   return (
