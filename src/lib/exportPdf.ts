@@ -57,17 +57,19 @@ export function exportPlanToPDF(
 
   autoTable(doc, {
     startY: cursorY,
-    head: [["Month", "Total Paid", "Interest", "Principal"]],
+    head: [["Month", "Total Paid", "Interest", "Principal", "Remaining"]],
     body: firstMonths.map((m) => {
       const totalPrincipal = m.payments.reduce(
         (a, p) => a + p.principal,
         0
       );
+      const totalRemaining = m.payments.reduce((a, p) => a + p.balanceEnd, 0);
       return [
         m.monthIndex + 1,
         `$${m.totalPaid.toFixed(2)}`,
         `$${m.totalInterest.toFixed(2)}`,
         `$${totalPrincipal.toFixed(2)}`,
+        `$${totalRemaining.toFixed(2)}`,
       ];
     }),
     styles: { fontSize: 10 },
