@@ -14,8 +14,10 @@ export default function ScenarioSwitcher({ scenario, onChange }: Props) {
     <button
       key={value}
       onClick={() => onChange(value)}
-      className={`px-3 py-1 border rounded ${
-        scenario === value ? "bg-black text-white" : "bg-white"
+      className={`px-4 py-2 rounded-md border transition-all duration-200 font-medium ${
+        scenario === value
+          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+          : "bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground hover:border-accent"
       }`}
     >
       {label}
@@ -23,10 +25,10 @@ export default function ScenarioSwitcher({ scenario, onChange }: Props) {
   );
 
   return (
-    <div className="flex gap-2 items-center">
-      {opt("snowball", "Snowball")}
-      {opt("avalanche", "Avalanche")}
-      {opt("minimum", "Minimum Only")}
+    <div className="flex gap-2 items-center flex-wrap">
+      {opt("snowball", "🏂 Snowball")}
+      {opt("avalanche", "🏔️ Avalanche")}
+      {opt("minimum", "💤 Minimum Only")}
     </div>
   );
 }
