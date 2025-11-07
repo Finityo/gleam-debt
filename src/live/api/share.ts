@@ -2,9 +2,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function shareSnapshot(snapshot: any) {
   try {
-    const { data, error } = await supabase.functions.invoke('share-plan', {
-      body: snapshot,
-    });
+    const { data, error } = await supabase
+      .from('public_shares')
+      .insert({ snapshot })
+      .select('id')
+      .single();
 
     if (error) throw error;
     return data;
@@ -17,7 +19,7 @@ export async function shareSnapshot(snapshot: any) {
 export async function getSharedPlan(id: string) {
   try {
     const { data, error } = await supabase
-      .from('shared_plans')
+      .from('public_shares')
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -25,10 +27,7 @@ export async function getSharedPlan(id: string) {
     if (error) throw error;
     if (!data) throw new Error('Plan not found');
 
-    // Increment view count
-    await supabase.rpc('increment_shared_plan_views', { p_plan_id: id });
-
-    return data;
+    return data.snapshot as any;
   } catch (e) {
     console.error("❌ getSharedPlan error:", e);
     throw e;

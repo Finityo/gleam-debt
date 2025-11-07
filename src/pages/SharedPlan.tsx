@@ -7,7 +7,7 @@ import PayoffChartWithEvents from "@/components/PayoffChartWithEvents";
 import DashboardSummary from "@/components/DashboardSummary";
 import Milestones from "@/components/Milestones";
 import BadgesBar from "@/components/BadgesBar";
-import { Eye } from "lucide-react";
+
 
 export default function SharedPlan() {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +15,7 @@ export default function SharedPlan() {
   const [plan, setPlan] = useState<DebtPlan | null>(null);
   const [debts, setDebts] = useState<any[]>([]);
   const [notes, setNotes] = useState("");
-  const [views, setViews] = useState(0);
+  const [metadata, setMetadata] = useState<any>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -23,11 +23,11 @@ export default function SharedPlan() {
       if (!id) return;
 
       try {
-        const data = await getSharedPlan(id);
-        setPlan(data.plan_data as DebtPlan);
-        setDebts(data.debts_data as any[]);
-        setNotes(data.notes || "");
-        setViews(data.views_count || 0);
+        const snapshot = await getSharedPlan(id);
+        setPlan(snapshot.plan as DebtPlan);
+        setDebts(snapshot.debts || []);
+        setNotes(snapshot.notes || "");
+        setMetadata(snapshot.metadata || null);
       } catch (e) {
         setError("Plan not found or expired");
       } finally {
@@ -63,10 +63,6 @@ export default function SharedPlan() {
     <div className="container mx-auto p-8 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Shared Debt Payoff Plan</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Eye className="h-4 w-4" />
-          <span>{views} views</span>
-        </div>
       </div>
 
       <BadgesBar plan={plan} />
@@ -98,8 +94,17 @@ export default function SharedPlan() {
         </div>
       )}
 
-      <div className="text-center text-xs text-muted-foreground pt-4">
-        This is a read-only shared plan snapshot
+      <div className="text-center space-y-1 text-xs text-muted-foreground pt-4 border-t">
+        <p>This is a read-only shared plan snapshot</p>
+        {metadata?.sharedAt && (
+          <p>Shared on {new Date(metadata.sharedAt).toLocaleDateString()}</p>
+        )}
+        {metadata?.privacySettings?.debtsAnonymized && (
+          <p className="text-amber-600 dark:text-amber-400">• Debt names have been anonymized</p>
+        )}
+        {metadata?.privacySettings?.notesExcluded && (
+          <p className="text-amber-600 dark:text-amber-400">• Personal notes excluded</p>
+        )}
       </div>
     </div>
   );

@@ -682,6 +682,24 @@ export type Database = {
         }
         Relationships: []
       }
+      public_shares: {
+        Row: {
+          created_at: string
+          id: string
+          snapshot: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          snapshot: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          snapshot?: Json
+        }
+        Relationships: []
+      }
       security_audit_log: {
         Row: {
           auto_fixed: boolean | null
@@ -709,42 +727,6 @@ export type Database = {
           id?: string
           metadata?: Json | null
           severity?: string
-        }
-        Relationships: []
-      }
-      shared_plans: {
-        Row: {
-          created_at: string | null
-          debts_data: Json
-          expires_at: string | null
-          id: string
-          notes: string | null
-          plan_data: Json
-          settings_data: Json
-          user_id: string | null
-          views_count: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          debts_data: Json
-          expires_at?: string | null
-          id?: string
-          notes?: string | null
-          plan_data: Json
-          settings_data: Json
-          user_id?: string | null
-          views_count?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          debts_data?: Json
-          expires_at?: string | null
-          id?: string
-          notes?: string | null
-          plan_data?: Json
-          settings_data?: Json
-          user_id?: string | null
-          views_count?: number | null
         }
         Relationships: []
       }
@@ -842,10 +824,6 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
-      }
-      increment_shared_plan_views: {
-        Args: { p_plan_id: string }
-        Returns: undefined
       }
       log_plaid_api_call: {
         Args: {
