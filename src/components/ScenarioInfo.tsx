@@ -10,9 +10,9 @@ export default function ScenarioInfo() {
     <div className="relative inline-block">
       <button
         onClick={() => setOpen(!open)}
-        className="text-sm underline text-blue-600"
+        className="text-gray-600"
       >
-        Why these options?
+        ⓘ
       </button>
 
       {open && (
