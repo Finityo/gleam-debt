@@ -27,14 +27,11 @@ export default function MilestonesCard({ plan }: Props) {
             <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold">{milestone.name}</span>
+                <span className="font-semibold">{milestone.label}</span>
                 <Badge variant="secondary">Month {milestone.monthIndex + 1}</Badge>
-                {milestone.date && (
-                  <Badge variant="outline">{milestone.date}</Badge>
-                )}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                {milestone.description}
+                Remaining: ${milestone.remaining.toFixed(2)}
               </p>
             </div>
           </div>
