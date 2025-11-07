@@ -1,119 +1,191 @@
+import { useState } from "react";
 import { useApp } from "@/context/AppStore";
-import { Card } from "@/components/Card";
 import AppLayout from "@/layouts/AppLayout";
+import { Card } from "@/components/Card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Settings, DollarSign, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
-import { Settings as SettingsIcon, DollarSign, TrendingDown, Calculator } from "lucide-react";
 
 export default function SettingsPage() {
   const { state, updateSettings } = useApp();
-  const s = state.settings;
+  const [localSettings, setLocalSettings] = useState(state.settings);
+
+  function handleChange(key: string, value: any) {
+    setLocalSettings({ ...localSettings, [key]: value });
+  }
 
   function handleSave() {
+    updateSettings(localSettings);
     toast.success("Settings saved successfully");
+  }
+
+  function handleCancel() {
+    setLocalSettings(state.settings);
+    toast.info("Changes discarded");
   }
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-2xl mx-auto animate-fade-in">
+      <div className="space-y-6 animate-fade-in max-w-4xl">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <SettingsIcon className="h-8 w-8" />
+            <Settings className="h-8 w-8" />
             Settings
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure your debt payoff strategy and preferences
+            Configure your debt payoff strategy and payment preferences
           </p>
         </div>
 
-        <Card title="Payoff Strategy" className="animate-slide-up">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="strategy" className="flex items-center gap-2">
-                <TrendingDown className="h-4 w-4" />
-                Repayment Strategy
+        <Card className="p-6">
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Payoff Strategy
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Choose how you want to tackle your debts
+              </p>
+            </div>
+
+            {/* Strategy Selection */}
+            <div className="space-y-3">
+              <Label htmlFor="strategy" className="text-base font-medium">
+                Repayment Method
               </Label>
               <Select
-                value={s.strategy}
-                onValueChange={(value) => updateSettings({ strategy: value as any })}
+                value={localSettings.strategy}
+                onValueChange={(value: "snowball" | "avalanche") =>
+                  handleChange("strategy", value)
+                }
               >
-                <SelectTrigger id="strategy">
+                <SelectTrigger id="strategy" className="h-12">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="snowball">
-                    <div>
-                      <div className="font-medium">Snowball</div>
-                      <div className="text-xs text-muted-foreground">Pay smallest balance first</div>
+                    <div className="py-1">
+                      <div className="font-medium">🎯 Snowball Method</div>
+                      <div className="text-xs text-muted-foreground">
+                        Pay smallest balance first - builds momentum
+                      </div>
                     </div>
                   </SelectItem>
                   <SelectItem value="avalanche">
-                    <div>
-                      <div className="font-medium">Avalanche</div>
-                      <div className="text-xs text-muted-foreground">Pay highest APR first</div>
+                    <div className="py-1">
+                      <div className="font-medium">💰 Avalanche Method</div>
+                      <div className="text-xs text-muted-foreground">
+                        Pay highest interest first - saves money
+                      </div>
                     </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
+              <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                {localSettings.strategy === "snowball" ? (
+                  <p>
+                    <strong>Snowball Method:</strong> Focuses on quick wins by paying off
+                    your smallest debts first, building motivation as you see debts
+                    disappear.
+                  </p>
+                ) : (
+                  <p>
+                    <strong>Avalanche Method:</strong> Mathematically optimal approach that
+                    targets high-interest debts first, minimizing total interest paid.
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="extra-monthly" className="flex items-center gap-2">
+            {/* Payment Settings */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
-                Monthly Extra Payment
+                Payment Settings
               </Label>
-              <Input
-                id="extra-monthly"
-                type="number"
-                min={0}
-                max={100000}
-                step={10}
-                value={s.extraMonthly}
-                onChange={(e) =>
-                  updateSettings({ extraMonthly: Number(e.target.value || 0) })
-                }
-                placeholder="200"
-              />
-              <p className="text-xs text-muted-foreground">
-                Additional amount to pay each month beyond minimum payments
-              </p>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="extra" className="text-sm">
+                    Extra Monthly Payment
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      $
+                    </span>
+                    <Input
+                      id="extra"
+                      type="number"
+                      min="0"
+                      step="10"
+                      value={localSettings.extraMonthly}
+                      onChange={(e) =>
+                        handleChange("extraMonthly", Number(e.target.value || 0))
+                      }
+                      placeholder="0"
+                      className="pl-7"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Beyond minimum payments
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="oneTime" className="text-sm">
+                    One-Time Payment
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      $
+                    </span>
+                    <Input
+                      id="oneTime"
+                      type="number"
+                      min="0"
+                      step="100"
+                      value={localSettings.oneTimeExtra || 0}
+                      onChange={(e) =>
+                        handleChange("oneTimeExtra", Number(e.target.value || 0))
+                      }
+                      placeholder="0"
+                      className="pl-7"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Applied in Month 1
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Display Currency</Label>
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">USD</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    All amounts shown in US Dollars
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="one-time" className="flex items-center gap-2">
-                <Calculator className="h-4 w-4" />
-                One-Time Extra Payment
-              </Label>
-              <Input
-                id="one-time"
-                type="number"
-                min={0}
-                max={1000000}
-                step={100}
-                value={s.oneTimeExtra || 0}
-                onChange={(e) =>
-                  updateSettings({ oneTimeExtra: Number(e.target.value || 0) })
-                }
-                placeholder="0"
-              />
-              <p className="text-xs text-muted-foreground">
-                Lump sum to apply in the first month
-              </p>
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={handleCancel}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>
+                Save Settings
+              </Button>
             </div>
           </div>
         </Card>
-
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => window.history.back()}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave}>
-            Save Settings
-          </Button>
-        </div>
       </div>
     </AppLayout>
   );

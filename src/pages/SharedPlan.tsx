@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { CoachInviteBar } from "@/components/CoachInviteBar";
 import { CoachSuggestDrawer } from "@/components/CoachSuggestDrawer";
 import { CoachSuggestions } from "@/components/CoachSuggestions";
+import { CoachDrawer } from "@/components/CoachDrawer";
 
 
 export default function SharedPlan() {
@@ -299,20 +300,18 @@ export default function SharedPlan() {
 
       {/* Floating Coach Button */}
       <div className="fixed bottom-4 right-4 z-40">
-        <Button onClick={() => setOpenCoach(true)}>
-          <MessageSquare className="h-4 w-4 mr-2" />
+        <Button onClick={() => setOpenCoach(true)} size="lg" className="shadow-lg">
+          <MessageSquare className="h-5 w-5 mr-2" />
           Coach Notes
         </Button>
       </div>
 
-      {/* Coach Drawer */}
-      <CoachSuggestDrawer
-        open={openCoach}
-        onClose={() => setOpenCoach(false)}
+      {/* Coach Drawer - Mobile Optimized */}
+      <CoachDrawer
         planId={id!}
         coachName={coachFromUrl || "Coach"}
-        monthsCount={monthsCount}
-        debts={debtsMini}
+        open={openCoach}
+        onClose={() => setOpenCoach(false)}
       />
     </div>
   );
