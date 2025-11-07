@@ -15,6 +15,11 @@ type PlanContextType = {
   debts: Debt[];
   settings: UserSettings;
   plan: DebtPlan | null;
+  notes: string;
+  setDebts: React.Dispatch<React.SetStateAction<Debt[]>>;
+  setSettings: React.Dispatch<React.SetStateAction<UserSettings>>;
+  setPlan: React.Dispatch<React.SetStateAction<DebtPlan | null>>;
+  setNotes: React.Dispatch<React.SetStateAction<string>>;
   updateDebts: (debts: Debt[]) => void;
   updateSettings: (next: Partial<UserSettings>) => void;
   compute: () => void;
@@ -31,6 +36,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     strategy: "snowball",
   });
   const [plan, setPlan] = useState<DebtPlan | null>(null);
+  const [notes, setNotes] = useState<string>("");
 
   // Load from localStorage
   useEffect(() => {
@@ -40,7 +46,14 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       setSettings(saved.settings);
       tryCompute(saved.debts, saved.settings);
     }
+    const savedNotes = localStorage.getItem("finityo:notes");
+    if (savedNotes !== null) setNotes(savedNotes);
   }, []);
+
+  // Persist notes to localStorage
+  useEffect(() => {
+    localStorage.setItem("finityo:notes", notes);
+  }, [notes]);
 
   // Save + re-compute
   const tryCompute = (d: Debt[], s: UserSettings) => {
@@ -90,6 +103,11 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         debts,
         settings,
         plan,
+        notes,
+        setDebts,
+        setSettings,
+        setPlan,
+        setNotes,
         updateDebts,
         updateSettings,
         compute,
