@@ -19,6 +19,7 @@ import { FileDown, Lock, Trash2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { CoachInviteBar } from "@/components/CoachInviteBar";
 import { CoachSuggestDrawer } from "@/components/CoachSuggestDrawer";
+import { CoachSuggestions } from "@/components/CoachSuggestions";
 
 
 export default function SharedPlan() {
@@ -217,6 +218,18 @@ export default function SharedPlan() {
 
       {/* Coach Invite */}
       <CoachInviteBar shareId={id!} />
+
+      {/* Coach Suggestions Section */}
+      {coachFromUrl && (
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-6">
+            {/* Main content will go here */}
+          </div>
+          <div>
+            <CoachSuggestions shareId={id!} coachName={coachFromUrl} />
+          </div>
+        </div>
+      )}
 
       {/* Share metadata */}
       <div className="text-xs text-muted-foreground space-y-1">

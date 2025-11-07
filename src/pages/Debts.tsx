@@ -12,14 +12,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2, CreditCard } from "lucide-react";
+import { Plus, Trash2, Edit2, CreditCard, Download, Upload } from "lucide-react";
 import type { Debt } from "@/lib/computeDebtPlan";
 import { toast } from "sonner";
+import { debtToCSV, downloadCSV, parseExcelPaste } from "@/lib/csvExport";
+import { DebtQuickEdit } from "@/components/DebtQuickEdit";
+import { ExcelImportModal } from "@/components/ExcelImportModal";
 
 export default function DebtsPage() {
   const { state, addDebt, updateDebt, deleteDebt } = useApp();
   const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [quickEditDebt, setQuickEditDebt] = useState<Debt | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   function handleAdd() {
     addDebt({
@@ -46,6 +51,46 @@ export default function DebtsPage() {
     }
   }
 
+  function handleQuickEditSave(debt: Debt) {
+    updateDebt(debt.id, debt);
+    toast.success("Debt updated");
+    setQuickEditDebt(null);
+  }
+
+  function handleImport(pasteText: string) {
+    const parsed = parseExcelPaste(pasteText);
+    if (parsed.length === 0) {
+      toast.error("No valid debts found in paste data");
+      return;
+    }
+
+    // Clear existing debts and add new ones
+    parsed.forEach((debt) => {
+      addDebt({
+        name: debt.name,
+        balance: debt.balance,
+        apr: debt.apr,
+        minPayment: debt.minPayment,
+      });
+    });
+
+    setShowImport(false);
+    toast.success(`Imported ${parsed.length} debt(s)`);
+  }
+
+  function handleExportCSV() {
+    const csvData = debtToCSV(
+      state.debts.map((d) => ({
+        name: d.name,
+        balance: d.balance,
+        apr: d.apr,
+        minPayment: d.minPayment,
+      }))
+    );
+    downloadCSV("debts.csv", csvData);
+    toast.success("CSV exported");
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
@@ -60,20 +105,30 @@ export default function DebtsPage() {
             </p>
           </div>
 
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Debt
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Debt</DialogTitle>
-              </DialogHeader>
-              <DebtForm onSubmit={handleAdd} />
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              Import from Excel
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Debt
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Debt</DialogTitle>
+                </DialogHeader>
+                <DebtForm onSubmit={handleAdd} />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {state.debts.length === 0 && (
@@ -111,27 +166,14 @@ export default function DebtsPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setEditingDebt(debt)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Edit Debt</DialogTitle>
-                      </DialogHeader>
-                      <DebtForm
-                        debt={editingDebt}
-                        onChange={setEditingDebt}
-                        onSubmit={handleUpdate}
-                      />
-                    </DialogContent>
-                  </Dialog>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setQuickEditDebt(debt)}
+                  >
+                    <Edit2 className="h-4 w-4 mr-1" />
+                    Quick Edit
+                  </Button>
 
                   <Button
                     variant="outline"
@@ -146,6 +188,20 @@ export default function DebtsPage() {
             </Card>
           ))}
         </div>
+
+        {/* Quick Edit Modal */}
+        <DebtQuickEdit
+          debt={quickEditDebt}
+          onClose={() => setQuickEditDebt(null)}
+          onSave={handleQuickEditSave}
+        />
+
+        {/* Excel Import Modal */}
+        <ExcelImportModal
+          open={showImport}
+          onClose={() => setShowImport(false)}
+          onImport={handleImport}
+        />
       </div>
     </AppLayout>
   );
