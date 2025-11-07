@@ -32,59 +32,43 @@ Deno.serve(async (req) => {
     // Normalize incoming demo data
     const incoming = normalizeDemoPayload(demo);
 
-    // Get current user data
-    const { data: currentDebts } = await supabase
-      .from('debts')
-      .select('*')
-      .eq('user_id', user.id);
-
-    const { data: currentSettings } = await supabase
-      .from('settings')
+    // Get current user plan data
+    const { data: currentPlan } = await supabase
+      .from('user_plan_data')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     let finalDebts = incoming.debts;
     let finalSettings = incoming.settings;
+    let finalNotes = incoming.notes || '';
 
     // Handle merge vs replace
-    if (mode === 'merge' && currentDebts) {
+    if (mode === 'merge' && currentPlan) {
+      const currentDebts = currentPlan.debts || [];
       finalDebts = mergeDebts(currentDebts, incoming.debts);
-      if (currentSettings) {
-        finalSettings = { ...currentSettings, ...incoming.settings };
-      }
+      finalSettings = { ...currentPlan.settings, ...incoming.settings };
+      finalNotes = [currentPlan.notes, incoming.notes].filter(Boolean).join('\n\n---\n\n');
     } else if (mode === 'replace') {
-      // Delete existing debts
-      await supabase
-        .from('debts')
-        .delete()
-        .eq('user_id', user.id);
+      // Replace mode keeps incoming data as-is
+      finalDebts = incoming.debts;
+      finalSettings = incoming.settings;
+      finalNotes = incoming.notes || '';
     }
 
-    // Insert/update debts
-    const debtsToInsert = finalDebts.map((d: any) => ({
-      ...d,
-      user_id: user.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
-
-    const { error: debtsError } = await supabase
-      .from('debts')
-      .upsert(debtsToInsert);
-
-    if (debtsError) throw debtsError;
-
-    // Update settings
-    const { error: settingsError } = await supabase
-      .from('settings')
+    // Update user plan data (unified table)
+    const { error: planError } = await supabase
+      .from('user_plan_data')
       .upsert({
         user_id: user.id,
-        ...finalSettings,
+        debts: finalDebts,
+        settings: finalSettings,
+        notes: finalNotes,
+        plan: null, // Will be recomputed on client
         updated_at: new Date().toISOString(),
       });
 
-    if (settingsError) throw settingsError;
+    if (planError) throw planError;
 
     console.log(`[migrate-demo] Successfully migrated ${finalDebts.length} debts`);
 
@@ -110,7 +94,8 @@ function normalizeDemoPayload(demo: any) {
     ? demo.debts.map(sanitizeDebt).filter(Boolean) 
     : [];
   const settings = sanitizeSettings(demo?.settings || {});
-  return { debts, settings };
+  const notes = String(demo?.notes || '');
+  return { debts, settings, notes };
 }
 
 function sanitizeDebt(d: any) {
@@ -120,18 +105,17 @@ function sanitizeDebt(d: any) {
     name: String(d.name || 'Debt'),
     balance: toNum(d.balance),
     apr: toNum(d.apr),
-    min_payment: toNum(d.minPayment || d.min_payment),
-    due_day: clampInt(d.dueDay || d.due_day || 1, 1, 28),
-    debt_type: d.debtType || d.debt_type || 'other',
-    notes: d.notes || null,
+    minPayment: toNum(d.minPayment || d.min_payment),
+    dueDay: clampInt(d.dueDay || d.due_day || 1, 1, 28),
+    include: d.include !== false,
   };
 }
 
 function sanitizeSettings(s: any) {
   return {
     strategy: s?.strategy === 'avalanche' ? 'avalanche' : 'snowball',
-    extra_monthly: toNum(s?.extraMonthly || s?.extra_monthly),
-    one_time_extra: toNum(s?.oneTimeExtra || s?.one_time_extra),
+    extraMonthly: toNum(s?.extraMonthly || s?.extra_monthly),
+    oneTimeExtra: toNum(s?.oneTimeExtra || s?.one_time_extra),
   };
 }
 

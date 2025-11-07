@@ -36,10 +36,10 @@ export const AppDB = {
       if (!data) return null;
 
       return {
-        debts: data.debts as Debt[],
-        settings: data.settings as UserSettings,
-        notes: data.notes || "",
-        plan: data.plan as DebtPlan | null,
+        debts: (data.debts as any) || [],
+        settings: (data.settings as any) || {},
+        notes: (data.notes as string) || "",
+        plan: (data.plan as any) || null,
         updatedAt: data.updated_at,
       };
     } catch (err) {
@@ -57,12 +57,12 @@ export const AppDB = {
         .from("user_plan_data")
         .upsert({
           user_id: userId,
-          debts: data.debts,
-          settings: data.settings,
+          debts: data.debts as any,
+          settings: data.settings as any,
           notes: data.notes,
-          plan: data.plan,
+          plan: data.plan as any,
           updated_at: data.updatedAt,
-        }, {
+        } as any, {
           onConflict: "user_id",
         });
 
@@ -84,7 +84,7 @@ export const AppDB = {
       const { error } = await supabase
         .from("user_plan_data")
         .delete()
-        .eq("user_id", userId);
+        .eq("user_id", userId) as any;
 
       if (error) {
         console.error("❌ AppDB.clear error:", error);
