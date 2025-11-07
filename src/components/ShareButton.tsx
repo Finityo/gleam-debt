@@ -18,6 +18,7 @@ import { Share2, Check, AlertTriangle, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
+import { Input } from "./ui/input";
 
 type Props = {
   plan: DebtPlan;
@@ -33,6 +34,7 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
   const [consentChecked, setConsentChecked] = useState(false);
   const [excludeNotes, setExcludeNotes] = useState(false);
   const [anonymizeDebts, setAnonymizeDebts] = useState(false);
+  const [expirationDays, setExpirationDays] = useState(90);
 
   const handleShareClick = () => {
     setShowPrivacyDialog(true);
@@ -59,12 +61,17 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
       
       const processedNotes = excludeNotes ? null : notes;
       
-      // Calculate expiration (90 days from now)
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 90);
+      // Calculate expiration
+      let expiresAt = null;
+      if (expirationDays && Number(expirationDays) > 0) {
+        const expDate = new Date();
+        expDate.setDate(expDate.getDate() + Number(expirationDays));
+        expiresAt = expDate.toISOString();
+      }
       
       // Create snapshot with exact structure
       const snapshot = { 
+        version: 1,
         debts: processedDebts, 
         settings, 
         plan, 
@@ -72,8 +79,7 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
         badges,
         includeNotes: !excludeNotes,
         createdAt: new Date().toISOString(),
-        expiresAt: expiresAt.toISOString(),
-        version: 1,
+        expiresAt,
         metadata: {
           privacySettings: {
             notesExcluded: excludeNotes,
@@ -244,6 +250,20 @@ export default function ShareButton({ plan, debts, settings, notes }: Props) {
                     >
                       Exclude personal notes from share
                     </Label>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="expiration-days" className="text-sm font-normal">
+                      Expiration (days, 0 = never)
+                    </Label>
+                    <Input
+                      id="expiration-days"
+                      type="number"
+                      value={expirationDays}
+                      onChange={(e) => setExpirationDays(Number(e.target.value))}
+                      min={0}
+                      className="w-full"
+                    />
                   </div>
                 </div>
 

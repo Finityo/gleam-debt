@@ -685,16 +685,19 @@ export type Database = {
       public_shares: {
         Row: {
           created_at: string
+          expires_at: string | null
           id: string
           snapshot: Json
         }
         Insert: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           snapshot: Json
         }
         Update: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           snapshot?: Json
         }

@@ -2,9 +2,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function shareSnapshot(snapshot: any) {
   try {
+    // Calculate expiration if provided
+    let expiresAt = snapshot.expiresAt || null;
+    
     const { data, error } = await supabase
       .from('public_shares')
-      .insert({ snapshot })
+      .insert({ 
+        snapshot,
+        expires_at: expiresAt 
+      })
       .select('id')
       .single();
 
@@ -27,9 +33,18 @@ export async function getSharedPlan(id: string) {
     if (error) throw error;
     if (!data) throw new Error('Plan not found');
 
+    // Check expiration
+    if (data.expires_at) {
+      const expirationDate = new Date(data.expires_at);
+      if (expirationDate.getTime() < Date.now()) {
+        throw new Error('Plan expired');
+      }
+    }
+
     return {
       ...data.snapshot as any,
       createdAt: data.created_at,
+      expiresAt: data.expires_at,
     };
   } catch (e) {
     console.error("❌ getSharedPlan error:", e);
