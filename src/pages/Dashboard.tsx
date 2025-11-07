@@ -1,23 +1,22 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { PlaidTokenMigration } from '@/components/PlaidTokenMigration';
-import { AccountsList } from '@/components/AccountsList';
 import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
 import { PlaidAnalytics } from '@/components/PlaidAnalytics';
 import { TrialSubscriptionDialog } from '@/components/TrialSubscriptionDialog';
 import { DemoBanner } from '@/components/DemoBanner';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Printer, AlertCircle, History } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Share2, Award, MessageSquare, Settings, AlertCircle } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
 import { PlanVersionHistory } from '@/components/PlanVersionHistory';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
-import { DEMO } from '@/config/demo';
+import { AppDB } from '@/live/lovableCloudDB';
 
 interface Account {
   id: string;
@@ -44,6 +43,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showPlaidLink, setShowPlaidLink] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const [planData, setPlanData] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -52,12 +52,6 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    // Skip auth checks in demo mode
-    if (DEMO) {
-      setLoading(false);
-      return;
-    }
-    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -67,9 +61,10 @@ const Dashboard = () => {
         if (!session) {
           navigate('/auth');
         } else if (event === 'SIGNED_IN' && !isFetching) {
-          // Defer the account fetch to avoid blocking the callback
+          // Defer fetches to avoid blocking the callback
           setTimeout(() => {
             fetchAccounts();
+            loadPlanData(session.user.id);
           }, 0);
         }
       }
@@ -84,12 +79,22 @@ const Dashboard = () => {
         navigate('/auth');
       } else if (!isFetching) {
         fetchAccounts();
+        loadPlanData(session.user.id);
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const loadPlanData = async (userId: string) => {
+    try {
+      const data = await AppDB.get(userId);
+      setPlanData(data);
+    } catch (error) {
+      logError('Dashboard - Load Plan Data', error);
+    }
+  };
 
   const fetchAccounts = async () => {
     if (isFetching) return; // Prevent duplicate fetches
@@ -152,22 +157,57 @@ const Dashboard = () => {
       <DemoBanner />
       <TrialSubscriptionDialog />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground mt-2">{user?.email}</p>
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-4xl font-bold text-foreground">Dashboard</h1>
+              <p className="text-muted-foreground mt-2">Welcome to your Finityo workspace</p>
+            </div>
+            <div className="flex gap-2 no-print">
+              <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2 no-print">
-            <PrintExportButton onPrint={handlePrint} />
-            <Button variant="outline" onClick={() => navigate('/profile')}>
-              <UserIcon className="w-4 h-4 mr-2" />
-              Profile
-            </Button>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
+
+          {/* Quick Stats */}
+          {planData?.debts?.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-3 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Debt</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(planData.debts.reduce((sum: number, d: any) => sum + (d.balance || 0), 0))}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Active Debts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{planData.debts.length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Strategy</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold capitalize">
+                    {planData.settings?.strategy || 'Snowball'}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
 
         <PlaidUpdateBanner />
@@ -220,110 +260,126 @@ const Dashboard = () => {
             </Button>
           )}
           
-          <div className="space-y-8">
-            <div className="bg-primary/5 border border-primary/20 rounded-lg p-6">
-              <h2 className="text-2xl font-bold mb-4">Guided Debt Freedom Flow</h2>
-              <p className="text-muted-foreground mb-6">
-                Follow this step-by-step process to take control of your finances
-              </p>
-              
-              <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-                <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Import Your Debts</p>
-                    <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
-                      <strong>Step 1:</strong> Use "Import from Bank" to connect your accounts via Plaid for automatic import.<br/>
-                      <strong>Step 2:</strong> For banks not supported by Plaid, download the blank Excel template and fill in your debt information manually, then upload it using "Import Excel".<br/>
-                      <strong>Step 3:</strong> Any remaining debts can be added manually using the form below.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Button
-                  onClick={() => navigate('/debts')}
-                  size="lg"
-                  variant="outline"
-                  className="w-full h-24 flex-col gap-2"
-                >
-                  <Calculator className="w-6 h-6" />
-                  <div className="text-center">
-                    <div className="font-bold">My Debts</div>
-                    <div className="text-xs text-muted-foreground">Step 1: Track & manage</div>
-                  </div>
-                </Button>
-                
-                <Button
-                  onClick={() => navigate('/debt-chart')}
-                  size="lg"
-                  variant="outline"
-                  className="w-full h-24 flex-col gap-2"
-                >
-                  <PieChart className="w-6 h-6" />
-                  <div className="text-center">
-                    <div className="font-bold">Debt Chart</div>
-                    <div className="text-xs text-muted-foreground">Step 2: Visualize data</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => navigate('/debt-plan')}
-                  size="lg"
-                  variant="outline"
-                  className="w-full h-24 flex-col gap-2"
-                >
-                  <Calendar className="w-6 h-6" />
-                  <div className="text-center">
-                    <div className="font-bold">Debt Plan</div>
-                    <div className="text-xs text-muted-foreground">Step 3: Create strategy</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => navigate('/ai-advisor')}
-                  size="lg"
-                  variant="outline"
-                  className="w-full h-24 flex-col gap-2"
-                >
-                  <Bot className="w-6 h-6" />
-                  <div className="text-center">
-                    <div className="font-bold">AI Advisor</div>
-                    <div className="text-xs text-muted-foreground">Step 4: Get guidance</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => navigate('/profile')}
-                  size="lg"
-                  variant="outline"
-                  className="w-full h-24 flex-col gap-2"
-                >
-                  <UserCircle className="w-6 h-6" />
-                  <div className="text-center">
-                    <div className="font-bold">Profile & Data</div>
-                    <div className="text-xs text-muted-foreground">Step 5: Manage account</div>
-                  </div>
-                </Button>
-
-                <div className="flex items-center justify-center p-4">
-                  <PlanVersionHistory />
-                </div>
-              </div>
-            </div>
+          {/* Main Navigation Cards */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+            <DashboardCard
+              title="My Debts"
+              description="Add, edit, and manage your debts"
+              icon={<Calculator className="w-6 h-6" />}
+              href="/debts"
+            />
+            
+            <DashboardCard
+              title="Debt Plan"
+              description="Configure your payoff strategy"
+              icon={<Calendar className="w-6 h-6" />}
+              href="/debt-plan"
+            />
+            
+            <DashboardCard
+              title="Visualization"
+              description="See your progress charts"
+              icon={<PieChart className="w-6 h-6" />}
+              href="/visualization"
+            />
+            
+            <DashboardCard
+              title="Payoff Calendar"
+              description="View payoff timeline"
+              icon={<Calendar className="w-6 h-6" />}
+              href="/payoff-calendar"
+            />
+            
+            <DashboardCard
+              title="Scenarios"
+              description="Compare different strategies"
+              icon={<FileText className="w-6 h-6" />}
+              href="/scenarios"
+            />
+            
+            <DashboardCard
+              title="Share History"
+              description="View shared plans"
+              icon={<Share2 className="w-6 h-6" />}
+              href="/share/history"
+            />
+            
+            <DashboardCard
+              title="AI Advisor"
+              description="Get personalized guidance"
+              icon={<Bot className="w-6 h-6" />}
+              href="/ai-advisor"
+            />
+            
+            <DashboardCard
+              title="Profile"
+              description="Manage your account"
+              icon={<UserCircle className="w-6 h-6" />}
+              href="/profile"
+            />
           </div>
+
+          {/* Quick Start Guide */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Quick Start Guide</CardTitle>
+              <CardDescription>Follow these steps to get started with Finityo</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ol className="space-y-3 text-sm">
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">1</span>
+                  <span>Add your debts manually or import from your bank using Plaid</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">2</span>
+                  <span>Configure your debt plan and choose between Snowball or Avalanche strategy</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">3</span>
+                  <span>Track your progress with visualizations and calendar view</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">4</span>
+                  <span>Export, share, and get AI advisor tips to stay on track</span>
+                </li>
+              </ol>
+            </CardContent>
+          </Card>
         </div>
 
         {accounts.length > 0 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-foreground">Connected Accounts</h2>
-            <AccountsList accounts={accounts} onAccountsChange={fetchAccounts} />
+            <h2 className="text-2xl font-bold text-foreground">Connected Bank Accounts</h2>
+            <ConnectedAccountsList />
           </div>
         )}
       </div>
     </div>
   );
 };
+
+function DashboardCard({ title, description, icon, href }: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  href: string;
+}) {
+  return (
+    <Link to={href}>
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-lg mb-1">{title}</CardTitle>
+              <CardDescription className="text-sm">{description}</CardDescription>
+            </div>
+            <div className="text-primary">{icon}</div>
+          </div>
+        </CardHeader>
+      </Card>
+    </Link>
+  );
+}
 
 export default Dashboard;
