@@ -31,11 +31,13 @@ const Hero = () => {
           <div className="relative z-10 max-w-6xl mx-auto text-center">
             {/* Logo */}
             <div className="mb-8 flex justify-center">
-              <img 
-                src={finityoIcon} 
-                alt="Finityo Icon" 
-                className="h-16 md:h-20 drop-shadow-2xl"
-              />
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center p-4">
+                <img 
+                  src={finityoIcon} 
+                  alt="Finityo Icon" 
+                  className="w-full h-full object-contain drop-shadow-2xl"
+                />
+              </div>
             </div>
 
             {/* Headline */}
