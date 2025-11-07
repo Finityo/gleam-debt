@@ -1,3 +1,5 @@
+import { PlaidAnalytics } from '@/components/PlaidAnalytics';
+import { PlaidComplianceStatus } from '@/components/PlaidComplianceStatus';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -494,6 +496,12 @@ const AdminDashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Plaid Compliance Status */}
+          <PlaidComplianceStatus />
+
+          {/* Plaid Analytics */}
+          <PlaidAnalytics />
 
           <Card id="recent-activity">
             <CardHeader>

@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Building2, ChevronDown, Trash2, AlertTriangle } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useToast } from '@/hooks/use-toast';
+import { demoGuard } from '@/services/api';
 
 interface ConnectedAccount {
   institution_name: string;
@@ -19,7 +23,9 @@ interface ConnectedAccount {
 export const ConnectedAccountsList = () => {
   const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [removingAll, setRemovingAll] = useState(false);
   const [openInstitutions, setOpenInstitutions] = useState<Record<string, boolean>>({});
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchConnectedAccounts();
@@ -99,6 +105,33 @@ export const ConnectedAccountsList = () => {
     }
   };
 
+  const handleRemoveAllAccounts = async () => {
+    if (demoGuard("Remove All Connected Accounts")) return;
+    
+    setRemovingAll(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('plaid-remove-all-items');
+
+      if (error) throw error;
+
+      toast({
+        title: 'Accounts Removed',
+        description: data.message || 'All connected bank accounts have been removed',
+      });
+
+      // Refresh the accounts list
+      fetchConnectedAccounts();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to remove accounts',
+        variant: 'destructive',
+      });
+    } finally {
+      setRemovingAll(false);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -128,10 +161,56 @@ export const ConnectedAccountsList = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Your Connected Accounts</CardTitle>
-        <CardDescription>
-          These accounts are already linked. Connecting the same account again will be prevented.
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg">Your Connected Accounts</CardTitle>
+            <CardDescription>
+              These accounts are already linked. Connecting the same account again will be prevented.
+            </CardDescription>
+          </div>
+          {connectedAccounts.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  disabled={removingAll}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Remove All
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    Remove All Connected Accounts?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="space-y-2">
+                    <p>This will permanently disconnect all {connectedAccounts.length} bank account(s) from Finityo.</p>
+                    <p className="font-medium">This action:</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Removes all bank connections</li>
+                      <li>Stops all account syncing</li>
+                      <li>Cannot be undone</li>
+                    </ul>
+                    <p className="text-sm mt-3">You can reconnect your accounts later if needed.</p>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleRemoveAllAccounts}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Remove All Accounts
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
