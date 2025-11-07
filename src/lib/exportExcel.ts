@@ -3,6 +3,7 @@
 // ===================================
 import * as XLSX from "xlsx";
 import { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
+import { remainingByMonth } from "@/lib/remaining";
 
 export function exportPlanToExcel(
   debts: Debt[],
@@ -49,8 +50,11 @@ export function exportPlanToExcel(
     "Total Interest (mo)",
   ]);
 
+  const remain = remainingByMonth(plan);
+
   plan.months.forEach((m) => {
-    const totalRemaining = m.payments.reduce((acc, p) => acc + p.balanceEnd, 0);
+    const rem = remain[m.monthIndex]?.remaining ?? 0;
+
     m.payments.forEach((p) => {
       planSheetData.push([
         m.monthIndex + 1,
@@ -59,7 +63,7 @@ export function exportPlanToExcel(
         p.interest,
         p.principal,
         p.balanceEnd,
-        totalRemaining,
+        rem,
         m.totalPaid,
         m.totalInterest,
       ]);
