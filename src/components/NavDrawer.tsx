@@ -1,23 +1,25 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import {
   Home,
   Calculator,
   Share2,
   Layers,
-  BadgeCheck,
   Settings,
   Calendar,
   Menu,
   X,
   Activity,
+  User,
+  LogIn,
 } from "lucide-react";
 import { Button } from "./ui/button";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
   { to: "/debts", label: "Debts", icon: Calculator },
-  { to: "/demo/plan", label: "Plan", icon: Calendar },
+  { to: "/debt-plan", label: "Plan", icon: Calendar },
   { to: "/demo/power-pack", label: "Power Pack", icon: Activity },
   { to: "/scenarios", label: "Scenarios", icon: Layers },
   { to: "/share/history", label: "Shares", icon: Share2 },
@@ -26,6 +28,7 @@ const links = [
 
 export function NavDrawer() {
   const { pathname } = useLocation();
+  const { user } = useAuth();
   const [open, setOpen] = useState(true);
 
   return (
@@ -95,6 +98,41 @@ export function NavDrawer() {
             );
           })}
         </nav>
+
+        {/* Auth section */}
+        <div className="border-t px-3 py-3">
+          {user ? (
+            <Link
+              to="/profile"
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                pathname === "/profile"
+                  ? "bg-primary text-primary-foreground font-medium"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) setOpen(false);
+              }}
+            >
+              <User className="h-5 w-5 flex-shrink-0" />
+              <span className={`transition-opacity ${open ? "opacity-100" : "md:opacity-0 md:w-0"}`}>
+                Profile
+              </span>
+            </Link>
+          ) : (
+            <Link
+              to="/auth/signin"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
+              onClick={() => {
+                if (window.innerWidth < 768) setOpen(false);
+              }}
+            >
+              <LogIn className="h-5 w-5 flex-shrink-0" />
+              <span className={`transition-opacity ${open ? "opacity-100" : "md:opacity-0 md:w-0"}`}>
+                Sign In
+              </span>
+            </Link>
+          )}
+        </div>
       </aside>
 
       {/* Mobile Overlay */}

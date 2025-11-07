@@ -15,8 +15,10 @@ import { useAutoLogout } from "@/hooks/useAutoLogout";
 import { PlanProvider } from "@/context/PlanContext";
 import { DemoPlanProvider } from "@/context/DemoPlanContext";
 import { ScenarioProvider } from "@/context/ScenarioContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { AppProvider } from "@/context/AppStore";
 import { NotificationsPanel } from "@/components/NotificationsPanel";
+import { RequireAuth } from "@/components/RequireAuth";
 
 // ===== Finityo Mode Check =====
 console.log("🔍 Finityo Build Mode:", import.meta.env.VITE_MODE);
@@ -64,6 +66,8 @@ const SharedPlan = lazy(() => import("./pages/SharedPlan"));
 const ShareHistory = lazy(() => import("./pages/ShareHistory"));
 const Scenarios = lazy(() => import("./pages/Scenarios"));
 const Settings = lazy(() => import("./pages/Settings"));
+const SignIn = lazy(() => import("./pages/auth/SignIn"));
+const SignUp = lazy(() => import("./pages/auth/SignUp"));
 
 // Demo pages
 const DemoStart = lazy(() => import("./pages/demo/DemoStart"));
@@ -117,49 +121,22 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
+              {/* Public routes */}
               <Route path="/" element={<Index />} />
               <Route path="/hero" element={<Hero />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/team-access" element={<TeamAccess />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/debts" element={<Debts />} />
-              <Route path="/debt-plan" element={<DebtPlan />} />
-              <Route path="/debt-chart" element={<DebtChart />} />
+              <Route path="/auth/signin" element={<SignIn />} />
+              <Route path="/auth/signup" element={<SignUp />} />
               <Route path="/about" element={<About />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/disclosures" element={<Disclosures />} />
-              <Route path="/plaid-submission" element={<PlaidSubmission />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/ai-advisor" element={<AIAdvisor />} />
-              <Route path="/plaid-proposal" element={<DownloadPlaidProposal />} />
               <Route path="/pricing" element={<Pricing />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/support-dashboard" element={<SupportDashboard />} />
-              <Route path="/security-audit" element={<SecurityAudit />} />
-              <Route path="/admin/roles" element={<UserRoleManagement />} />
-              <Route path="/admin/documents" element={<DocumentExport />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/oauth-redirect" element={<OAuthRedirect />} />
-              <Route path="/demo-old" element={<Demo />} />
-              <Route path="/demo-test" element={<DemoTest />} />
               <Route path="/install" element={<Install />} />
-              <Route path="/payoff-calendar" element={<PayoffCalendar />} />
-              <Route path="/printable-summary" element={<PrintableSummary />} />
-              <Route path="/mobile-view" element={<MobileView />} />
-              <Route path="/debt-plan-new" element={<DebtPlanNew />} />
-              <Route path="/debt-chart-new" element={<DebtChartNew />} />
-              <Route path="/debt-visualization" element={<DebtVisualization />} />
-              <Route path="/debts-new" element={<DebtsNew />} />
-              <Route path="/plan-simple" element={<PlanSimple />} />
-              <Route path="/chart-simple" element={<ChartSimple />} />
               <Route path="/p/:id" element={<SharedPlan />} />
-              <Route path="/share/history" element={<ShareHistory />} />
-              <Route path="/scenarios" element={<Scenarios />} />
-              <Route path="/settings" element={<Settings />} />
               
-              {/* Demo routes with shared context provider */}
+              {/* Demo routes (public) */}
               <Route path="/demo" element={<DemoLayoutWrapper />}>
                 <Route index element={<DemoStart />} />
                 <Route path="start" element={<DemoStart />} />
@@ -168,6 +145,38 @@ const AppRoutes = () => {
                 <Route path="chart" element={<DemoChart />} />
                 <Route path="power-pack" element={<DemoPlanPowerPack />} />
               </Route>
+              
+              {/* Protected routes */}
+              <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+              <Route path="/auth" element={<RequireAuth><Auth /></RequireAuth>} />
+              <Route path="/team-access" element={<RequireAuth><TeamAccess /></RequireAuth>} />
+              <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+              <Route path="/debts" element={<RequireAuth><Debts /></RequireAuth>} />
+              <Route path="/debt-plan" element={<RequireAuth><DebtPlan /></RequireAuth>} />
+              <Route path="/debt-chart" element={<RequireAuth><DebtChart /></RequireAuth>} />
+              <Route path="/plaid-submission" element={<RequireAuth><PlaidSubmission /></RequireAuth>} />
+              <Route path="/admin" element={<RequireAuth><AdminDashboard /></RequireAuth>} />
+              <Route path="/ai-advisor" element={<RequireAuth><AIAdvisor /></RequireAuth>} />
+              <Route path="/plaid-proposal" element={<RequireAuth><DownloadPlaidProposal /></RequireAuth>} />
+              <Route path="/support-dashboard" element={<RequireAuth><SupportDashboard /></RequireAuth>} />
+              <Route path="/security-audit" element={<RequireAuth><SecurityAudit /></RequireAuth>} />
+              <Route path="/admin/roles" element={<RequireAuth><UserRoleManagement /></RequireAuth>} />
+              <Route path="/admin/documents" element={<RequireAuth><DocumentExport /></RequireAuth>} />
+              <Route path="/oauth-redirect" element={<RequireAuth><OAuthRedirect /></RequireAuth>} />
+              <Route path="/demo-old" element={<RequireAuth><Demo /></RequireAuth>} />
+              <Route path="/demo-test" element={<RequireAuth><DemoTest /></RequireAuth>} />
+              <Route path="/payoff-calendar" element={<RequireAuth><PayoffCalendar /></RequireAuth>} />
+              <Route path="/printable-summary" element={<RequireAuth><PrintableSummary /></RequireAuth>} />
+              <Route path="/mobile-view" element={<RequireAuth><MobileView /></RequireAuth>} />
+              <Route path="/debt-plan-new" element={<RequireAuth><DebtPlanNew /></RequireAuth>} />
+              <Route path="/debt-chart-new" element={<RequireAuth><DebtChartNew /></RequireAuth>} />
+              <Route path="/debt-visualization" element={<RequireAuth><DebtVisualization /></RequireAuth>} />
+              <Route path="/debts-new" element={<RequireAuth><DebtsNew /></RequireAuth>} />
+              <Route path="/plan-simple" element={<RequireAuth><PlanSimple /></RequireAuth>} />
+              <Route path="/chart-simple" element={<RequireAuth><ChartSimple /></RequireAuth>} />
+              <Route path="/share/history" element={<RequireAuth><ShareHistory /></RequireAuth>} />
+              <Route path="/scenarios" element={<RequireAuth><Scenarios /></RequireAuth>} />
+              <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
               
               <Route path="/sitemap" element={<Sitemap />} />
               <Route path="*" element={<NotFound />} />
@@ -180,22 +189,23 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <TooltipProvider>
-        <AppProvider>
-          <ScenarioProvider>
-            <PlanProvider>
-              <BrowserRouter>
-                <AppRoutes />
-                <NotificationsPanel />
-              </BrowserRouter>
-              <Toaster />
-              <Sonner />
-            </PlanProvider>
-          </ScenarioProvider>
-        </AppProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppProvider>
+              <ScenarioProvider>
+                <PlanProvider>
+                  <AppRoutes />
+                  <NotificationsPanel />
+                  <Toaster />
+                  <Sonner />
+                </PlanProvider>
+              </ScenarioProvider>
+            </AppProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
 
 export default App;
-

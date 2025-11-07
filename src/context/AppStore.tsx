@@ -2,8 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
 import { computeDebtPlan } from "@/lib/computeDebtPlan";
 import type { Scenario } from "./ScenarioContext";
-import { getUserId } from "@/lib/user";
-import { dbGet, dbSet } from "@/live/db";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export type AppState = {
   debts: Debt[];
@@ -18,10 +18,10 @@ export type AppState = {
 type Ctx = {
   state: AppState;
   updateDebts: (debts: Debt[]) => void;
-  addDebt: (d: Partial<Debt>) => void;
-  updateDebt: (id: string, patch: Partial<Debt>) => void;
-  deleteDebt: (id: string) => void;
-  updateSettings: (patch: Partial<UserSettings>) => void;
+  addDebt: (d: Partial<Debt>) => Promise<void>;
+  updateDebt: (id: string, patch: Partial<Debt>) => Promise<void>;
+  deleteDebt: (id: string) => Promise<void>;
+  updateSettings: (patch: Partial<UserSettings>) => Promise<void>;
   updateNotes: (notes: string) => void;
   computeNow: () => void;
   notify: (msg: string) => void;
@@ -30,8 +30,10 @@ type Ctx = {
 
 const AppStore = createContext<Ctx>(null as any);
 
+const LOCAL_STORAGE_KEY = "finityo:migrated";
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const userId = getUserId();
+  const { user } = useAuth();
   const [state, setState] = useState<AppState>({
     debts: [],
     scenarios: [],
@@ -46,28 +48,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     notes: "",
   });
 
-  // Load initial user data
+  // Load user data from database
   useEffect(() => {
+    if (!user) return;
+
     (async () => {
-      const saved = await dbGet(userId);
-      if (saved) {
-        setState(saved);
-        // Recompute on load
-        if (saved.debts?.length && saved.settings) {
-          const plan = computeDebtPlan(saved.debts, saved.settings);
-          setState((s) => ({ ...s, plan }));
+      try {
+        // Check if migration from localStorage is needed (one-time)
+        const migrated = localStorage.getItem(LOCAL_STORAGE_KEY);
+        
+        // Load debts
+        const { data: debts } = await supabase
+          .from("debts")
+          .select("*")
+          .eq("user_id", user.id);
+
+        // Load settings
+        const { data: settings } = await supabase
+          .from("debt_calculator_settings")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        setState((s) => ({
+          ...s,
+          debts: debts?.map(d => ({
+            id: d.id,
+            name: d.name,
+            balance: Number(d.balance),
+            apr: Number(d.apr),
+            minPayment: Number(d.min_payment),
+            category: d.debt_type,
+          })) || [],
+          settings: settings
+            ? {
+                strategy: settings.strategy as "snowball" | "avalanche",
+                extraMonthly: Number(settings.extra_monthly),
+                oneTimeExtra: Number(settings.one_time),
+              }
+            : s.settings,
+        }));
+
+        // Mark migration as complete
+        if (!migrated) {
+          localStorage.setItem(LOCAL_STORAGE_KEY, "true");
         }
+      } catch (error) {
+        console.error("Error loading user data:", error);
       }
     })();
-  }, [userId]);
-
-  // Sync to DB on change (debounced)
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      dbSet(userId, state);
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [state, userId]);
+  }, [user]);
 
   // Central recompute
   const computeNow = () => {
@@ -80,7 +110,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Debts CRUD
-  const addDebt = (d: Partial<Debt>) => {
+  const addDebt = async (d: Partial<Debt>) => {
+    if (!user) return;
+
     const newDebt: Debt = {
       id: "debt-" + Math.random().toString(36).slice(2, 9),
       name: d.name ?? "New Debt",
@@ -90,6 +122,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       dueDay: d.dueDay,
       category: d.category,
     };
+
+    // Save to database
+    const { error } = await supabase.from("debts").insert({
+      user_id: user.id,
+      name: newDebt.name,
+      balance: newDebt.balance,
+      apr: newDebt.apr,
+      min_payment: newDebt.minPayment,
+      debt_type: newDebt.category || "personal",
+    });
+
+    if (error) {
+      console.error("Error adding debt:", error);
+      return;
+    }
+
     setState((s) => {
       const newState = { ...s, debts: [...s.debts, newDebt] };
       const plan = computeDebtPlan(newState.debts, newState.settings);
@@ -97,7 +145,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateDebt = (id: string, patch: Partial<Debt>) => {
+  const updateDebt = async (id: string, patch: Partial<Debt>) => {
+    if (!user) return;
+
+    // Update in database
+    const debt = state.debts.find((d) => d.id === id);
+    if (debt) {
+      const { error } = await supabase
+        .from("debts")
+        .update({
+          name: patch.name ?? debt.name,
+          balance: patch.balance ?? debt.balance,
+          apr: patch.apr ?? debt.apr,
+          min_payment: patch.minPayment ?? debt.minPayment,
+          debt_type: patch.category ?? debt.category ?? "personal",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id)
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error updating debt:", error);
+        return;
+      }
+    }
+
     setState((s) => {
       const newDebts = s.debts.map((d) => (d.id === id ? { ...d, ...patch } : d));
       const plan = computeDebtPlan(newDebts, s.settings);
@@ -105,7 +177,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const deleteDebt = (id: string) => {
+  const deleteDebt = async (id: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("debts")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting debt:", error);
+      return;
+    }
+
     setState((s) => {
       const newDebts = s.debts.filter((d) => d.id !== id);
       const plan = newDebts.length ? computeDebtPlan(newDebts, s.settings) : null;
@@ -121,9 +206,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Settings
-  const updateSettings = (patch: Partial<UserSettings>) => {
+  const updateSettings = async (patch: Partial<UserSettings>) => {
+    if (!user) return;
+
+    const newSettings = { ...state.settings, ...patch };
+
+    // Save to database
+    const { error } = await supabase
+      .from("debt_calculator_settings")
+      .upsert({
+        user_id: user.id,
+        strategy: newSettings.strategy,
+        extra_monthly: newSettings.extraMonthly,
+        one_time: newSettings.oneTimeExtra || 0,
+        updated_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      console.error("Error updating settings:", error);
+      return;
+    }
+
     setState((s) => {
-      const newSettings = { ...s.settings, ...patch };
       const plan = s.debts.length ? computeDebtPlan(s.debts, newSettings) : null;
       return { ...s, settings: newSettings, plan };
     });
