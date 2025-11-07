@@ -50,19 +50,13 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const DocumentExport = lazy(() => import("./pages/DocumentExport"));
 const OAuthRedirect = lazy(() => import("./pages/OAuthRedirect"));
-const Demo = lazy(() => import("./pages/Demo"));
-const DemoTest = lazy(() => import("./pages/DemoTest"));
 const Install = lazy(() => import("./pages/Install"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PayoffCalendar = lazy(() => import("./pages/PayoffCalendar"));
 const PrintableSummary = lazy(() => import("./pages/PrintableSummary"));
 const MobileView = lazy(() => import("./pages/Mobile"));
-const DebtPlanNew = lazy(() => import("./pages/DebtPlanNew"));
-const DebtChartNew = lazy(() => import("./pages/DebtChartNew"));
 const DebtVisualization = lazy(() => import("./pages/DebtVisualization"));
 const DebtsNew = lazy(() => import("./pages/DebtsNew"));
-const PlanSimple = lazy(() => import("./pages/PlanSimple"));
-const ChartSimple = lazy(() => import("./pages/ChartSimple"));
 const SharedPlan = lazy(() => import("./pages/SharedPlan"));
 const ShareHistory = lazy(() => import("./pages/ShareHistory"));
 const Scenarios = lazy(() => import("./pages/Scenarios"));
@@ -166,17 +160,11 @@ const AppRoutes = () => {
               <Route path="/admin/roles" element={<RequireAuth><UserRoleManagement /></RequireAuth>} />
               <Route path="/admin/documents" element={<RequireAuth><DocumentExport /></RequireAuth>} />
               <Route path="/oauth-redirect" element={<RequireAuth><OAuthRedirect /></RequireAuth>} />
-              <Route path="/demo-old" element={<RequireAuth><Demo /></RequireAuth>} />
-              <Route path="/demo-test" element={<RequireAuth><DemoTest /></RequireAuth>} />
               <Route path="/payoff-calendar" element={<RequireAuth><PayoffCalendar /></RequireAuth>} />
               <Route path="/printable-summary" element={<RequireAuth><PrintableSummary /></RequireAuth>} />
               <Route path="/mobile-view" element={<RequireAuth><MobileView /></RequireAuth>} />
-              <Route path="/debt-plan-new" element={<RequireAuth><DebtPlanNew /></RequireAuth>} />
-              <Route path="/debt-chart-new" element={<RequireAuth><DebtChartNew /></RequireAuth>} />
-              <Route path="/debt-visualization" element={<RequireAuth><DebtVisualization /></RequireAuth>} />
+              <Route path="/visualization" element={<RequireAuth><DebtVisualization /></RequireAuth>} />
               <Route path="/debts-new" element={<RequireAuth><DebtsNew /></RequireAuth>} />
-              <Route path="/plan-simple" element={<RequireAuth><PlanSimple /></RequireAuth>} />
-              <Route path="/chart-simple" element={<RequireAuth><ChartSimple /></RequireAuth>} />
               <Route path="/share/history" element={<RequireAuth><ShareHistory /></RequireAuth>} />
               <Route path="/scenarios" element={<RequireAuth><Scenarios /></RequireAuth>} />
               <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
