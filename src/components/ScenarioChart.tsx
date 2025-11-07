@@ -2,16 +2,7 @@
 // src/components/ScenarioChart.tsx
 // ===================================
 import React from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
-import { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
+import { Debt, UserSettings } from "@/lib/computeDebtPlan";
 import { scenarioCompare } from "@/lib/scenarioCompare";
 
 type Props = {
@@ -42,20 +33,15 @@ export default function ScenarioChart({ debts, settings }: Props) {
 
   return (
     <div className="p-4 border rounded bg-white">
-      <h2 className="text-lg font-semibold mb-2">
-        Scenario Comparison (Months)
-      </h2>
+      <h2 className="text-lg font-semibold mb-3">Scenario Comparison</h2>
 
-      <ResponsiveContainer width="100%" height={260}>
-        <BarChart data={data}>
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip formatter={(v) => Math.round(Number(v))} />
-          <Legend />
-          <Bar dataKey="months" fill="#000000" />
-          <Bar dataKey="interest" fill="#d0a331" />
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="space-y-2">
+        {data.map((item) => (
+          <div key={item.name}>
+            <strong>{item.name}:</strong> {item.months} months
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
