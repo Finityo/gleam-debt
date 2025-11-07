@@ -37,7 +37,7 @@ export function CoachSuggestions({ shareId, coachName = "Coach" }: Props) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setComments(data || []);
+      setComments((data as any) || []);
     } catch (err) {
       console.error("Failed to load comments:", err);
     }
@@ -56,7 +56,7 @@ export function CoachSuggestions({ shareId, coachName = "Coach" }: Props) {
           coach_name: coachName,
           comment_text: text,
           resolved: false
-        });
+        } as any);
 
       if (error) throw error;
 
@@ -75,7 +75,7 @@ export function CoachSuggestions({ shareId, coachName = "Coach" }: Props) {
     try {
       const { error } = await supabase
         .from("coach_comments")
-        .update({ resolved: !currentStatus })
+        .update({ resolved: !currentStatus } as any)
         .eq("id", id);
 
       if (error) throw error;

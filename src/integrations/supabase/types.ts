@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_comments: {
+        Row: {
+          coach_name: string
+          comment_text: string
+          created_at: string | null
+          id: string
+          resolved: boolean | null
+          share_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          coach_name: string
+          comment_text: string
+          created_at?: string | null
+          id?: string
+          resolved?: boolean | null
+          share_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          coach_name?: string
+          comment_text?: string
+          created_at?: string | null
+          id?: string
+          resolved?: boolean | null
+          share_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       debt_calculator_settings: {
         Row: {
           created_at: string
