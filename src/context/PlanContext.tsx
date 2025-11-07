@@ -136,10 +136,10 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
 
   // --------------------------------------------------------------------------
-  // SAVE PLAN: DEMO → localStorage | LIVE → PlanAPI.save
+  // SAVE PLAN: DEMO → localStorage | LIVE → PlanAPI.save + auto-version
   // --------------------------------------------------------------------------
   const persist = useCallback(
-    async (nextDebts: Debt[], nextSettings: UserSettings, nextPlan: DebtPlan | null) => {
+    async (nextDebts: Debt[], nextSettings: UserSettings, nextPlan: DebtPlan | null, changeDesc?: string) => {
       // DEMO
       if (demoMode) {
         saveLocal({
@@ -150,13 +150,24 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       }
 
       // LIVE
-      await PlanAPI.save(user.id, {
+      const planData = {
         debts: nextDebts,
         settings: nextSettings,
         notes,
         plan: nextPlan,
         updatedAt: new Date().toISOString(),
-      });
+      };
+
+      await PlanAPI.save(user.id, planData);
+
+      // Auto-save version for significant changes
+      if (changeDesc) {
+        try {
+          await PlanAPI.saveVersion(user.id, planData, changeDesc);
+        } catch (err) {
+          console.error('Failed to save version:', err);
+        }
+      }
     },
     [demoMode, notes, user?.id]
   );
@@ -185,7 +196,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       try {
         const p = computeDebtPlan(next, settings);
         setPlan(p);
-        await persist(next, settings, p);
+        await persist(next, settings, p, 'Updated debts');
       } catch (err) {
         console.error("❌ compute error:", err);
       }
@@ -204,7 +215,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       try {
         const p = computeDebtPlan(debts, next);
         setPlan(p);
-        await persist(debts, next, p);
+        await persist(debts, next, p, 'Updated settings');
       } catch (err) {
         console.error("❌ compute error:", err);
       }

@@ -12,8 +12,9 @@ import { PlaidAnalytics } from '@/components/PlaidAnalytics';
 import { TrialSubscriptionDialog } from '@/components/TrialSubscriptionDialog';
 import { DemoBanner } from '@/components/DemoBanner';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Printer, AlertCircle } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Printer, AlertCircle, History } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
+import { PlanVersionHistory } from '@/components/PlanVersionHistory';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
 import { DEMO } from '@/config/demo';
@@ -305,6 +306,10 @@ const Dashboard = () => {
                     <div className="text-xs text-muted-foreground">Step 5: Manage account</div>
                   </div>
                 </Button>
+
+                <div className="flex items-center justify-center p-4">
+                  <PlanVersionHistory />
+                </div>
               </div>
             </div>
           </div>

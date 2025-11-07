@@ -832,6 +832,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_plan_versions: {
+        Row: {
+          change_description: string | null
+          created_at: string
+          debts: Json
+          id: string
+          notes: string | null
+          plan: Json | null
+          settings: Json
+          user_id: string
+          version_id: string
+        }
+        Insert: {
+          change_description?: string | null
+          created_at?: string
+          debts?: Json
+          id?: string
+          notes?: string | null
+          plan?: Json | null
+          settings?: Json
+          user_id: string
+          version_id: string
+        }
+        Update: {
+          change_description?: string | null
+          created_at?: string
+          debts?: Json
+          id?: string
+          notes?: string | null
+          plan?: Json | null
+          settings?: Json
+          user_id?: string
+          version_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
