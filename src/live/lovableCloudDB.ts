@@ -14,6 +14,7 @@ export interface PlanData {
   notes: string;
   plan: DebtPlan | null;
   updatedAt: string;
+  versions?: any[];
 }
 
 export const AppDB = {
@@ -41,6 +42,7 @@ export const AppDB = {
         notes: (data.notes as string) || "",
         plan: (data.plan as any) || null,
         updatedAt: data.updated_at,
+        versions: (data.versions as any) || [],
       };
     } catch (err) {
       console.error("❌ AppDB.get exception:", err);
@@ -62,6 +64,7 @@ export const AppDB = {
           notes: data.notes,
           plan: data.plan as any,
           updated_at: data.updatedAt,
+          versions: data.versions as any,
         } as any, {
           onConflict: "user_id",
         });

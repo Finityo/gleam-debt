@@ -160,18 +160,13 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
       await PlanAPI.save(user.id, planData);
 
-      // Smart auto-save: only create version if something meaningful changed
+      // Auto-log version (deduplication handled internally)
       if (changeDesc) {
         try {
-          const shouldSave = await PlanAPI.shouldSaveVersion(user.id, planData);
-          if (shouldSave) {
-            await PlanAPI.saveVersion(user.id, planData, changeDesc);
-            console.log('✅ Version saved:', changeDesc);
-          } else {
-            console.log('⏭️ No meaningful changes, skipping version save');
-          }
+          await PlanAPI.logVersion(user.id);
+          console.log('✅ Version logged:', changeDesc);
         } catch (err) {
-          console.error('Failed to save version:', err);
+          console.error('Failed to log version:', err);
         }
       }
     },

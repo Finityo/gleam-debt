@@ -32,15 +32,15 @@ export function PlanVersionHistory() {
     if (!user || demoMode) return;
     loadVersions();
 
-    // Subscribe to realtime updates
+    // Subscribe to realtime updates for user_plan_data
     const channel = supabase
-      .channel('version-changes')
+      .channel('plan-data-changes')
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: 'UPDATE',
           schema: 'public',
-          table: 'user_plan_versions',
+          table: 'user_plan_data',
           filter: `user_id=eq.${user.id}`,
         },
         () => {
@@ -58,8 +58,8 @@ export function PlanVersionHistory() {
     if (!user) return;
     try {
       setLoading(true);
-      const data = await PlanAPI.getVersions(user.id);
-      setVersions(data);
+      const data = await PlanAPI.listVersions(user.id);
+      setVersions(data.reverse()); // newest first
     } catch (err) {
       console.error('Failed to load versions:', err);
       toast.error('Failed to load version history');
@@ -83,16 +83,7 @@ export function PlanVersionHistory() {
   }
 
   async function deleteVersion(versionId: string) {
-    if (!user) return;
-    try {
-      await PlanAPI.deleteVersion(user.id, versionId);
-      await loadVersions();
-      toast.success('Version deleted');
-      setSelectedVersion(null);
-    } catch (err) {
-      console.error('Failed to delete version:', err);
-      toast.error('Failed to delete version');
-    }
+    toast.info('Version deletion not yet implemented for inline storage');
   }
 
   if (demoMode) {
@@ -147,7 +138,7 @@ export function PlanVersionHistory() {
 
               {versions.map((version) => (
                 <button
-                  key={version.id}
+                  key={version.versionId}
                   onClick={() => {
                     if (compareMode && selectedVersion) {
                       setCompareVersion(version);
@@ -156,9 +147,9 @@ export function PlanVersionHistory() {
                     }
                   }}
                   className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                    selectedVersion?.id === version.id
+                    selectedVersion?.versionId === version.versionId
                       ? 'border-primary bg-primary/5'
-                      : compareVersion?.id === version.id
+                      : compareVersion?.versionId === version.versionId
                       ? 'border-blue-500 bg-blue-500/5'
                       : 'border-border hover:bg-accent'
                   }`}
@@ -171,11 +162,6 @@ export function PlanVersionHistory() {
                           {new Date(version.createdAt).toLocaleString()}
                         </span>
                       </div>
-                      {version.changeDescription && (
-                        <p className="text-xs text-muted-foreground mt-1 truncate">
-                          {version.changeDescription}
-                        </p>
-                      )}
                       <div className="text-xs text-muted-foreground mt-1">
                         {version.debts.length} debts • {version.settings.strategy}
                       </div>
