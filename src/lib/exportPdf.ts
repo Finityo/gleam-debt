@@ -8,6 +8,7 @@ import { remainingByMonth } from "@/lib/remaining";
 import { getPayoffOrder } from "@/lib/payoffOrder";
 import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
 import { comparePlans } from "@/lib/comparePlans";
+import { getMilestones } from "@/lib/milestones";
 
 export function exportPlanToPDF(
   debts: Debt[],
