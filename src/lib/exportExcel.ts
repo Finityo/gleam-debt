@@ -44,11 +44,13 @@ export function exportPlanToExcel(
     "Interest",
     "Principal",
     "Ending Balance",
+    "Remaining (total)",
     "Total Paid (mo)",
     "Total Interest (mo)",
   ]);
 
   plan.months.forEach((m) => {
+    const totalRemaining = m.payments.reduce((acc, p) => acc + p.balanceEnd, 0);
     m.payments.forEach((p) => {
       planSheetData.push([
         m.monthIndex + 1,
@@ -57,6 +59,7 @@ export function exportPlanToExcel(
         p.interest,
         p.principal,
         p.balanceEnd,
+        totalRemaining,
         m.totalPaid,
         m.totalInterest,
       ]);
