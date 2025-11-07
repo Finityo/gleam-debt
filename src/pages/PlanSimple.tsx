@@ -7,7 +7,7 @@ import { computeDebtPlan } from "@/lib/computeDebtPlan";
 import DashboardSummary from "@/components/DashboardSummary";
 import PayoffOrder from "@/components/PayoffOrder";
 import ComparisonCard from "@/components/ComparisonCard";
-import ScenarioSelector from "@/components/ScenarioSelector";
+import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, FileText } from "lucide-react";
@@ -79,7 +79,7 @@ export default function PlanPage() {
         Debt-Free Date: {displayedPlan.debtFreeDate}
       </p>
 
-      <ScenarioSelector scenario={scenario} setScenario={setScenario} />
+      <ScenarioSwitcher scenario={scenario} onChange={setScenario} />
 
       <DashboardSummary plan={displayedPlan} />
 
