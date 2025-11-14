@@ -23,6 +23,7 @@ import AdvancedInsightsSection from '@/features/AdvancedInsightsSection';
 import RecommendationsCard from '@/components/RecommendationsCard';
 import WhatIfCalculator from '@/components/WhatIfCalculator';
 import EnhancedCoachPanel from '@/components/EnhancedCoachPanel';
+import PayoffIntelligenceSection from '@/features/PayoffIntelligenceSection';
 
 interface Account {
   id: string;
@@ -271,6 +272,8 @@ const Dashboard = () => {
         <FinancialDashboardExtras />
         
         <AdvancedInsightsSection />
+        
+        <PayoffIntelligenceSection />
         
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <RecommendationsCard />
