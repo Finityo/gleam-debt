@@ -91,6 +91,7 @@ export default {
         'vibrant': 'var(--shadow-vibrant)',
         'glow': 'var(--shadow-glow)',
         'accent': 'var(--shadow-accent)',
+        'liquid': 'var(--shadow-liquid)',
         'card': '0 1px 4px rgba(0,0,0,0.08)',
         'sheet': '0 -8px 24px rgba(0,0,0,0.15)',
         'glass': '0 0 25px rgba(16,231,205,0.15)',
