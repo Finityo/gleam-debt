@@ -44,11 +44,23 @@ function useEdgeFunction<T>(name: string, payload?: any) {
     (async () => {
       try {
         setLoading(true);
+        setError(null);
         
-        // Check authentication
-        const { data: { session } } = await supabase.auth.getSession();
+        // Wait for session to be ready
+        let session = null;
+        let retries = 0;
+        while (!session && retries < 3 && !cancelled) {
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          session = currentSession;
+          if (!session && retries < 2) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            retries++;
+          }
+        }
+        
         if (!session) {
           if (!cancelled) setError('Not authenticated');
+          if (!cancelled) setLoading(false);
           return;
         }
 
