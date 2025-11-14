@@ -250,33 +250,33 @@ export default function DebtsLive() {
         </Card>
       )}
 
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {inputs.debts.map((debt) => (
-          <div key={debt.id} className="glass-card p-6 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h3 className="font-bold text-xl text-foreground mb-4">{debt.name}</h3>
-                <div className="grid grid-cols-3 gap-6">
+          <div key={debt.id} className="glass-card p-4 animate-fade-in">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-base text-foreground mb-3 truncate">{debt.name}</h3>
+                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <div className="text-foreground/60 text-sm font-medium mb-1">Balance</div>
-                    <div className="font-bold text-2xl bg-gradient-primary bg-clip-text text-transparent">
+                    <div className="text-foreground/60 text-xs font-medium mb-0.5">Balance</div>
+                    <div className="font-bold text-base bg-gradient-primary bg-clip-text text-transparent">
                       ${debt.balance.toFixed(2)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-foreground/60 text-sm font-medium mb-1">APR</div>
-                    <div className="font-bold text-2xl text-accent">{debt.apr.toFixed(1)}%</div>
+                    <div className="text-foreground/60 text-xs font-medium mb-0.5">APR</div>
+                    <div className="font-bold text-base text-accent">{debt.apr.toFixed(1)}%</div>
                   </div>
                   <div>
-                    <div className="text-foreground/60 text-sm font-medium mb-1">Min Payment</div>
-                    <div className="font-bold text-2xl text-foreground">
+                    <div className="text-foreground/60 text-xs font-medium mb-0.5">Min Payment</div>
+                    <div className="font-bold text-base text-foreground">
                       ${debt.minPayment.toFixed(2)}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 ml-4">
+              <div className="flex gap-2 flex-shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
