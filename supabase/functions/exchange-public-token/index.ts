@@ -117,13 +117,34 @@ serve(async (req) => {
 
     console.log('Institution name:', institutionName);
 
-    // Store plaid_items
+    // Store token securely in vault
+    const vaultSecretName = `plaid_token_${item_id}`;
+    
+    try {
+      const { error: vaultError } = await supabaseClient.rpc('store_plaid_token_in_vault', {
+        p_token: access_token,
+        p_secret_name: vaultSecretName,
+        p_description: `Plaid access token for item ${item_id}`
+      });
+
+      if (vaultError) {
+        console.error('Error storing token in vault:', vaultError);
+        throw new Error('Failed to store token securely');
+      }
+
+      console.log('Token stored securely in vault');
+    } catch (vaultErr) {
+      console.error('Vault storage failed:', vaultErr);
+      throw new Error('Failed to store token securely');
+    }
+
+    // Store plaid_items with vault reference
     const { error: itemInsertError } = await supabaseClient
       .from('plaid_items')
       .insert({
         user_id: user.id,
         item_id: item_id,
-        access_token: access_token,
+        vault_secret_id: vaultSecretName,
         institution_id: institutionId,
         institution_name: institutionName,
       });
