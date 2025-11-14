@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { supabase } from '@/integrations/supabase/client';
 
 // --------------------------------------------------------
 // Types
@@ -34,31 +35,31 @@ type SpendingInsightsResponse = {
 };
 
 // --------------------------------------------------------
-// Generic fetch hook
+// Generic Supabase function hook
 // --------------------------------------------------------
 
-function useApi<T>(url: string) {
+function useSupabaseFunction<T>(functionName: string) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const controller = new AbortController();
 
     async function run() {
       try {
         setLoading(true);
-        const res = await fetch(url, { signal: controller.signal });
-        if (!res.ok) {
-          throw new Error(`Request failed: ${res.status}`);
+        const { data: result, error: invokeError } = await supabase.functions.invoke(functionName);
+        
+        if (invokeError) {
+          throw invokeError;
         }
-        const json = (await res.json()) as T;
-        if (!cancelled) {
-          setData(json);
+        
+        if (!cancelled && result) {
+          setData(result);
         }
       } catch (err: any) {
-        if (!cancelled && err.name !== "AbortError") {
+        if (!cancelled) {
           setError(err.message || "Something went wrong");
         }
       } finally {
@@ -72,9 +73,8 @@ function useApi<T>(url: string) {
 
     return () => {
       cancelled = true;
-      controller.abort();
     };
-  }, [url]);
+  }, [functionName]);
 
   return { data, loading, error };
 }
@@ -84,15 +84,22 @@ function useApi<T>(url: string) {
 // --------------------------------------------------------
 
 function useFinancialHealth() {
-  return useApi<FinancialHealthResponse>("/api/financial-health");
+  return useSupabaseFunction<FinancialHealthResponse>('compute-financial-health');
 }
 
 function useMilestones() {
-  return useApi<MilestonesResponse>("/api/milestones");
+  const result = useSupabaseFunction<any>('check-milestones');
+  
+  // Transform the response to match expected format
+  const transformedData = result.data ? {
+    achieved: result.data.milestones?.map((m: any) => m.milestone_type) || []
+  } : null;
+  
+  return { ...result, data: transformedData };
 }
 
 function useSpendingInsights() {
-  return useApi<SpendingInsightsResponse>("/api/spending-insights");
+  return useSupabaseFunction<SpendingInsightsResponse>('generate-spending-insights');
 }
 
 // --------------------------------------------------------

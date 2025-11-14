@@ -18,6 +18,7 @@ import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
 import { AppDB } from '@/live/lovableCloudDB';
 import { useSubscription } from '@/hooks/useSubscription';
+import { FinancialDashboardExtras } from '@/features/FinancialDashboardExtras';
 
 interface Account {
   id: string;
@@ -262,6 +263,8 @@ const Dashboard = () => {
         <PlaidUpdateBanner />
         
         <PlaidAnalytics />
+        
+        <FinancialDashboardExtras />
         
         <PlaidTokenMigration 
           unmigrated_item_ids={unmigratedItemIds}
