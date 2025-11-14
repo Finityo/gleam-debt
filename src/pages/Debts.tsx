@@ -163,22 +163,22 @@ export default function DebtsPage() {
 
         <div className="grid gap-4">
           {state.debts.map((debt) => (
-            <Card key={debt.id} className="hover:shadow-md transition-shadow">
+            <Card key={debt.id} className="hover:shadow-md transition-shadow bg-card/95 backdrop-blur-xl">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{debt.name}</h3>
-                  <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
+                  <h3 className="font-bold text-xl text-foreground">{debt.name}</h3>
+                  <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
                     <div>
-                      <div className="text-muted-foreground">Balance</div>
-                      <div className="font-medium">${debt.balance.toFixed(2)}</div>
+                      <div className="text-foreground/60 font-medium">Balance</div>
+                      <div className="font-bold text-lg text-foreground">${debt.balance.toFixed(2)}</div>
                     </div>
                     <div>
-                      <div className="text-muted-foreground">APR</div>
-                      <div className="font-medium">{debt.apr.toFixed(1)}%</div>
+                      <div className="text-foreground/60 font-medium">APR</div>
+                      <div className="font-bold text-lg text-foreground">{debt.apr.toFixed(1)}%</div>
                     </div>
                     <div>
-                      <div className="text-muted-foreground">Min Payment</div>
-                      <div className="font-medium">${debt.minPayment.toFixed(2)}</div>
+                      <div className="text-foreground/60 font-medium">Min Payment</div>
+                      <div className="font-bold text-lg text-foreground">${debt.minPayment.toFixed(2)}</div>
                     </div>
                   </div>
                 </div>
