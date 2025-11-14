@@ -125,6 +125,7 @@ export function computeDebtPlan(
   // If nothing to do, return empty plan
   const startActive = debts.filter(isActive);
   if (startActive.length === 0) {
+    console.warn("⚠️ No active debts to compute");
     return {
       months: [],
       debtFreeDate: monthAddISO(startDate, 0),
@@ -140,6 +141,14 @@ export function computeDebtPlan(
 
   // Constant outflow each month: initial mins + extraMonthly
   const initialOutflow = round2(sumMins(debts) + (settings.extraMonthly || 0));
+  
+  console.log("💰 Computing debt plan:", {
+    activeDebts: startActive.length,
+    strategy: settings.strategy,
+    initialOutflow,
+    extraMonthly: settings.extraMonthly,
+    oneTimeExtra: settings.oneTimeExtra
+  });
 
   let months: PlanMonth[] = [];
   let totalInterestAll = 0;

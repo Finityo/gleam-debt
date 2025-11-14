@@ -147,27 +147,38 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   }, [demoMode, user?.id]);
 
   // --------------------------------------------------------------------------
-  // REALTIME VERSION HISTORY UPDATES
+  // REALTIME PLAN DATA SYNC
   // --------------------------------------------------------------------------
   useEffect(() => {
     if (demoMode || !user?.id) return;
 
     const channel = supabase
-      .channel('plan-data-realtime')
+      .channel('plan-data-realtime-full')
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',  // Listen to all events (INSERT, UPDATE, DELETE)
           schema: 'public',
           table: 'user_plan_data',
           filter: `user_id=eq.${user.id}`,
         },
-        async () => {
+        async (payload) => {
+          console.log('📊 Plan data changed, reloading...', payload.eventType);
           try {
+            // Reload full plan data
+            const row = await PlanAPI.get(user.id);
+            if (row) {
+              setDebts(row.debts ?? []);
+              setSettings(row.settings ?? settings);
+              setNotes(row.notes ?? "");
+              setPlan(row.plan ?? null);
+            }
+            
+            // Reload version history
             const versions = await PlanAPI.listVersions(user.id);
             setHistory(versions.reverse());
           } catch (err) {
-            console.error('Failed to reload version history:', err);
+            console.error('Failed to reload plan data:', err);
           }
         }
       )
@@ -176,7 +187,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [demoMode, user?.id]);
+  }, [demoMode, user?.id, settings]);
 
 
   // --------------------------------------------------------------------------
@@ -223,9 +234,11 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   // --------------------------------------------------------------------------
   const compute = useCallback(async () => {
     try {
+      console.log('🔄 Computing plan with', debts.length, 'debts');
       const p = computeDebtPlan(debts, settings);
       setPlan(p);
       await persist(debts, settings, p);
+      console.log('✅ Plan computed successfully');
     } catch (err) {
       console.error("❌ compute error:", err);
     }
