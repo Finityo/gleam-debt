@@ -30,36 +30,65 @@ export function useRecommendations() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRecommendations = async () => {
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchRecommendations = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Check if user is authenticated first
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          if (mounted) {
+            setError('Not authenticated');
+            setLoading(false);
+          }
+          return;
+        }
+
+        const { data: response, error: invokeError } = await supabase.functions.invoke('generate-recommendations');
+        
+        if (invokeError) throw invokeError;
+        if (response && mounted) {
+          setData(response);
+        }
+      } catch (err: any) {
+        console.error('Error fetching recommendations:', err);
+        if (mounted) {
+          setError(err.message);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchRecommendations();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const refresh = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
     try {
       setLoading(true);
       setError(null);
-
-      // Check if user is authenticated first
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setError('Not authenticated');
-        setLoading(false);
-        return;
-      }
-
       const { data: response, error: invokeError } = await supabase.functions.invoke('generate-recommendations');
-      
       if (invokeError) throw invokeError;
-      if (response) {
-        setData(response);
-      }
+      if (response) setData(response);
     } catch (err: any) {
-      console.error('Error fetching recommendations:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchRecommendations();
-  }, []);
-
-  return { data, loading, error, refresh: fetchRecommendations };
+  return { data, loading, error, refresh };
 }
