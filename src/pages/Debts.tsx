@@ -15,7 +15,7 @@ import {
 import { Plus, Trash2, Edit2, CreditCard, Download, Upload } from "lucide-react";
 import type { Debt } from "@/lib/computeDebtPlan";
 import { toast } from "sonner";
-import { debtToCSV, downloadCSV, parseExcelPaste } from "@/lib/csvExport";
+import { debtToCSV, downloadCSV, parseExcelFile } from "@/lib/csvExport";
 import { DebtQuickEdit } from "@/components/DebtQuickEdit";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
 
@@ -57,25 +57,30 @@ export default function DebtsPage() {
     setQuickEditDebt(null);
   }
 
-  function handleImport(pasteText: string) {
-    const parsed = parseExcelPaste(pasteText);
-    if (parsed.length === 0) {
-      toast.error("No valid debts found in paste data");
-      return;
-    }
+  async function handleImport(file: File) {
+    try {
+      const parsed = await parseExcelFile(file);
+      if (parsed.length === 0) {
+        toast.error("No valid debts found in Excel file");
+        return;
+      }
 
-    // Clear existing debts and add new ones
-    parsed.forEach((debt) => {
-      addDebt({
-        name: debt.name,
-        balance: debt.balance,
-        apr: debt.apr,
-        minPayment: debt.minPayment,
+      // Add imported debts
+      parsed.forEach((debt) => {
+        addDebt({
+          name: debt.name,
+          balance: debt.balance,
+          apr: debt.apr,
+          minPayment: debt.minPayment,
+        });
       });
-    });
 
-    setShowImport(false);
-    toast.success(`Imported ${parsed.length} debt(s)`);
+      setShowImport(false);
+      toast.success(`Imported ${parsed.length} debt(s)`);
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error("Failed to import Excel file");
+    }
   }
 
   function handleExportCSV() {

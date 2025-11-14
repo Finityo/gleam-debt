@@ -13,7 +13,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Plus, Trash2, Edit2, Download, Upload, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { debtToCSV, downloadCSV, parseExcelPaste } from "@/lib/csvExport";
+import { debtToCSV, downloadCSV, parseExcelFile } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
 import { PlaidLink } from "@/components/PlaidLink";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
@@ -68,25 +68,30 @@ export default function DebtsLive() {
     }
   }
 
-  function handleImport(pasteText: string) {
-    const parsed = parseExcelPaste(pasteText);
-    if (parsed.length === 0) {
-      toast.error("No valid debts found");
-      return;
+  async function handleImport(file: File) {
+    try {
+      const parsed = await parseExcelFile(file);
+      if (parsed.length === 0) {
+        toast.error("No valid debts found in Excel file");
+        return;
+      }
+
+      const imported = parsed.map((d) => ({
+        id: crypto.randomUUID(),
+        name: d.name,
+        balance: d.balance,
+        apr: d.apr,
+        minPayment: d.minPayment,
+        include: true,
+      }));
+
+      setInputs({ debts: [...inputs.debts, ...imported] });
+      setShowImport(false);
+      toast.success(`Imported ${parsed.length} debt(s)`);
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error("Failed to import Excel file");
     }
-
-    const imported = parsed.map((d) => ({
-      id: crypto.randomUUID(),
-      name: d.name,
-      balance: d.balance,
-      apr: d.apr,
-      minPayment: d.minPayment,
-      include: true,
-    }));
-
-    setInputs({ debts: [...inputs.debts, ...imported] });
-    setShowImport(false);
-    toast.success(`Imported ${parsed.length} debt(s)`);
   }
 
   function handleExportCSV() {
