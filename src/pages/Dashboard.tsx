@@ -20,6 +20,9 @@ import { AppDB } from '@/live/lovableCloudDB';
 import { useSubscription } from '@/hooks/useSubscription';
 import FinancialDashboardExtras from '@/features/FinancialDashboardExtras';
 import AdvancedInsightsSection from '@/features/AdvancedInsightsSection';
+import RecommendationsCard from '@/components/RecommendationsCard';
+import WhatIfCalculator from '@/components/WhatIfCalculator';
+import EnhancedCoachPanel from '@/components/EnhancedCoachPanel';
 
 interface Account {
   id: string;
@@ -268,6 +271,15 @@ const Dashboard = () => {
         <FinancialDashboardExtras />
         
         <AdvancedInsightsSection />
+        
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <RecommendationsCard />
+          <WhatIfCalculator />
+        </div>
+        
+        <div className="mt-6">
+          <EnhancedCoachPanel />
+        </div>
         
         <PlaidTokenMigration
           unmigrated_item_ids={unmigratedItemIds}
