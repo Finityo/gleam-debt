@@ -25,6 +25,7 @@ import WhatIfCalculator from '@/components/WhatIfCalculator';
 import EnhancedCoachPanel from '@/components/EnhancedCoachPanel';
 import PayoffIntelligenceSection from '@/features/PayoffIntelligenceSection';
 import SmartPayoffSuite from '@/features/SmartPayoffSuite';
+import ImpactSuite from '@/features/ImpactSuite';
 
 interface Account {
   id: string;
@@ -277,6 +278,8 @@ const Dashboard = () => {
         <PayoffIntelligenceSection />
         
         <SmartPayoffSuite />
+        
+        <ImpactSuite />
         
         <div className="mt-6">
           <EnhancedCoachPanel />
