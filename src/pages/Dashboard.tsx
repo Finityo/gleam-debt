@@ -274,23 +274,27 @@ const Dashboard = () => {
         
         <PlaidAnalytics />
         
-        <FinancialDashboardExtras />
-        
-        <AdvancedInsightsSection />
-        
-        <PayoffIntelligenceSection />
-        
-        <SmartPayoffSuite />
-        
-        <ImpactSuite />
-        
-        <EngagementSuite />
-        
-        {!DEMO && <IntelligenceSuite />}
-        
-        <div className="mt-6">
-          <EnhancedCoachPanel />
-        </div>
+        {user && !DEMO && (
+          <>
+            <FinancialDashboardExtras />
+            
+            <AdvancedInsightsSection />
+            
+            <PayoffIntelligenceSection />
+            
+            <SmartPayoffSuite />
+            
+            <ImpactSuite />
+            
+            <EngagementSuite />
+            
+            <IntelligenceSuite />
+            
+            <div className="mt-6">
+              <EnhancedCoachPanel />
+            </div>
+          </>
+        )}
         
         <PlaidTokenMigration
           unmigrated_item_ids={unmigratedItemIds}
