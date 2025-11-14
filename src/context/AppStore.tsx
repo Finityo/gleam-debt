@@ -4,6 +4,7 @@ import { computeDebtPlan } from "@/lib/computeDebtPlan";
 import type { Scenario } from "./ScenarioContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PlanAPI } from "@/lib/planAPI";
 
 export type AppState = {
   debts: Debt[];
@@ -141,6 +142,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((s) => {
       const newState = { ...s, debts: [...s.debts, newDebt] };
       const plan = computeDebtPlan(newState.debts, newState.settings);
+      
+      // Sync with PlanAPI for Plan page
+      PlanAPI.writeAndCompute(user.id, {
+        debts: newState.debts,
+        settings: newState.settings,
+      }, `Added debt: ${newDebt.name}`).catch(err => 
+        console.error("Error syncing with PlanAPI:", err)
+      );
+      
       return { ...newState, plan };
     });
   };
@@ -173,6 +183,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((s) => {
       const newDebts = s.debts.map((d) => (d.id === id ? { ...d, ...patch } : d));
       const plan = computeDebtPlan(newDebts, s.settings);
+      
+      // Sync with PlanAPI for Plan page
+      PlanAPI.writeAndCompute(user.id, {
+        debts: newDebts,
+        settings: s.settings,
+      }, `Updated debt: ${patch.name || debt?.name || 'Unknown'}`).catch(err => 
+        console.error("Error syncing with PlanAPI:", err)
+      );
+      
       return { ...s, debts: newDebts, plan };
     });
   };
@@ -194,6 +213,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((s) => {
       const newDebts = s.debts.filter((d) => d.id !== id);
       const plan = newDebts.length ? computeDebtPlan(newDebts, s.settings) : null;
+      
+      // Sync with PlanAPI for Plan page
+      PlanAPI.writeAndCompute(user.id, {
+        debts: newDebts,
+        settings: s.settings,
+      }, `Deleted debt`).catch(err => 
+        console.error("Error syncing with PlanAPI:", err)
+      );
+      
       return { ...s, debts: newDebts, plan };
     });
   };
