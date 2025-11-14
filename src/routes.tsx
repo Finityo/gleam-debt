@@ -16,6 +16,7 @@ export const ROUTE_META = [
   { path: "/debt-chart", title: "Payoff Chart", protected: true },
   { path: "/visualization", title: "Debt Visualization", protected: true },
   { path: "/scenarios", title: "Scenarios", protected: true },
+  { path: "/financial-insights", title: "Financial Insights", protected: true },
   { path: "/settings", title: "Settings", protected: true },
 ];
 
@@ -93,6 +94,7 @@ const Scenarios = lazy(() => import("@/pages/Scenarios"));
 const AIAdvisor = lazy(() => import("@/pages/AIAdvisor"));
 const PayoffCalendar = lazy(() => import("@/pages/PayoffCalendar"));
 const ShareHistory = lazy(() => import("@/pages/ShareHistory"));
+const FinancialInsights = lazy(() => import("@/pages/FinancialInsights"));
 
 // ===== ADMIN =====
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
@@ -170,6 +172,7 @@ export function AppRoutes() {
           <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/scenarios" element={<RequireAuth><Scenarios /></RequireAuth>} />
+          <Route path="/financial-insights" element={<RequireAuth><FinancialInsights /></RequireAuth>} />
           <Route path="/ai-advisor" element={<RequireAuth><AIAdvisor /></RequireAuth>} />
           <Route path="/payoff-calendar" element={<RequireAuth><PayoffCalendar /></RequireAuth>} />
           <Route path="/share/history" element={<RequireAuth><ShareHistory /></RequireAuth>} />
