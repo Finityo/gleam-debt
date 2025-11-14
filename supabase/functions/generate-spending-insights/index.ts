@@ -66,45 +66,37 @@ Deno.serve(async (req) => {
       return sum + (balance * (apr / 100 / 12));
     }, 0) || 0;
 
-    const totals = {
-      minimumPayments: Math.round(minimumPayments * 100) / 100,
-      extraPayments: Math.round(extraPayments * 100) / 100,
-      oneTimePayments: Math.round(oneTimePayments * 100) / 100,
-      totalDebtPayments: Math.round(totalDebtPayments * 100) / 100,
-      monthlyInterest: Math.round(monthlyInterest * 100) / 100
+    // Calculate spending totals by category
+    const totals: Record<string, number> = {
+      'Debt Payments': Math.round(totalDebtPayments * 100) / 100,
+      'Minimum Payments': Math.round(minimumPayments * 100) / 100,
+      'Extra Payments': Math.round(extraPayments * 100) / 100,
     };
 
-    // Detect anomalies
-    const anomalies = [];
+    if (oneTimePayments > 0) {
+      totals['One-Time Payments'] = Math.round(oneTimePayments * 100) / 100;
+    }
+
+    totals['Interest Charges'] = Math.round(monthlyInterest * 100) / 100;
+
+    // Detect anomalies - format for display
+    const anomalies: Array<{ amount: number; merchant?: string; date?: string }> = [];
 
     // Check for high interest accrual
     if (monthlyInterest > 100) {
       anomalies.push({
-        type: 'high_interest',
-        severity: 'warning',
-        message: `You're accruing $${Math.round(monthlyInterest)} in interest this month`,
-        suggestion: 'Consider increasing your extra monthly payment to reduce interest costs'
+        amount: Math.round(monthlyInterest * 100) / 100,
+        merchant: 'Interest Charges',
+        date: new Date().toISOString().split('T')[0]
       });
     }
 
-    // Check if making only minimum payments
-    if (extraPayments === 0 && debts && debts.length > 0) {
+    // Check for large one-time payment
+    if (oneTimePayments > 500) {
       anomalies.push({
-        type: 'minimum_only',
-        severity: 'info',
-        message: 'You\'re only making minimum payments',
-        suggestion: 'Adding even $50 extra per month can significantly reduce payoff time'
-      });
-    }
-
-    // Check for high utilization
-    const highBalanceDebts = debts?.filter(d => Number(d.balance) > 5000).length || 0;
-    if (highBalanceDebts >= 2) {
-      anomalies.push({
-        type: 'high_debt_load',
-        severity: 'warning',
-        message: `You have ${highBalanceDebts} debts over $5,000`,
-        suggestion: 'Focus on paying down one debt at a time using the snowball method'
+        amount: Math.round(oneTimePayments * 100) / 100,
+        merchant: 'One-Time Debt Payment',
+        date: new Date().toISOString().split('T')[0]
       });
     }
 
