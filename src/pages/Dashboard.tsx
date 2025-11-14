@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PlaidLink } from '@/components/PlaidLink';
 import { PlaidUpdateBanner } from '@/components/PlaidUpdateBanner';
 import { PlaidTokenMigration } from '@/components/PlaidTokenMigration';
 import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
@@ -53,7 +52,6 @@ const Dashboard = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [unmigratedItemIds, setUnmigratedItemIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showPlaidLink, setShowPlaidLink] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [planData, setPlanData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
@@ -313,8 +311,8 @@ const Dashboard = () => {
           {/* Show connected accounts to prevent accidental duplicates */}
           {accounts.length > 0 && <ConnectedAccountsList />}
           
-          {/* Only show PlaidLink when user clicks the button */}
-          {!showPlaidLink && accounts.length === 0 && (
+          {/* Show connect button when no accounts */}
+          {accounts.length === 0 && (
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center space-y-4">
@@ -322,9 +320,11 @@ const Dashboard = () => {
                     Connect your bank account to get started
                   </p>
                   <Button 
-                    onClick={() => setShowPlaidLink(true)}
+                    onClick={() => navigate('/plaid-connect')}
                     size="lg"
+                    className="bg-gradient-to-r from-cyan-600 via-teal-600 to-cyan-600 hover:from-cyan-500 hover:via-teal-500 hover:to-cyan-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50"
                   >
+                    <Building2 className="w-5 h-5 mr-2" />
                     Connect Bank Account
                   </Button>
                 </div>
@@ -332,20 +332,15 @@ const Dashboard = () => {
             </Card>
           )}
           
-          {showPlaidLink && (
-            <PlaidLink onSuccess={() => {
-              setShowPlaidLink(false);
-              fetchAccounts();
-            }} />
-          )}
-          
-          {accounts.length > 0 && !showPlaidLink && (
+          {/* Show "Connect Another" button when accounts exist */}
+          {accounts.length > 0 && (
             <Button 
-              onClick={() => setShowPlaidLink(true)}
+              onClick={() => navigate('/plaid-connect')}
               size="lg"
               variant="outline"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto border-cyan-500/40 hover:bg-cyan-500/10 hover:border-cyan-400/60 text-cyan-300 hover:text-cyan-200"
             >
+              <Building2 className="w-5 h-5 mr-2" />
               Connect Another Bank Account
             </Button>
           )}
