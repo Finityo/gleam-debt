@@ -2,11 +2,15 @@ import { PageShell } from "@/components/PageShell";
 import { usePlan } from "@/context/PlanContext";
 import { PopIn } from "@/components/Animate";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Btn } from "@/components/Btn";
 import { computeDebtPlan } from "@/lib/computeDebtPlan";
 
 export default function DemoComparePage() {
   const { debts, settings } = usePlan();
+  const navigate = useNavigate();
 
   // Compute both approaches fresh
   const snow = computeDebtPlan(debts, { ...settings, strategy: "snowball" });
@@ -15,6 +19,11 @@ export default function DemoComparePage() {
   return (
     <PageShell>
       <div className="max-w-4xl mx-auto px-4 py-10">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
         <h1 className="text-3xl font-bold text-finityo-textMain mb-2">
           Compare Methods
         </h1>

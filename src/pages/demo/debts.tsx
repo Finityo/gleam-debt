@@ -5,8 +5,9 @@ import { PopIn } from "@/components/Animate";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, DollarSign } from "lucide-react";
+import { Plus, Trash2, DollarSign, ArrowLeft } from "lucide-react";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 
 // Validation schemas
 const debtNameSchema = z.string().trim().max(100, "Name must be less than 100 characters");
@@ -16,6 +17,7 @@ const minPaymentSchema = z.number().min(0, "Minimum payment must be positive").m
 
 export default function DemoDebts() {
   const { debts, updateDebts } = usePlan();
+  const navigate = useNavigate();
 
   const addDebt = () => {
     const next = [
@@ -48,6 +50,11 @@ export default function DemoDebts() {
   return (
     <PageShell>
       <div className="max-w-5xl mx-auto px-4 py-10">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
         <h1 className="text-3xl font-bold text-finityo-textMain mb-2">
           Your Debts
         </h1>

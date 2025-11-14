@@ -5,7 +5,7 @@ import { PopIn } from "@/components/Animate";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Zap } from "lucide-react";
+import { DollarSign, Zap, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ShareButton } from "@/components/ShareButton";
 import CoachDrawer from "@/components/CoachDrawer";
@@ -36,6 +36,11 @@ export default function DemoPlan() {
   return (
     <PageShell>
       <div className="max-w-5xl mx-auto px-4 py-10">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
         <h1 className="text-3xl font-bold text-finityo-textMain mb-2">
           Optimize Your Plan
         </h1>

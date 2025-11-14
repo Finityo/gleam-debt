@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePlanLive } from "../context/PlanContextLive";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
-import { Plus, Trash2, Edit2, Download, Upload, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Edit2, Download, Upload, AlertCircle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { debtToCSV, downloadCSV, parseExcelFile } from "@/lib/csvExport";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,7 @@ import * as XLSX from "xlsx";
 
 export default function DebtsLive() {
   const { inputs, setInputs, refreshFromBackend } = usePlanLive();
+  const navigate = useNavigate();
   const [editingDebt, setEditingDebt] = useState<DebtInput | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -176,6 +178,11 @@ export default function DebtsLive() {
 
   return (
     <div className="space-y-6 p-6">
+      <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back
+      </Button>
+      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-finityo-textMain">My Debts</h1>

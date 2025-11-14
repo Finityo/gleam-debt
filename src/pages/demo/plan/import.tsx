@@ -2,11 +2,15 @@ import { PageShell } from "@/components/PageShell";
 import { usePlan } from "@/context/PlanContext";
 import { PopIn } from "@/components/Animate";
 import { Btn } from "@/components/Btn";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function DemoImportExportPage() {
   const { debts, updateDebts } = usePlan();
+  const navigate = useNavigate();
 
   function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -31,6 +35,11 @@ export default function DemoImportExportPage() {
   return (
     <PageShell>
       <div className="max-w-xl mx-auto px-4 py-10">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
         <h1 className="text-3xl font-bold text-finityo-textMain mb-2">
           Import / Export
         </h1>
