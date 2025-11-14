@@ -26,38 +26,19 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('Starting generate-recommendations function');
-    
-    const authHeader = req.headers.get('Authorization');
-    console.log('Auth header present:', !!authHeader);
-    console.log('Auth header format:', authHeader?.substring(0, 20) + '...');
-    
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
-    console.log('Supabase URL configured:', !!supabaseUrl);
-    console.log('Supabase Key configured:', !!supabaseKey);
-    
     const supabase = createClient(
-      supabaseUrl ?? '',
-      supabaseKey ?? '',
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: authHeader! },
+          headers: { Authorization: req.headers.get('Authorization')! },
         },
       }
     );
 
-    console.log('Calling supabase.auth.getUser()');
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    console.log('Auth result - user:', !!user, 'error:', authError?.message);
-    
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.error('No user found. Auth error:', authError);
-      return new Response(JSON.stringify({ 
-        error: 'Unauthorized',
-        details: authError?.message 
-      }), {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
