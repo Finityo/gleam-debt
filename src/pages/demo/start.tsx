@@ -3,11 +3,12 @@ import { PageShell } from "@/components/PageShell";
 import { Btn } from "@/components/Btn";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { usePlan } from "@/context/PlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 
 export default function DemoStart() {
   const nav = useNavigate();
-  const { debts, reset } = usePlan();
+  const { inputs, reset } = useDemoPlan();
+  const debts = inputs.debts;
 
   const handleStart = () => {
     // For setup, wipe whatever's in memory/local.
