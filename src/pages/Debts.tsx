@@ -161,50 +161,50 @@ export default function DebtsPage() {
           </Card>
         )}
 
-        <div className="grid gap-3">
+        <div className="grid gap-2">
           {state.debts.map((debt) => (
-            <div key={debt.id} className="glass-card p-4 animate-fade-in">
-              <div className="flex items-center justify-between gap-4">
+            <div key={debt.id} className="glass p-3 rounded-2xl animate-fade-in hover:shadow-liquid transition-all">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-base text-foreground mb-3 truncate">{debt.name}</h3>
-                  <div className="grid grid-cols-3 gap-4">
+                  <h3 className="font-medium text-sm text-foreground/90 mb-2 truncate">{debt.name}</h3>
+                  <div className="grid grid-cols-3 gap-3 text-xs">
                     <div>
-                      <div className="text-foreground/60 text-xs font-medium mb-0.5">Balance</div>
-                      <div className="font-bold text-base bg-gradient-primary bg-clip-text text-transparent">
+                      <div className="text-foreground/50 mb-0.5">Balance</div>
+                      <div className="font-semibold text-sm text-foreground/90">
                         ${debt.balance.toFixed(2)}
                       </div>
                     </div>
                     <div>
-                      <div className="text-foreground/60 text-xs font-medium mb-0.5">APR</div>
-                      <div className="font-bold text-base text-accent">{debt.apr.toFixed(1)}%</div>
+                      <div className="text-foreground/50 mb-0.5">APR</div>
+                      <div className="font-semibold text-sm text-foreground/90">{debt.apr.toFixed(1)}%</div>
                     </div>
                     <div>
-                      <div className="text-foreground/60 text-xs font-medium mb-0.5">Min Payment</div>
-                      <div className="font-bold text-base text-foreground">
+                      <div className="text-foreground/50 mb-0.5">Min Payment</div>
+                      <div className="font-semibold text-sm text-foreground/90">
                         ${debt.minPayment.toFixed(2)}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 flex-shrink-0">
+                <div className="flex gap-1.5 flex-shrink-0">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => setQuickEditDebt(debt)}
-                    className="glass hover:shadow-glow"
+                    className="h-8 text-xs"
                   >
-                    <Edit2 className="h-4 w-4 mr-1" />
+                    <Edit2 className="h-3.5 w-3.5 mr-1" />
                     Edit
                   </Button>
 
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(debt.id)}
-                    className="text-destructive hover:bg-destructive/10"
+                    className="h-8 w-8 text-destructive/80 hover:text-destructive hover:bg-destructive/10"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
