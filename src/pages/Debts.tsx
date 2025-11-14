@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useApp } from "@/context/AppStore";
+import { useNavigate } from "react-router-dom";
 import AppLayout from "@/layouts/AppLayout";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2, CreditCard, Download, Upload } from "lucide-react";
+import { Plus, Trash2, Edit2, CreditCard, Download, Upload, ArrowLeft } from "lucide-react";
 import type { Debt } from "@/lib/computeDebtPlan";
 import { toast } from "sonner";
 import { debtToCSV, downloadCSV, parseExcelFile } from "@/lib/csvExport";
@@ -21,6 +22,7 @@ import { ExcelImportModal } from "@/components/ExcelImportModal";
 
 export default function DebtsPage() {
   const { state, addDebt, updateDebt, deleteDebt } = useApp();
+  const navigate = useNavigate();
   const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [quickEditDebt, setQuickEditDebt] = useState<Debt | null>(null);
@@ -112,6 +114,11 @@ export default function DebtsPage() {
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">

@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { PageShell } from "@/components/PageShell";
 import { Btn } from "@/components/Btn";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { usePlan } from "@/context/PlanContext";
 
 export default function DemoStart() {
@@ -16,6 +18,11 @@ export default function DemoStart() {
   return (
     <PageShell>
       <section className="max-w-lg mx-auto px-4 pt-16 pb-20 text-center">
+        <Button variant="ghost" onClick={() => nav(-1)} className="mb-4">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
         <h1 className="text-4xl font-bold text-finityo-textMain mb-4">
           Try Finityo Demo
         </h1>

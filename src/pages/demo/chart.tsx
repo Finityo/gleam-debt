@@ -4,6 +4,9 @@ import NextBack from "@/components/NextBack";
 import { usePlan } from "@/context/PlanContext";
 import { PopIn } from "@/components/Animate";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   AreaChart,
   Area,
@@ -17,6 +20,7 @@ import { format } from "date-fns";
 
 export default function DemoChart() {
   const { plan } = usePlan();
+  const navigate = useNavigate();
 
   const data = useMemo(() => {
     if (!plan) return [];
@@ -52,6 +56,11 @@ export default function DemoChart() {
   return (
     <PageShell>
       <div className="max-w-5xl mx-auto px-4 py-10">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
         <h1 className="text-3xl font-bold text-finityo-textMain mb-6">
           Your Debt Freedom Plan
         </h1>
