@@ -50,17 +50,25 @@ All colors MUST be HSL.
     --gradient-hero: linear-gradient(180deg, hsl(262 83% 58%), hsl(243 75% 59%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(260 25% 98%));
     
-    --glass-bg: 0 0% 100% / 0.7;
-    --glass-border: 260 20% 90% / 0.3;
-    --glass-blur: 12px;
-    --glass-shadow: 0 8px 32px 0 rgb(0 0 0 / 0.1);
+    /* Liquid Glass Variables */
+    --glass-bg: 0 0% 100% / 0.4;
+    --glass-border: 260 20% 90% / 0.2;
+    --glass-blur: 24px;
+    --glass-shadow: 0 8px 32px 0 rgb(0 0 0 / 0.08), 0 2px 8px 0 rgb(0 0 0 / 0.04);
+    
+    --liquid-glass-bg: 0 0% 100% / 0.25;
+    --liquid-glass-border: 260 20% 95% / 0.3;
+    --liquid-glass-blur: 32px;
+    --liquid-glass-shimmer: linear-gradient(135deg, hsl(0 0% 100% / 0.1) 0%, hsl(0 0% 100% / 0) 50%, hsl(0 0% 100% / 0.1) 100%);
     
     --shadow-vibrant: 0 20px 60px -15px hsl(270 70% 55% / 0.4);
     --shadow-glow: 0 0 40px hsl(270 80% 65% / 0.3);
     --shadow-accent: 0 10px 40px -10px hsl(180 85% 55% / 0.3);
     --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.25);
+    --shadow-liquid: 0 8px 32px -4px rgb(0 0 0 / 0.12), 0 20px 48px -8px rgb(0 0 0 / 0.08), inset 0 1px 0 0 rgb(255 255 255 / 0.1);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-liquid: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .dark {
@@ -104,15 +112,22 @@ All colors MUST be HSL.
     --gradient-hero: linear-gradient(135deg, hsl(180 75% 15%), hsl(220 50% 10%), hsl(270 50% 18%));
     --gradient-card: linear-gradient(145deg, hsl(220 40% 14%), hsl(220 35% 18%));
     
-    --glass-bg: 220 40% 14% / 0.7;
-    --glass-border: 210 40% 98% / 0.15;
-    --glass-blur: 16px;
-    --glass-shadow: 0 8px 32px 0 rgb(0 0 0 / 0.5);
+    /* Liquid Glass Variables - Dark Mode */
+    --glass-bg: 220 40% 14% / 0.3;
+    --glass-border: 210 40% 98% / 0.1;
+    --glass-blur: 28px;
+    --glass-shadow: 0 8px 32px 0 rgb(0 0 0 / 0.4), 0 2px 8px 0 rgb(0 0 0 / 0.2);
+    
+    --liquid-glass-bg: 220 40% 14% / 0.2;
+    --liquid-glass-border: 210 40% 98% / 0.15;
+    --liquid-glass-blur: 40px;
+    --liquid-glass-shimmer: linear-gradient(135deg, hsl(210 40% 98% / 0.08) 0%, hsl(210 40% 98% / 0) 50%, hsl(210 40% 98% / 0.08) 100%);
     
     --shadow-vibrant: 0 20px 60px -15px hsl(270 85% 65% / 0.5);
     --shadow-glow: 0 0 40px hsl(270 90% 70% / 0.4);
     --shadow-accent: 0 10px 40px -10px hsl(180 90% 60% / 0.4);
     --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.25);
+    --shadow-liquid: 0 8px 32px -4px rgb(0 0 0 / 0.3), 0 20px 48px -8px rgb(0 0 0 / 0.2), inset 0 1px 0 0 rgb(255 255 255 / 0.05);
 
     /* ==== Finityo Glass – Palette & helpers ==== */
     --fin-bg-a: 180 60% 12%;
@@ -210,36 +225,60 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* ==== Liquid Glass Utilities (iOS 26.1 Beta 2 Style) ==== */
   .glass {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--glass-border));
-    box-shadow: var(--glass-shadow);
+    background: hsla(var(--liquid-glass-bg));
+    backdrop-filter: blur(var(--liquid-glass-blur)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(180%);
+    border: 1px solid hsla(var(--liquid-glass-border));
+    box-shadow: var(--shadow-liquid);
     position: relative;
+    overflow: hidden;
+    transition: var(--transition-liquid);
   }
   
   .glass::before {
     content: '';
     position: absolute;
-    inset: -1px;
+    inset: -2px;
     border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      transparent 40%,
-      rgba(255, 255, 255, 0.4) 50%,
-      transparent 60%,
-      transparent 100%
-    );
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) content-box, 
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    animation: shine-border 3s linear infinite;
+    background: var(--liquid-glass-shimmer);
+    background-size: 200% 200%;
+    animation: liquid-shimmer 4s ease-in-out infinite;
+    opacity: 0;
     pointer-events: none;
+    z-index: 1;
+  }
+
+  .glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 50% 0%, hsla(var(--primary) / 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glass:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-liquid), 0 24px 56px -12px rgb(0 0 0 / 0.15);
+    border-color: hsla(var(--liquid-glass-border));
+  }
+
+  .glass:hover::before {
+    opacity: 1;
+  }
+
+  @keyframes liquid-shimmer {
+    0%, 100% { 
+      background-position: 0% 50%;
+      opacity: 0;
+    }
+    50% { 
+      background-position: 100% 50%;
+      opacity: 0.6;
+    }
   }
   
   .glass-card {
@@ -247,66 +286,34 @@ All colors MUST be HSL.
   }
   
   .glass-intense {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid hsl(var(--glass-border));
-    box-shadow: var(--glass-shadow);
+    background: hsla(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-blur)) saturate(200%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(200%);
+    border: 1px solid hsla(var(--liquid-glass-border));
+    box-shadow: var(--shadow-liquid);
     position: relative;
+    overflow: hidden;
   }
   
   .glass-intense::before {
     content: '';
     position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      transparent 40%,
-      rgba(255, 255, 255, 0.5) 50%,
-      transparent 60%,
-      transparent 100%
-    );
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) content-box, 
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    animation: shine-border 3s linear infinite;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, hsla(var(--primary) / 0.08) 0%, transparent 60%);
     pointer-events: none;
   }
-  
-  @keyframes shine-border {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
+
+  /* Liquid Glass Color Variants */
+  .liquid-glass-primary {
+    @apply glass;
+    background: linear-gradient(135deg, hsla(var(--primary) / 0.1) 0%, hsla(var(--liquid-glass-bg)) 100%);
+    border-color: hsla(var(--primary) / 0.2);
   }
-  
-  .dark .glass::before {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      transparent 40%,
-      rgba(255, 255, 255, 0.3) 50%,
-      transparent 60%,
-      transparent 100%
-    );
-  }
-  
-  .dark .glass-intense::before {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      transparent 40%,
-      rgba(255, 255, 255, 0.4) 50%,
-      transparent 60%,
-      transparent 100%
-    );
+
+  .liquid-glass-accent {
+    @apply glass;
+    background: linear-gradient(135deg, hsla(var(--accent) / 0.1) 0%, hsla(var(--liquid-glass-bg)) 100%);
+    border-color: hsla(var(--accent) / 0.2);
   }
   
   .bg-gradient-card {
