@@ -46,7 +46,6 @@ const Auth = () => {
   const [lastName, setLastName] = useState('');
   const [address, setAddress] = useState('');
   const [zipCode, setZipCode] = useState('');
-  const [phone, setPhone] = useState('');
   const {
     toast
   } = useToast();
@@ -133,8 +132,7 @@ const Auth = () => {
             first_name: firstName,
             last_name: lastName,
             address,
-            zip_code: zipCode,
-            phone
+            zip_code: zipCode
           }
         }
       });
@@ -159,7 +157,6 @@ const Auth = () => {
         setLastName('');
         setAddress('');
         setZipCode('');
-        setPhone('');
       }
     } catch (error: any) {
       toast({
@@ -406,11 +403,6 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input id="signup-email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-phone">Phone Number</Label>
-                    <Input id="signup-phone" type="tel" placeholder="+1234567890" value={phone} onChange={e => setPhone(e.target.value)} />
                   </div>
                   
                   <div className="space-y-2">
