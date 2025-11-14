@@ -252,24 +252,24 @@ export default function DebtsLive() {
 
       <div className="grid gap-4">
         {inputs.debts.map((debt) => (
-          <Card key={debt.id} className="p-4 hover:shadow-md transition-shadow">
+          <Card key={debt.id} className="p-4 hover:shadow-md transition-shadow bg-card/95 backdrop-blur-xl">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <h3 className="font-semibold text-lg text-finityo-textMain">{debt.name}</h3>
-                <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
+                <h3 className="font-bold text-xl text-finityo-textMain">{debt.name}</h3>
+                <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
                   <div>
-                    <div className="text-finityo-textBody">Balance</div>
-                    <div className="font-medium text-finityo-textMain">
+                    <div className="text-finityo-textBody font-medium">Balance</div>
+                    <div className="font-bold text-lg text-finityo-textMain">
                       ${debt.balance.toFixed(2)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-finityo-textBody">APR</div>
-                    <div className="font-medium text-finityo-textMain">{debt.apr.toFixed(1)}%</div>
+                    <div className="text-finityo-textBody font-medium">APR</div>
+                    <div className="font-bold text-lg text-finityo-textMain">{debt.apr.toFixed(1)}%</div>
                   </div>
                   <div>
-                    <div className="text-finityo-textBody">Min Payment</div>
-                    <div className="font-medium text-finityo-textMain">
+                    <div className="text-finityo-textBody font-medium">Min Payment</div>
+                    <div className="font-bold text-lg text-finityo-textMain">
                       ${debt.minPayment.toFixed(2)}
                     </div>
                   </div>
