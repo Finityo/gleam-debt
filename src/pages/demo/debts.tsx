@@ -1,6 +1,6 @@
 import { PageShell } from "@/components/PageShell";
 import NextBack from "@/components/NextBack";
-import { usePlan } from "@/context/PlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,32 +16,14 @@ const aprSchema = z.number().min(0, "APR must be positive").max(100, "APR must b
 const minPaymentSchema = z.number().min(0, "Minimum payment must be positive").max(1000000000, "Payment too large");
 
 export default function DemoDebts() {
-  const { debts, updateDebts } = usePlan();
+  const { inputs, setInputs, updateDebt: updateSingleDebt, addDebt: addNewDebt, removeDebt } = useDemoPlan();
   const navigate = useNavigate();
+  const debts = inputs.debts;
 
-  const addDebt = () => {
-    const next = [
-      ...debts,
-      {
-        id: crypto.randomUUID(),
-        name: "",
-        balance: 0,
-        apr: 0,
-        minPayment: 0,
-        dueDay: null,
-      },
-    ];
-    updateDebts(next);
-  };
-
-  const removeDebt = (id: string) => {
-    updateDebts(debts.filter((d) => d.id !== id));
-  };
+  const addDebt = () => addNewDebt();
 
   const update = (id: string, patch: any) => {
-    updateDebts(
-      debts.map((d) => (d.id === id ? { ...d, ...patch } : d))
-    );
+    updateSingleDebt(id, patch);
   };
 
   // Helper to display number value (empty string if 0)

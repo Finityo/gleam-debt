@@ -50,6 +50,63 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_actions: {
+        Row: {
+          action_type: string
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          label: string
+          payload: Json | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          label: string
+          payload?: Json | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          label?: string
+          payload?: Json | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coach_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coach_comments: {
         Row: {
           coach_name: string
@@ -105,6 +162,48 @@ export type Database = {
           id?: string
           one_time?: number | null
           strategy?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      debt_goals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          goal_type: string
+          id: string
+          label: string
+          status: string
+          strategy: string | null
+          target_date: string | null
+          target_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          goal_type: string
+          id?: string
+          label: string
+          status?: string
+          strategy?: string | null
+          target_date?: string | null
+          target_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          goal_type?: string
+          id?: string
+          label?: string
+          status?: string
+          strategy?: string | null
+          target_date?: string | null
+          target_value?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -227,6 +326,81 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_health_history: {
+        Row: {
+          created_at: string | null
+          id: number
+          score: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          score: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_health_scores: {
+        Row: {
+          created_at: string
+          factors: Json
+          id: string
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          factors?: Json
+          id?: string
+          score: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          factors?: Json
+          id?: string
+          score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      insight_settings: {
+        Row: {
+          anomaly_threshold: number | null
+          daily_alerts: boolean | null
+          ignored_categories: string[] | null
+          updated_at: string | null
+          user_id: string
+          weekly_reports: boolean | null
+        }
+        Insert: {
+          anomaly_threshold?: number | null
+          daily_alerts?: boolean | null
+          ignored_categories?: string[] | null
+          updated_at?: string | null
+          user_id: string
+          weekly_reports?: boolean | null
+        }
+        Update: {
+          anomaly_threshold?: number | null
+          daily_alerts?: boolean | null
+          ignored_categories?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+          weekly_reports?: boolean | null
+        }
+        Relationships: []
+      }
       otp_verification_attempts: {
         Row: {
           attempted_at: string | null
@@ -251,6 +425,33 @@ export type Database = {
           ip_address?: string | null
           phone?: string
           success?: boolean
+        }
+        Relationships: []
+      }
+      payoff_events: {
+        Row: {
+          created_at: string | null
+          event_date: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_date: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -733,6 +934,30 @@ export type Database = {
         }
         Relationships: []
       }
+      score_history: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          score: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          score: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       security_audit_log: {
         Row: {
           auto_fixed: boolean | null
@@ -760,6 +985,36 @@ export type Database = {
           id?: string
           metadata?: Json | null
           severity?: string
+        }
+        Relationships: []
+      }
+      share_cards: {
+        Row: {
+          card_type: string
+          created_at: string
+          id: string
+          payload: Json | null
+          subtitle: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          card_type: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          subtitle?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          card_type?: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          subtitle?: string | null
+          title?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -798,6 +1053,75 @@ export type Database = {
           status?: string
           subject?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category: string[] | null
+          created_at: string | null
+          date: string
+          id: string
+          merchant: string | null
+          raw: Json | null
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          category?: string[] | null
+          created_at?: string | null
+          date: string
+          id?: string
+          merchant?: string | null
+          raw?: Json | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category?: string[] | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          merchant?: string | null
+          raw?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_milestones: {
+        Row: {
+          achieved_at: string
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          level: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          level: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          level?: string
+          title?: string
           user_id?: string
         }
         Relationships: []
@@ -871,6 +1195,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_risk_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          id: string
+          message: string
+          resolved_at: string | null
+          severity: string
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          id?: string
+          message: string
+          resolved_at?: string | null
+          severity: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          resolved_at?: string | null
+          severity?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -888,6 +1242,36 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_spending_insights: {
+        Row: {
+          anomalies: Json | null
+          created_at: string
+          id: string
+          month: string
+          totals: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anomalies?: Json | null
+          created_at?: string
+          id?: string
+          month: string
+          totals?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anomalies?: Json | null
+          created_at?: string
+          id?: string
+          month?: string
+          totals?: Json
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

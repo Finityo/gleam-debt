@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { PageShell } from "@/components/PageShell";
 import NextBack from "@/components/NextBack";
-import { usePlan } from "@/context/PlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import {
 import { format } from "date-fns";
 
 export default function DemoChart() {
-  const { plan } = usePlan();
+  const { plan } = useDemoPlan();
   const navigate = useNavigate();
 
   const data = useMemo(() => {
@@ -28,9 +28,9 @@ export default function DemoChart() {
     const startDate = new Date();
 
     return plan.months.map((m) => {
-      cumulative += m.totalPaid;
+      cumulative += m.totals.outflow;
       const totalBalance = m.payments.reduce(
-        (sum, p) => sum + p.balanceEnd,
+        (sum, p) => sum + p.endingBalance,
         0
       );
       const monthDate = new Date(startDate.getFullYear(), startDate.getMonth() + m.monthIndex, 1);

@@ -1,6 +1,6 @@
 import { PageShell } from "@/components/PageShell";
 import NextBack from "@/components/NextBack";
-import { usePlan } from "@/context/PlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,8 +16,10 @@ import { z } from "zod";
 const extraPaymentSchema = z.number().min(0, "Payment must be positive").max(1000000000, "Amount too large");
 
 export default function DemoPlan() {
-  const { debts, settings, plan, updateSettings, compute } = usePlan();
+  const { inputs, setInputs, plan, compute } = useDemoPlan();
   const navigate = useNavigate();
+  const debts = inputs.debts;
+  const settings = { strategy: inputs.strategy, extraMonthly: inputs.extraMonthly, oneTimeExtra: inputs.oneTimeExtra };
 
   // Helper to display number value (empty string if 0)
   const displayValue = (val: number) => val === 0 ? "" : val.toString();
@@ -26,7 +28,7 @@ export default function DemoPlan() {
     compute();
     
     // Check if high interest and suggest upgrade
-    if (plan && plan.totalInterest > plan.totalPaid * 0.4) {
+    if (plan && plan.totals.interest > plan.totals.totalPaid * 0.4) {
       toast("You could save money with Ultimate's Avalanche coaching.");
     }
     
@@ -59,16 +61,18 @@ export default function DemoPlan() {
               <Input
                 type="number"
                 placeholder="0"
-                value={displayValue(settings.extraMonthly)}
-                onChange={(e) => {
-                  const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                  if (!isNaN(val)) {
-                    const validated = extraPaymentSchema.safeParse(val);
-                    if (validated.success) {
-                      updateSettings({ extraMonthly: val });
-                    }
+              value={displayValue(settings.extraMonthly)}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value) || 0;
+                try {
+                  extraPaymentSchema.parse(val);
+                  setInputs({ extraMonthly: val });
+                } catch (err) {
+                  if (err instanceof z.ZodError) {
+                    toast.error(err.issues[0].message);
                   }
-                }}
+                }
+              }}
               />
             </div>
 
@@ -81,23 +85,25 @@ export default function DemoPlan() {
               <Input
                 type="number"
                 placeholder="0"
-                value={displayValue(settings.oneTimeExtra)}
-                onChange={(e) => {
-                  const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                  if (!isNaN(val)) {
-                    const validated = extraPaymentSchema.safeParse(val);
-                    if (validated.success) {
-                      updateSettings({ oneTimeExtra: val });
-                    }
+              value={displayValue(settings.oneTimeExtra)}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value) || 0;
+                try {
+                  extraPaymentSchema.parse(val);
+                  setInputs({ oneTimeExtra: val });
+                } catch (err) {
+                  if (err instanceof z.ZodError) {
+                    toast.error(err.issues[0].message);
                   }
-                }}
+                }
+              }}
               />
             </div>
 
             {/* Strategy */}
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => updateSettings({ strategy: "snowball" })}
+                onClick={() => setInputs({ strategy: "snowball" })}
                 className={`p-4 rounded-xl border transition-all ${
                   settings.strategy === "snowball"
                     ? "bg-primary/10 border-primary"
@@ -109,7 +115,7 @@ export default function DemoPlan() {
               </button>
 
               <button
-                onClick={() => updateSettings({ strategy: "avalanche" })}
+                onClick={() => setInputs({ strategy: "avalanche" })}
                 className={`p-4 rounded-xl border transition-all ${
                   settings.strategy === "avalanche"
                     ? "bg-primary/10 border-primary"
@@ -184,7 +190,8 @@ export default function DemoPlan() {
           </div>
         </PopIn>
 
-        <CoachDrawer plan={plan} />
+        {/* CoachDrawer disabled - requires DebtPlan type */}
+        {/* <CoachDrawer plan={plan} /> */}
       </div>
     </PageShell>
   );

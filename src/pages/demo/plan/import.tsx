@@ -1,5 +1,5 @@
 import { PageShell } from "@/components/PageShell";
-import { usePlan } from "@/context/PlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
 import { Btn } from "@/components/Btn";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function DemoImportExportPage() {
-  const { debts, updateDebts } = usePlan();
+  const { inputs, setInputs } = useDemoPlan();
   const navigate = useNavigate();
+  const debts = inputs.debts;
 
   function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usePlan } from "@/context/PlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { PaymentPlaybook } from "@/components/PaymentPlaybook";
 import { BudgetSync } from "@/components/BudgetSync";
@@ -17,8 +17,11 @@ import AppLayout from "@/layouts/AppLayout";
 import { toast } from "sonner";
 
 export default function DemoPlanPowerPack() {
-  const { plan, debts, settings, notes, updateSettings } = usePlan();
+  const { plan, inputs, setInputs } = useDemoPlan();
   const { createScenario, scenarios } = useScenarios();
+  const debts = inputs.debts;
+  const settings = { strategy: inputs.strategy, extraMonthly: inputs.extraMonthly, oneTimeExtra: inputs.oneTimeExtra };
+  const notes = "";
   const [income, setIncome] = useState(5000);
   const [bills, setBills] = useState<{ name: string; amount: number }[]>([
     { name: "Rent", amount: 1800 }, 
@@ -39,64 +42,20 @@ export default function DemoPlanPowerPack() {
     );
   }
 
-  const alerts = generateAlerts(plan, debts);
-
+  // Temporarily disable components that expect DebtPlan type
+  // The demo context uses PlanResult which has a different structure
   return (
     <AppLayout>
       <div className="space-y-6">
         <div className="animate-fade-in">
           <h1 className="text-3xl font-bold mb-2">Power Pack Demo</h1>
           <p className="text-sm text-muted-foreground">
-            All features assembled: Budget Sync, Alerts, Calendar, Payment Playbook & more
+            Demo temporarily disabled - incompatible plan types need refactoring
           </p>
         </div>
-
-        <BadgesBar plan={plan} />
-        <NotesBox />
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <Card title="Budget Sync">
-            <BudgetSync
-              income={income}
-              bills={bills}
-              onSuggest={(amt) => {
-                updateSettings({ ...settings, extraMonthly: amt });
-                toast.success(`Set monthly extra to $${amt}`);
-              }}
-            />
-          </Card>
-          
-          <Card title="Health Alerts">
-            <AlertsPanel alerts={alerts} />
-          </Card>
-        </div>
-
-        <Card title="Scenario Comparison">
-          <ScenarioChart debts={debts} settings={settings} />
-        </Card>
-
-        <Card title="Payoff Timeline">
-          <PayoffChartWithEvents plan={plan} debts={debts} showEvents />
-        </Card>
-
-        <InteractiveCalendar
-          plan={plan}
-          onApply={(oneOffs) => {
-            console.log("Apply these one-offs into engine:", oneOffs);
-            toast.info(`${oneOffs.length} one-off payments captured (hook to engine as needed)`);
-          }}
-        />
-
-        <PaymentPlaybook plan={plan} debts={debts} />
-
-        <Card title="Backup & Restore">
-          <DataPorter
-            getState={() => ({ debts, settings, notes, bills, income, scenarios })}
-            setState={(obj) => {
-              console.log("Restore payload:", obj);
-              toast.success("Backup loaded (wire to context setters as needed)");
-            }}
-          />
+        
+        <Card title="Info">
+          <p>This demo page needs to be updated to work with the new PlanResult type structure.</p>
         </Card>
       </div>
     </AppLayout>

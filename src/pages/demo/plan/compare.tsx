@@ -1,5 +1,5 @@
 import { PageShell } from "@/components/PageShell";
-import { usePlan } from "@/context/PlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,10 @@ import { Btn } from "@/components/Btn";
 import { computeDebtPlan } from "@/lib/computeDebtPlan";
 
 export default function DemoComparePage() {
-  const { debts, settings } = usePlan();
+  const { inputs } = useDemoPlan();
   const navigate = useNavigate();
+  const debts = inputs.debts;
+  const settings = { strategy: inputs.strategy, extraMonthly: inputs.extraMonthly, oneTimeExtra: inputs.oneTimeExtra };
 
   // Compute both approaches fresh
   const snow = computeDebtPlan(debts, { ...settings, strategy: "snowball" });

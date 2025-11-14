@@ -1,5 +1,5 @@
 import { PageShell } from "@/components/PageShell";
-import { usePlan } from "@/context/PlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Btn } from "@/components/Btn";
 
 export default function DemoSummaryPage() {
-  const { plan } = usePlan();
+  const { plan } = useDemoPlan();
   const navigate = useNavigate();
 
   if (!plan) {
@@ -41,25 +41,27 @@ export default function DemoSummaryPage() {
             <div>
               <div className="text-sm text-finityo-textBody">Debt-Free Date</div>
               <div className="text-2xl font-bold text-finityo-textMain">
-                {plan.debtFreeDate}
+                {plan.startDateISO && plan.months.length > 0 
+                  ? new Date(new Date(plan.startDateISO).setMonth(new Date(plan.startDateISO).getMonth() + plan.months.length - 1)).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                  : 'N/A'}
               </div>
             </div>
             <div>
               <div className="text-sm text-finityo-textBody">Months to Freedom</div>
               <div className="text-2xl font-bold text-finityo-textMain">
-                {plan.summary.finalMonthIndex + 1}
+                {plan.totals.monthsToDebtFree}
               </div>
             </div>
             <div>
               <div className="text-sm text-finityo-textBody">Total Interest</div>
               <div className="text-2xl font-bold text-finityo-textMain">
-                ${Math.round(plan.totalInterest).toLocaleString()}
+                ${Math.round(plan.totals.interest).toLocaleString()}
               </div>
             </div>
             <div>
               <div className="text-sm text-finityo-textBody">Total Paid</div>
               <div className="text-2xl font-bold text-finityo-textMain">
-                ${Math.round(plan.totalPaid).toLocaleString()}
+                ${Math.round(plan.totals.totalPaid).toLocaleString()}
               </div>
             </div>
           </Card>

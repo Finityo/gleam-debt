@@ -1,5 +1,5 @@
 import { PageShell } from "@/components/PageShell";
-import { usePlan } from "@/context/PlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 import { PopIn } from "@/components/Animate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,9 @@ import { Btn } from "@/components/Btn";
 import { format, addMonths } from "date-fns";
 
 export default function DemoPayoffCalendarPage() {
-  const { plan, debts } = usePlan();
+  const { plan, inputs } = useDemoPlan();
   const navigate = useNavigate();
+  const debts = inputs.debts;
 
   if (!plan) {
     return (
@@ -41,7 +42,7 @@ export default function DemoPayoffCalendarPage() {
           <div className="space-y-4">
             {plan.months.map((m, idx) => {
               const totalBalance = m.payments.reduce(
-                (sum, p) => sum + p.balanceEnd,
+                (sum, p) => sum + p.endingBalance,
                 0
               );
               
@@ -60,7 +61,7 @@ export default function DemoPayoffCalendarPage() {
                     Remaining balance: ${Math.round(totalBalance).toLocaleString()}
                   </div>
                   <div className="text-xs text-finityo-textBody">
-                    Outflow: ${Math.round(m.totalPaid).toLocaleString()}
+                    Outflow: ${Math.round(m.totals.outflow).toLocaleString()}
                   </div>
 
                   <details className="mt-3 text-xs">
@@ -72,7 +73,7 @@ export default function DemoPayoffCalendarPage() {
                         const debt = debts.find(d => d.id === p.debtId);
                         return (
                           <li key={p.debtId} className="text-finityo-textBody">
-                            {debt?.name || 'Unknown'}: ${Math.round(p.balanceEnd).toLocaleString()}
+                            {debt?.name || 'Unknown'}: ${Math.round(p.endingBalance).toLocaleString()}
                           </li>
                         );
                       })}
