@@ -110,6 +110,19 @@ Deno.serve(async (req) => {
 
     if (upsertError) throw upsertError;
 
+    // Append to history table
+    const { error: historyError } = await supabase
+      .from('financial_health_history')
+      .insert({
+        user_id: user.id,
+        score: finalScore
+      });
+
+    if (historyError) {
+      console.error('Error appending to history:', historyError);
+      // Don't fail the request if history insert fails
+    }
+
     return new Response(
       JSON.stringify({ score: finalScore, factors }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
