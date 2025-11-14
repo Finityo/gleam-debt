@@ -252,35 +252,36 @@ export default function DebtsLive() {
 
       <div className="grid gap-4">
         {inputs.debts.map((debt) => (
-          <Card key={debt.id} className="p-4 hover:shadow-md transition-shadow bg-card/95 backdrop-blur-xl">
+          <div key={debt.id} className="glass-card p-6 animate-fade-in">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <h3 className="font-bold text-xl text-finityo-textMain">{debt.name}</h3>
-                <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
+                <h3 className="font-bold text-xl text-foreground mb-4">{debt.name}</h3>
+                <div className="grid grid-cols-3 gap-6">
                   <div>
-                    <div className="text-finityo-textBody font-medium">Balance</div>
-                    <div className="font-bold text-lg text-finityo-textMain">
+                    <div className="text-foreground/60 text-sm font-medium mb-1">Balance</div>
+                    <div className="font-bold text-2xl bg-gradient-primary bg-clip-text text-transparent">
                       ${debt.balance.toFixed(2)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-finityo-textBody font-medium">APR</div>
-                    <div className="font-bold text-lg text-finityo-textMain">{debt.apr.toFixed(1)}%</div>
+                    <div className="text-foreground/60 text-sm font-medium mb-1">APR</div>
+                    <div className="font-bold text-2xl text-accent">{debt.apr.toFixed(1)}%</div>
                   </div>
                   <div>
-                    <div className="text-finityo-textBody font-medium">Min Payment</div>
-                    <div className="font-bold text-lg text-finityo-textMain">
+                    <div className="text-foreground/60 text-sm font-medium mb-1">Min Payment</div>
+                    <div className="font-bold text-2xl text-foreground">
                       ${debt.minPayment.toFixed(2)}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 ml-4">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setEditingDebt(debt)}
+                  className="glass hover:shadow-glow"
                 >
                   <Edit2 className="h-4 w-4 mr-1" />
                   Edit
@@ -290,13 +291,13 @@ export default function DebtsLive() {
                   variant="outline"
                   size="icon"
                   onClick={() => handleDelete(debt.id)}
-                  className="text-destructive"
+                  className="text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-          </Card>
+          </div>
         ))}
       </div>
 
