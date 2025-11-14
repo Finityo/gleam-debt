@@ -39,7 +39,7 @@ export default function SignUp() {
     try {
       await signUp(email, password, firstName, lastName);
       toast.success("Account created successfully!");
-      navigate("/plan");
+      navigate("/dashboard");
     } catch (error: any) {
       console.error("Sign up error:", error);
       if (error.message?.includes("already registered")) {

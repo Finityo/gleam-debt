@@ -35,7 +35,7 @@ export default function SignIn() {
     try {
       await signIn(email, password);
       toast.success("Signed in successfully");
-      navigate("/plan");
+      navigate("/dashboard");
     } catch (error: any) {
       console.error("Sign in error:", error);
       if (error.message?.includes("Invalid login credentials")) {
