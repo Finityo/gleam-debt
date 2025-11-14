@@ -21,20 +21,7 @@ export function useFinancialHealth() {
       setLoading(true);
       setError(null);
 
-      // First try to get cached score
-      const { data: cached } = await supabase
-        .from('financial_health_scores')
-        .select('*')
-        .single();
-
-      if (cached) {
-        setScore({
-          score: cached.score,
-          factors: cached.factors as any
-        });
-      }
-
-      // Then compute fresh score
+      // Compute fresh score
       const { data, error: invokeError } = await supabase.functions.invoke('compute-financial-health');
       
       if (invokeError) throw invokeError;
