@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRecommendations, Recommendation } from '@/hooks/useRecommendations';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -91,7 +92,19 @@ const RecommendationItem: React.FC<RecommendationItemProps> = ({ recommendation,
 };
 
 export const RecommendationsCard: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { data, loading, error } = useRecommendations();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+  }, []);
+
+  // Don't show when not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const handleApplyRecommendation = (rec: Recommendation) => {
     console.log('Applying recommendation:', rec);
