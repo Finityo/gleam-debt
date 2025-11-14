@@ -65,8 +65,19 @@ export default function DebtsPage() {
         return;
       }
 
+      // Sort based on strategy
+      const sortedDebts = parsed.sort((a, b) => {
+        if (state.settings.strategy === "snowball") {
+          // Snowball: smallest balance first
+          return a.balance - b.balance;
+        } else {
+          // Avalanche: highest APR first
+          return b.apr - a.apr;
+        }
+      });
+
       // Add imported debts
-      parsed.forEach((debt) => {
+      sortedDebts.forEach((debt) => {
         addDebt({
           name: debt.name,
           balance: debt.balance,
@@ -76,7 +87,9 @@ export default function DebtsPage() {
       });
 
       setShowImport(false);
-      toast.success(`Imported ${parsed.length} debt(s)`);
+      toast.success(
+        `Imported ${parsed.length} debt(s) sorted by ${state.settings.strategy} method`
+      );
     } catch (error) {
       console.error("Import error:", error);
       toast.error("Failed to import Excel file");

@@ -76,7 +76,18 @@ export default function DebtsLive() {
         return;
       }
 
-      const imported = parsed.map((d) => ({
+      // Sort based on strategy
+      const sortedDebts = parsed.sort((a, b) => {
+        if (inputs.strategy === "snowball") {
+          // Snowball: smallest balance first
+          return a.balance - b.balance;
+        } else {
+          // Avalanche: highest APR first
+          return b.apr - a.apr;
+        }
+      });
+
+      const imported = sortedDebts.map((d) => ({
         id: crypto.randomUUID(),
         name: d.name,
         balance: d.balance,
@@ -87,7 +98,9 @@ export default function DebtsLive() {
 
       setInputs({ debts: [...inputs.debts, ...imported] });
       setShowImport(false);
-      toast.success(`Imported ${parsed.length} debt(s)`);
+      toast.success(
+        `Imported ${parsed.length} debt(s) sorted by ${inputs.strategy} method`
+      );
     } catch (error) {
       console.error("Import error:", error);
       toast.error("Failed to import Excel file");
