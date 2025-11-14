@@ -9,12 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { z } from 'zod';
-import { Smartphone, Mail } from 'lucide-react';
 import { PasswordStrengthIndicator, validatePasswordStrength } from '@/components/PasswordStrengthIndicator';
 import { DEMO } from '@/config/demo';
+
 const emailSchema = z.string().email('Invalid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
-const phoneSchema = z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format (use international format, e.g., +1234567890)');
 
 const Auth = () => {
   // 🚀 Early return for demo mode
@@ -32,13 +31,9 @@ const Auth = () => {
   const params = new URLSearchParams(window.location.search);
   const urlMode = params.get('mode');
   
-  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [currentTab, setCurrentTab] = useState(urlMode === 'signin' ? 'signin' : 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -51,6 +46,7 @@ const Auth = () => {
   const [lastName, setLastName] = useState('');
   const [address, setAddress] = useState('');
   const [zipCode, setZipCode] = useState('');
+  const [phone, setPhone] = useState('');
   const {
     toast
   } = useToast();
@@ -175,155 +171,6 @@ const Auth = () => {
       setLoading(false);
     }
   };
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      phoneSchema.parse(phone);
-    } catch (error: any) {
-      toast({
-        title: 'Validation Error',
-        description: error.errors?.[0]?.message || 'Invalid phone number',
-        variant: 'destructive'
-      });
-      return;
-    }
-    setLoading(true);
-    try {
-      const {
-        error
-      } = await supabase.auth.signInWithOtp({
-        phone
-      });
-      if (error) throw error;
-      setOtpSent(true);
-      toast({
-        title: 'OTP Sent',
-        description: 'Check your phone for the verification code'
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to send OTP',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      // Use server-side OTP verification with rate limiting
-      const { data, error } = await supabase.functions.invoke('verify-phone-otp', {
-        body: { phone, otp }
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        // Handle rate limiting or verification errors
-        throw new Error(data.error);
-      }
-
-      // Set the session from the response
-      if (data.session) {
-        await supabase.auth.setSession(data.session);
-      }
-
-      toast({
-        title: 'Success!',
-        description: 'Signed in successfully'
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Invalid verification code',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      emailSchema.parse(resetEmail);
-    } catch (error: any) {
-      toast({
-        title: 'Validation Error',
-        description: error.errors?.[0]?.message || 'Invalid email',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Email Sent',
-        description: 'Check your email for the password reset link'
-      });
-      setShowForgotPassword(false);
-      setResetEmail('');
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to send reset email',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      passwordSchema.parse(newPassword);
-    } catch (error: any) {
-      toast({
-        title: 'Validation Error',
-        description: error.errors?.[0]?.message || 'Invalid password',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success!',
-        description: 'Your password has been reset. You can now sign in.'
-      });
-      
-      setShowResetPassword(false);
-      setNewPassword('');
-      navigate('/dashboard');
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to reset password',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -369,6 +216,88 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate email
+    try {
+      emailSchema.parse(resetEmail);
+    } catch (error: any) {
+      toast({
+        title: 'Validation Error',
+        description: error.errors?.[0]?.message || 'Invalid email',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth?reset=true`
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Check your email',
+        description: 'Password reset link has been sent to your email'
+      });
+      setShowForgotPassword(false);
+      setResetEmail('');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to send reset email',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate password
+    try {
+      passwordSchema.parse(newPassword);
+    } catch (error: any) {
+      toast({
+        title: 'Validation Error',
+        description: error.errors?.[0]?.message || 'Invalid password',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success!',
+        description: 'Password has been reset successfully'
+      });
+      setShowResetPassword(false);
+      setNewPassword('');
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to reset password',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
@@ -376,14 +305,7 @@ const Auth = () => {
           <CardDescription>Connect your accounts and start crushing debt</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-6">
-            <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg">
-              
-              
-            </div>
-          </div>
-
-          {authMethod === 'email' ? (
+          {
             showResetPassword ? (
               <div className="space-y-4">
                 <div className="text-center mb-4">
@@ -534,31 +456,7 @@ const Auth = () => {
               </TabsContent>
             </Tabs>
             )
-          ) : <div className="space-y-4">
-              {!otpSent ? <form onSubmit={handleSendOTP} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" placeholder="+1234567890" value={phone} onChange={e => setPhone(e.target.value)} required />
-                    <p className="text-xs text-muted-foreground">
-                      Use international format (e.g., +1 for US)
-                    </p>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Sending...' : 'Send Verification Code'}
-                  </Button>
-                </form> : <form onSubmit={handleVerifyOTP} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="otp">Verification Code</Label>
-                    <Input id="otp" type="text" placeholder="Enter 6-digit code" value={otp} onChange={e => setOtp(e.target.value)} required maxLength={6} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Verifying...' : 'Verify & Sign In'}
-                  </Button>
-                  <Button type="button" variant="ghost" className="w-full" onClick={() => setOtpSent(false)}>
-                    Use different number
-                  </Button>
-                </form>}
-            </div>}
+          }
         </CardContent>
       </Card>
     </div>;
