@@ -391,6 +391,19 @@ export const CoachRecommendationsPanel: React.FC = () => {
 };
 
 export const SmartPayoffSuite: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+  }, []);
+
+  // Don't show when not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
       <SmartRecommendationsCard />

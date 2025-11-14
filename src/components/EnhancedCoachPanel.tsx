@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -7,8 +8,20 @@ import { useRecommendations } from '@/hooks/useRecommendations';
 import { MessageSquare, Lightbulb, Calculator, TrendingUp } from 'lucide-react';
 
 export const EnhancedCoachPanel: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { data: recommendations, loading } = useRecommendations();
   const [activeTab, setActiveTab] = useState('insights');
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+  }, []);
+
+  // Don't show when not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const getRecommendationExplanation = (type: string) => {
     switch (type) {
