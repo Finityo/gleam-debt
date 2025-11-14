@@ -52,6 +52,14 @@ function useEdgeFunction<T>(name: string, payload?: any) {
     (async () => {
       try {
         setLoading(true);
+        
+        // Check if user is authenticated first
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          if (!cancelled) setError('Not authenticated');
+          return;
+        }
+
         const { data, error } = await supabase.functions.invoke(name, { body: payload ?? {} });
         if (error) throw error;
         if (!cancelled) setData(data as T);

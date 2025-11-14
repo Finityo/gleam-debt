@@ -35,6 +35,14 @@ export function useRecommendations() {
       setLoading(true);
       setError(null);
 
+      // Check if user is authenticated first
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Not authenticated');
+        setLoading(false);
+        return;
+      }
+
       const { data: response, error: invokeError } = await supabase.functions.invoke('generate-recommendations');
       
       if (invokeError) throw invokeError;
