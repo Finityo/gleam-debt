@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { usePlan } from "@/context/PlanContext";
-import { Strategy } from "@/lib/computeDebtPlan";
+import { Strategy, Debt } from "@/lib/computeDebtPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,32 @@ import { useNavigate } from "react-router-dom";
 // Helper to format APR
 const formatAPR = (apr: number) => `${apr.toFixed(2)}%`;
 
+// Sort debts by strategy (same logic as the engine)
+const sortDebtsByStrategy = (debts: Debt[], strategy: Strategy): Debt[] => {
+  const active = debts.filter(d => (d.include ?? true) && d.balance > 0);
+  const inactive = debts.filter(d => !(d.include ?? true) || d.balance <= 0);
+  
+  let sorted: Debt[];
+  if (strategy === "snowball") {
+    // Snowball: smallest balance first, tiebreaker APR desc
+    sorted = active.sort((a, b) =>
+      a.balance !== b.balance
+        ? a.balance - b.balance
+        : b.apr - a.apr
+    );
+  } else {
+    // Avalanche: highest APR first, tiebreaker balance asc
+    sorted = active.sort((a, b) =>
+      a.apr !== b.apr
+        ? b.apr - a.apr
+        : a.balance - b.balance
+    );
+  }
+  
+  // Return sorted active debts followed by inactive ones
+  return [...sorted, ...inactive];
+};
+
 export default function DebtPlanPage() {
   const { debts, settings, plan, updateSettings, compute, reset } = usePlan();
   const navigate = useNavigate();
@@ -22,6 +48,12 @@ export default function DebtPlanPage() {
   const totalMins = useMemo(
     () => debts.filter(d => d.include !== false).reduce((a, d) => a + d.minPayment, 0),
     [debts]
+  );
+
+  // Sort debts by strategy after plan is computed
+  const sortedDebts = useMemo(
+    () => plan ? sortDebtsByStrategy(debts, settings.strategy) : debts,
+    [debts, settings.strategy, plan]
   );
 
   return (
@@ -318,7 +350,7 @@ export default function DebtPlanPage() {
             </tr>
           </thead>
           <tbody>
-            {debts.map((d, i) => {
+            {sortedDebts.map((d, i) => {
               // Calculate totals from plan if available
               const debtPayments = plan?.months.flatMap(m => m.payments.filter(p => p.debtId === d.id)) || [];
               const totalInterest = debtPayments.reduce((sum, p) => sum + p.interest, 0);
@@ -326,17 +358,23 @@ export default function DebtPlanPage() {
               const payoffMonth = plan?.months.find(m => 
                 m.payments.some(p => p.debtId === d.id && p.balanceEnd <= 0.01 && p.paid > 0)
               );
+              const isActive = (d.include ?? true) && d.balance > 0;
               
               return (
-                <tr key={i} className="border-b hover:bg-muted/50">
-                  <td className="p-3">{d.name}</td>
+                <tr key={d.id} className="border-b hover:bg-muted/50">
+                  <td className="p-3 font-medium">
+                    {isActive && plan && (
+                      <span className="inline-block w-8 text-primary font-bold">#{i + 1}</span>
+                    )}
+                    {d.name}
+                  </td>
                   <td className="text-right p-3">{formatAPR(d.apr)}</td>
                   <td className="text-right p-3">${d.minPayment.toFixed(2)}</td>
                   <td className="text-right p-3">${d.balance.toFixed(2)}</td>
                   <td className="p-3">{payoffMonth ? `Month ${payoffMonth.monthIndex + 1}` : ""}</td>
                   <td className="text-right p-3">${totalInterest.toFixed(2)}</td>
                   <td className="text-right p-3">${totalPaid.toFixed(2)}</td>
-                  <td className="text-center p-3">{d.include !== false ? "Yes" : "No"}</td>
+                  <td className="text-center p-3">{d.include !== false ? "✅" : "❌"}</td>
                 </tr>
               );
             })}
