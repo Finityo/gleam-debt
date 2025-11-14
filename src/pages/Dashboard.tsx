@@ -11,7 +11,7 @@ import { ConnectedAccountsList } from '@/components/ConnectedAccountsList';
 import { PlaidAnalytics } from '@/components/PlaidAnalytics';
 import { ActivityLog } from '@/components/ActivityLog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Share2, Award, MessageSquare, Settings, AlertCircle, CreditCard, Crown } from 'lucide-react';
+import { Loader2, LogOut, PieChart, Calculator, User as UserIcon, Bot, Calendar, FileText, UserCircle, Share2, Award, MessageSquare, Settings, AlertCircle, CreditCard, Crown, Building2 } from 'lucide-react';
 import { PrintExportButton } from '@/components/PrintExportButton';
 import { PlanVersionHistory } from '@/components/PlanVersionHistory';
 import type { User, Session } from '@supabase/supabase-js';
@@ -187,6 +187,14 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex gap-2 no-print">
+              <Button 
+                size="sm" 
+                onClick={() => navigate('/plaid-connect')}
+                className="bg-gradient-to-r from-cyan-600 via-teal-600 to-cyan-600 hover:from-cyan-500 hover:via-teal-500 hover:to-cyan-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 border-0 transition-all duration-300"
+              >
+                <Building2 className="w-4 h-4 mr-2" />
+                Connect Bank
+              </Button>
               <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
