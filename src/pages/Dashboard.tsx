@@ -28,6 +28,7 @@ import SmartPayoffSuite from '@/features/SmartPayoffSuite';
 import ImpactSuite from '@/features/ImpactSuite';
 import EngagementSuite from '@/features/EngagementSuite';
 import IntelligenceSuite from '@/features/IntelligenceSuite';
+import { DEMO } from '@/config/demo';
 
 interface Account {
   id: string;
@@ -285,7 +286,7 @@ const Dashboard = () => {
         
         <EngagementSuite />
         
-        <IntelligenceSuite />
+        {!DEMO && <IntelligenceSuite />}
         
         <div className="mt-6">
           <EnhancedCoachPanel />
