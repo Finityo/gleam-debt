@@ -76,15 +76,15 @@ export default function DebtsPage() {
         }
       });
 
-      // Add imported debts
-      sortedDebts.forEach((debt) => {
-        addDebt({
+      // Add imported debts to both storage systems
+      for (const debt of sortedDebts) {
+        await addDebt({
           name: debt.name,
           balance: debt.balance,
           apr: debt.apr,
           minPayment: debt.minPayment,
         });
-      });
+      }
 
       setShowImport(false);
       toast.success(
