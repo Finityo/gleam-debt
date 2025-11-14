@@ -1,5 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+// src/features/IntelligenceSuite.tsx
+
+import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+
+/* ============================================================
+   Shared types
+   ============================================================ */
 
 type CoachReply = {
   reply: string;
@@ -12,10 +18,10 @@ type PaceResponse = {
   projected_months: number | null;
   goal_target_date: string | null;
   pace_status: "ahead" | "on_track" | "behind" | "no_goal";
-  days_delta: number | null;
+  days_delta: number | null; // positive = ahead, negative = behind
   total_debts_estimate: number;
   closed_debts: number;
-  progress_pct: number;
+  progress_pct: number; // 0–100
 };
 
 type ScoreSnapshot = {
@@ -37,6 +43,12 @@ type ShareCardResponse = {
   hashtags: string[];
 };
 
+type ChatMessage = {
+  id: string;
+  role: "user" | "coach";
+  content: string;
+};
+
 function useEdgeFunction<T>(name: string, payload?: any) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -47,26 +59,6 @@ function useEdgeFunction<T>(name: string, payload?: any) {
     (async () => {
       try {
         setLoading(true);
-        setError(null);
-        
-        // Wait for session to be ready
-        let session = null;
-        let retries = 0;
-        while (!session && retries < 3 && !cancelled) {
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          session = currentSession;
-          if (!session && retries < 2) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            retries++;
-          }
-        }
-        
-        if (!session) {
-          if (!cancelled) setError('Not authenticated');
-          if (!cancelled) setLoading(false);
-          return;
-        }
-
         const { data, error } = await supabase.functions.invoke(name, {
           body: payload ?? {}
         });
@@ -86,13 +78,9 @@ function useEdgeFunction<T>(name: string, payload?: any) {
   return { data, loading, error, setData };
 }
 
-/* ---------------- CoachChat ---------------- */
-
-type ChatMessage = {
-  id: string;
-  role: "user" | "coach";
-  content: string;
-};
+/* ============================================================
+   CoachChat – Ask-The-Coach UI
+   ============================================================ */
 
 const CoachChat: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -122,11 +110,13 @@ const CoachChat: React.FC = () => {
     const trimmed = input.trim();
     if (!trimmed) return;
     setError(null);
+
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       role: "user",
       content: trimmed
     };
+
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setSending(true);
@@ -142,6 +132,7 @@ const CoachChat: React.FC = () => {
         }
       );
       if (error) throw error;
+
       const reply = data as CoachReply;
       const coachMsg: ChatMessage = {
         id: `coach-${Date.now()}`,
@@ -157,7 +148,7 @@ const CoachChat: React.FC = () => {
   };
 
   return (
-    <div className="rounded-2xl border border-cyan-500/40 bg-neutral-900/70 p-4 md:p-5 shadow-lg shadow-cyan-500/25 flex flex-col h-full min-h-[500px]">
+    <div className="flex h-full flex-col rounded-2xl border border-cyan-500/40 bg-neutral-900/70 p-4 shadow-lg shadow-cyan-500/25 md:p-5">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-cyan-300">
         Coach Chat
       </h3>
@@ -175,8 +166,8 @@ const CoachChat: React.FC = () => {
             key={m.id}
             className={`max-w-full whitespace-pre-line rounded-lg px-3 py-2 ${
               m.role === "user"
-                ? "ml-auto bg-cyan-600/30 text-cyan-100 max-w-[80%]"
-                : "mr-auto bg-neutral-800 text-neutral-100 max-w-[90%]"
+                ? "ml-auto bg-cyan-600/30 text-cyan-100"
+                : "mr-auto bg-neutral-800 text-neutral-100"
             }`}
           >
             {m.content}
@@ -222,8 +213,9 @@ const CoachChat: React.FC = () => {
   );
 };
 
-
-/* ---------------- PaceMonitorCard ---------------- */
+/* ============================================================
+   PaceMonitorCard – Ahead / On Track / Behind
+   ============================================================ */
 
 const PaceMonitorCard: React.FC = () => {
   const { data, loading, error } =
@@ -292,7 +284,7 @@ const PaceMonitorCard: React.FC = () => {
   }
 
   return (
-    <div className="rounded-2xl border border-lime-500/40 bg-neutral-900/70 p-4 md:p-5 shadow-lg shadow-lime-500/25">
+    <div className="rounded-2xl border border-lime-500/40 bg-neutral-900/70 p-4 shadow-lg shadow-lime-500/25 md:p-5">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-lime-300">
         Pace Monitor
       </h3>
@@ -365,8 +357,9 @@ const PaceMonitorCard: React.FC = () => {
   );
 };
 
-
-/* ---------------- ScoreHistoryCard ---------------- */
+/* ============================================================
+   ScoreHistoryCard – Health score snapshots
+   ============================================================ */
 
 const ScoreHistoryCard: React.FC = () => {
   const { data, loading, error, setData } =
@@ -374,6 +367,7 @@ const ScoreHistoryCard: React.FC = () => {
       mode: "list",
       limit: 12
     });
+
   const [recording, setRecording] = useState(false);
   const [recError, setRecError] = useState<string | null>(null);
 
@@ -384,20 +378,21 @@ const ScoreHistoryCard: React.FC = () => {
     try {
       setRecording(true);
       setRecError(null);
+
       const { error } = await supabase.functions.invoke("score-history", {
         body: { mode: "record" }
       });
       if (error) throw error;
-      
-      // Refresh list
-      const { data: refreshed, error: refreshError } = await supabase.functions.invoke("score-history", {
-        body: { mode: "list", limit: 12 }
-      });
-      if (!refreshError) {
-        setData(refreshed as ScoreHistoryResponse);
-      }
+
+      const { data: refreshed, error: refreshError } =
+        await supabase.functions.invoke("score-history", {
+          body: { mode: "list", limit: 12 }
+        });
+      if (refreshError) throw refreshError;
+
+      setData(refreshed as ScoreHistoryResponse);
     } catch (e: any) {
-      setRecError(e.message ?? "Could not record snapshot.");
+      setRecError(e.message ?? "Could not record score.");
     } finally {
       setRecording(false);
     }
@@ -405,7 +400,7 @@ const ScoreHistoryCard: React.FC = () => {
 
   if (loading && !data) {
     return (
-      <div className="rounded-2xl border border-indigo-800 bg-neutral-900/60 p-4 md:p-5">
+      <div className="rounded-2xl border border-fuchsia-800 bg-neutral-900/60 p-4 md:p-5">
         <div className="mb-2 h-4 w-40 animate-pulse rounded bg-neutral-800" />
         <div className="h-4 w-3/4 animate-pulse rounded bg-neutral-800" />
         <div className="mt-2 h-4 w-1/2 animate-pulse rounded bg-neutral-800" />
@@ -415,20 +410,34 @@ const ScoreHistoryCard: React.FC = () => {
 
   if (error && !data) {
     return (
-      <div className="rounded-2xl border border-indigo-600/60 bg-indigo-950/40 p-4 md:p-5 text-xs text-indigo-100">
-        <div className="text-sm font-semibold">Score History</div>
-        <p className="mt-2">We couldn&apos;t load your score history.</p>
+      <div className="rounded-2xl border border-fuchsia-600/60 bg-fuchsia-950/40 p-4 md:p-5 text-xs text-fuchsia-100">
+        <div className="text-sm font-semibold">
+          Financial Health History
+        </div>
+        <p className="mt-2">
+          We couldn&apos;t load your score history yet.
+        </p>
       </div>
     );
   }
 
+  const minScore =
+    snapshots.length > 0
+      ? Math.min(...snapshots.map((s) => Number(s.score)))
+      : 0;
+  const maxScore =
+    snapshots.length > 0
+      ? Math.max(...snapshots.map((s) => Number(s.score)))
+      : 100;
+  const range = Math.max(10, maxScore - minScore || 10);
+
   return (
-    <div className="rounded-2xl border border-indigo-500/40 bg-neutral-900/70 p-4 md:p-5 shadow-lg shadow-indigo-500/25">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-indigo-300">
-        Score History
+    <div className="rounded-2xl border border-fuchsia-500/40 bg-neutral-900/70 p-4 shadow-lg shadow-fuchsia-500/25 md:p-5">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-fuchsia-300">
+        Financial Health History
       </h3>
       <p className="mt-1 text-xs text-neutral-400">
-        Simple 0–100 financial health snapshots over time.
+        Snapshots of your Finityo health score over time.
       </p>
 
       {recError && (
@@ -437,61 +446,90 @@ const ScoreHistoryCard: React.FC = () => {
         </div>
       )}
 
-      <div className="mt-3 flex items-center justify-between">
+      <div className="mt-3 flex items-center justify-between text-xs text-neutral-200">
+        <div>
+          <div className="text-[11px] text-neutral-400">
+            Latest score
+          </div>
+          <div className="text-lg font-semibold text-neutral-50">
+            {latest ? latest.score.toFixed(0) : "—"}
+            {latest?.label && (
+              <span className="ml-1 text-[11px] text-neutral-400">
+                ({latest.label})
+              </span>
+            )}
+          </div>
+          {latest && (
+            <div className="text-[10px] text-neutral-500">
+              As of{" "}
+              {new Date(latest.created_at).toLocaleDateString()}
+            </div>
+          )}
+        </div>
         <button
           type="button"
           onClick={recordSnapshot}
           disabled={recording}
-          className="rounded-lg border border-indigo-400/70 bg-indigo-500/20 px-3 py-1 text-[11px] font-semibold text-indigo-100 hover:bg-indigo-500/30 disabled:opacity-60"
+          className="rounded-lg border border-fuchsia-400/70 bg-fuchsia-500/20 px-3 py-1 text-[11px] font-semibold text-fuchsia-100 hover:bg-fuchsia-500/30 disabled:opacity-60"
         >
-          {recording ? "Recording..." : "Record Snapshot"}
+          {recording ? "Recording…" : "Record new snapshot"}
         </button>
-        {latest && (
-          <div className="text-right text-xs text-neutral-300">
-            Latest: <span className="font-semibold">{latest.score}</span> ({latest.label})
+      </div>
+
+      <div className="mt-3 rounded-xl bg-black/40 p-3 text-[10px] text-neutral-300">
+        <div className="mb-2 text-[11px] text-neutral-400">
+          Score trend
+        </div>
+        {snapshots.length === 0 ? (
+          <div>No snapshots yet. Record your first score to start.</div>
+        ) : (
+          <div className="flex items-end gap-1">
+            {snapshots
+              .slice()
+              .reverse()
+              .map((s) => {
+                const normalized =
+                  (Number(s.score) - minScore) / range;
+                const height = Math.max(10, Math.round(normalized * 40));
+                return (
+                  <div
+                    key={s.id}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <div
+                      className="w-2 rounded-full bg-fuchsia-500/80"
+                      style={{ height }}
+                    />
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>
-
-      {snapshots.length === 0 ? (
-        <p className="mt-3 text-xs text-neutral-400">
-          No snapshots yet. Record your first one above.
-        </p>
-      ) : (
-        <ul className="mt-3 max-h-40 space-y-2 overflow-y-auto text-xs text-neutral-100">
-          {snapshots.map((s) => (
-            <li
-              key={s.id}
-              className="flex items-center justify-between rounded-xl bg-black/40 px-3 py-2"
-            >
-              <div className="flex-1">
-                <div className="font-semibold">Score: {s.score}</div>
-                <div className="text-[11px] text-neutral-400">
-                  {s.label ? `${s.label} • ` : ""}
-                  {new Date(s.created_at).toLocaleDateString()}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 };
 
-
-/* ---------------- ShareCardPanel ---------------- */
+/* ============================================================
+   ShareCardPanel – Social caption generator
+   ============================================================ */
 
 const ShareCardPanel: React.FC = () => {
-  const [cardType, setCardType] = useState<"streak" | "milestone" | "goal" | "generic">("generic");
-  const [generating, setGenerating] = useState(false);
-  const [card, setCard] = useState<ShareCardResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [cardType, setCardType] =
+    useState<"streak" | "milestone" | "goal" | "generic">(
+      "generic"
+    );
+  const [data, setData] = useState<ShareCardResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const generateCard = async () => {
     try {
-      setGenerating(true);
-      setError(null);
+      setLoading(true);
+      setErr(null);
+      setCopied(false);
+
       const { data, error } = await supabase.functions.invoke(
         "share-card-generator",
         {
@@ -499,63 +537,97 @@ const ShareCardPanel: React.FC = () => {
         }
       );
       if (error) throw error;
-      setCard(data as ShareCardResponse);
+      setData(data as ShareCardResponse);
     } catch (e: any) {
-      setError(e.message ?? "Could not generate card.");
+      setErr(e.message ?? "Could not build share card.");
     } finally {
-      setGenerating(false);
+      setLoading(false);
+    }
+  };
+
+  const copyCaption = async () => {
+    if (!data) return;
+    try {
+      await navigator.clipboard.writeText(
+        `${data.caption}\n\n${data.hashtags.join(" ")}`
+      );
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
     }
   };
 
   return (
-    <div className="rounded-2xl border border-fuchsia-500/40 bg-neutral-900/70 p-4 md:p-5 shadow-lg shadow-fuchsia-500/25">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-fuchsia-300">
-        Social Share Cards
+    <div className="rounded-2xl border border-slate-500/40 bg-neutral-900/70 p-4 shadow-lg shadow-slate-500/25 md:p-5">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+        Share Your Progress
       </h3>
       <p className="mt-1 text-xs text-neutral-400">
-        Generate shareable content based on your progress.
+        Generate social-ready text so you can share your wins without
+        exposing sensitive numbers.
       </p>
 
-      {error && (
-        <div className="mt-2 rounded-md bg-red-900/50 p-2 text-[11px] text-red-200">
-          {error}
-        </div>
-      )}
-
-      <div className="mt-3 flex items-center gap-2 text-xs">
+      <div className="mt-3 flex items-center justify-between gap-2 text-xs">
         <select
           value={cardType}
-          onChange={(e) => setCardType(e.target.value as any)}
-          className="flex-1 rounded-lg border border-neutral-700 bg-black/60 px-2 py-1 text-xs text-neutral-100 outline-none"
+          onChange={(e) =>
+            setCardType(
+              e.target.value as
+                | "streak"
+                | "milestone"
+                | "goal"
+                | "generic"
+            )
+          }
+          className="rounded-lg border border-neutral-700 bg-black/60 px-2 py-1 text-[11px] text-neutral-100 outline-none"
         >
-          <option value="generic">Generic</option>
-          <option value="streak">Streak</option>
-          <option value="milestone">Milestone</option>
-          <option value="goal">Goal</option>
+          <option value="generic">General progress</option>
+          <option value="streak">Streak highlight</option>
+          <option value="milestone">Milestone unlocked</option>
+          <option value="goal">Goal / pace update</option>
         </select>
         <button
           type="button"
           onClick={generateCard}
-          disabled={generating}
-          className="rounded-lg border border-fuchsia-400/70 bg-fuchsia-500/20 px-3 py-1 text-[11px] font-semibold text-fuchsia-100 hover:bg-fuchsia-500/30 disabled:opacity-60"
+          disabled={loading}
+          className="rounded-lg border border-slate-400/70 bg-slate-500/20 px-3 py-1 text-[11px] font-semibold text-slate-100 hover:bg-slate-500/30 disabled:opacity-60"
         >
-          {generating ? "Generating..." : "Generate"}
+          {loading ? "Building…" : "Generate"}
         </button>
       </div>
 
-      {card && (
+      {err && (
+        <div className="mt-2 rounded-md bg-red-900/50 p-2 text-[11px] text-red-200">
+          {err}
+        </div>
+      )}
+
+      {data && (
         <div className="mt-3 rounded-xl bg-black/40 p-3 text-xs text-neutral-100">
-          <div className="text-sm font-semibold text-fuchsia-200">{card.title}</div>
-          <div className="mt-1 text-[11px] text-neutral-400">{card.subtitle}</div>
-          <div className="mt-2 rounded-lg bg-neutral-800 p-2 text-[11px]">
-            {card.caption}
+          <div className="text-[11px] uppercase text-neutral-500">
+            Preview
           </div>
-          <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-neutral-400">
-            {card.hashtags.map((tag) => (
-              <span key={tag} className="rounded-full bg-neutral-800 px-2 py-0.5">
-                {tag}
-              </span>
-            ))}
+          <div className="mt-1 text-sm font-semibold">
+            {data.title}
+          </div>
+          <div className="text-[11px] text-neutral-300">
+            {data.subtitle}
+          </div>
+          <div className="mt-2 whitespace-pre-line text-[11px] text-neutral-100">
+            {data.caption}
+          </div>
+          <div className="mt-2 text-[11px] text-neutral-400">
+            {data.hashtags.join(" ")}
+          </div>
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              onClick={copyCaption}
+              className="rounded-lg border border-slate-400/70 bg-slate-500/20 px-3 py-1 text-[11px] font-semibold text-slate-100 hover:bg-slate-500/30"
+            >
+              {copied ? "Copied!" : "Copy caption"}
+            </button>
           </div>
         </div>
       )}
@@ -563,19 +635,18 @@ const ShareCardPanel: React.FC = () => {
   );
 };
 
-
-/* ---------------- IntelligenceSuite ---------------- */
+/* ============================================================
+   IntelligenceSuite – Wrapper layout
+   ============================================================ */
 
 export const IntelligenceSuite: React.FC = () => {
   return (
-    <div className="mt-6 space-y-4">
-      <div className="grid gap-4 lg:grid-cols-2">
+    <div className="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="xl:col-span-2 h-full">
         <CoachChat />
-        <div className="grid gap-4">
-          <PaceMonitorCard />
-          <ScoreHistoryCard />
-        </div>
       </div>
+      <PaceMonitorCard />
+      <ScoreHistoryCard />
       <ShareCardPanel />
     </div>
   );
