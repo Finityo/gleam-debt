@@ -180,7 +180,7 @@ export default function DebtsLive() {
     <div className="space-y-6 p-6">
       <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
+        ← Back
       </Button>
       
       <div className="flex items-center justify-between">
@@ -370,6 +370,7 @@ function DebtForm({
         <Input
           id="balance"
           type="number"
+          placeholder="5000"
           value={local.balance || ""}
           onChange={(e) => handleChange("balance", Number(e.target.value || 0))}
         />
@@ -381,6 +382,7 @@ function DebtForm({
           id="apr"
           type="number"
           step={0.1}
+          placeholder="18.99"
           value={local.apr || ""}
           onChange={(e) => handleChange("apr", Number(e.target.value || 0))}
         />
@@ -391,8 +393,27 @@ function DebtForm({
         <Input
           id="minPayment"
           type="number"
+          placeholder="150"
           value={local.minPayment || ""}
           onChange={(e) => handleChange("minPayment", Number(e.target.value || 0))}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="dueDay">Due Day</Label>
+        <Input
+          id="dueDay"
+          type="number"
+          placeholder="1-31"
+          min={1}
+          max={31}
+          value={local.dueDay || ""}
+          onChange={(e) => {
+            const val = Number(e.target.value || 0);
+            if (val >= 1 && val <= 31) {
+              handleChange("dueDay", val);
+            }
+          }}
         />
       </div>
 
