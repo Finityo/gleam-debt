@@ -140,7 +140,7 @@ const DemoLayoutWrapper = () => (
 
 export function AppRoutes() {
   return (
-    <BrowserRouter>
+    <>
       <AnalyticsTracker />
       <Suspense fallback={<Loader />}>
         <Routes>
@@ -226,6 +226,6 @@ export function AppRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </>
   );
 }
