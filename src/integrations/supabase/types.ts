@@ -50,6 +50,33 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_visits: {
+        Row: {
+          id: string
+          ip: string | null
+          page_path: string | null
+          referrer: string | null
+          timestamp: string
+          user_agent: string | null
+        }
+        Insert: {
+          id?: string
+          ip?: string | null
+          page_path?: string | null
+          referrer?: string | null
+          timestamp?: string
+          user_agent?: string | null
+        }
+        Update: {
+          id?: string
+          ip?: string | null
+          page_path?: string | null
+          referrer?: string | null
+          timestamp?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       coach_actions: {
         Row: {
           action_type: string
@@ -1060,6 +1087,30 @@ export type Database = {
         }
         Relationships: []
       }
+      team_access: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           account_id: string | null
@@ -1312,6 +1363,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      has_team_access: {
+        Args: { check_email: string; required_role?: string }
         Returns: boolean
       }
       hash_ip_address: { Args: { ip_text: string }; Returns: string }

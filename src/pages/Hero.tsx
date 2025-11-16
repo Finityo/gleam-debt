@@ -2,144 +2,201 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { Wallet, TrendingDown, Target, Zap, ArrowRight } from "lucide-react";
+import { Check, Shield, Sparkles } from "lucide-react";
+import { useEffect } from "react";
 
 const Hero = () => {
   const navigate = useNavigate();
   const { trackEvent } = useAnalytics();
 
+  useEffect(() => {
+    // Track page visit
+    const trackVisit = async () => {
+      try {
+        const response = await fetch('/api/track-visit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            page_path: window.location.pathname,
+            referrer: document.referrer,
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to track visit:', error);
+      }
+    };
+    trackVisit();
+  }, []);
+
   return (
     <>
       <SEOHead 
-        title="Finityo - Debt Freedom Made Simple"
-        description="Experience the power of strategic debt elimination with our interactive demo. See how snowball and avalanche methods can transform your financial future."
+        title="Finityo - Take Control of Your Debt. Finally."
+        description="AI-powered payoff plans that adapt as your life changes. Bank-grade security, Plaid integration, no credit impact."
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-primary via-primary-dark to-secondary overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden relative">
+        {/* Animated gradient beams */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-1/4 w-1 h-full bg-gradient-to-b from-primary/0 via-primary/50 to-primary/0 animate-pulse" />
+          <div className="absolute top-0 right-1/3 w-1 h-full bg-gradient-to-b from-accent/0 via-accent/50 to-accent/0 animate-pulse delay-700" />
+        </div>
+
+        {/* Particle shimmer effect */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-primary/30 rounded-full animate-float"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${5 + Math.random() * 5}s`,
+              }}
+            />
+          ))}
+        </div>
+
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center px-4 py-20">
-          {/* Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary-dark/90 to-secondary/90" />
-
-          {/* Content */}
-          <div className="relative z-10 max-w-6xl mx-auto text-center">
-            {/* Logo */}
-            <div className="mb-8 flex justify-center">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center p-4">
-                <Wallet className="w-16 h-16 md:w-20 md:h-20 text-white" />
-              </div>
-            </div>
-
-            {/* Headline */}
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              Your Path to
-              <br />
-              <span className="bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent">
-                Debt Freedom
-              </span>
-            </h1>
-
-            {/* Subheadline */}
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-sm">
-              Experience our powerful debt elimination engine. Choose your strategy, visualize your progress, and see your debt-free date.
-            </p>
-
-            {/* Feature Pills */}
-            <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <div className="px-6 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/30 text-white flex items-center gap-2">
-                <Wallet className="w-5 h-5" />
-                <span>Smart Strategies</span>
-              </div>
-              <div className="px-6 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/30 text-white flex items-center gap-2">
-                <TrendingDown className="w-5 h-5" />
-                <span>Real-Time Calculations</span>
-              </div>
-              <div className="px-6 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/30 text-white flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                <span>Visual Progress</span>
-              </div>
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button
-                size="lg"
-                className="bg-white text-primary hover:bg-white/90 hover:shadow-2xl transition-all text-lg px-8 py-6 font-semibold group"
-                onClick={() => {
-                  trackEvent('demo_cta_click');
-                  navigate('/setup/start');
-                }}
-              >
-                <Zap className="w-5 h-5 mr-2 group-hover:animate-pulse" />
-                Try Interactive Demo
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6 font-semibold"
-                onClick={() => navigate('/auth?mode=signup')}
-              >
-                Create Free Account
-              </Button>
-            </div>
-
-            {/* Trust Indicators */}
-            <div className="mt-16 flex flex-col md:flex-row items-center justify-center gap-8 text-white/80">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-sm">No credit card required</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-sm">Bank-level security</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-sm">Free forever</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Quick Features Section */}
-        <section className="relative py-20 px-4 bg-white/5 backdrop-blur-sm">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
-                  <Wallet className="w-8 h-8 text-white" />
+          <div className="relative z-10 max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              
+              {/* Left: Content */}
+              <div className="text-left space-y-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">AI-Powered Debt Freedom</span>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Choose Your Strategy</h3>
-                <p className="text-white/80">
-                  Snowball for quick wins or Avalanche to save on interest. See both options side-by-side.
+
+                <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+                  Take control of your debt.{" "}
+                  <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
+                    Finally.
+                  </span>
+                </h1>
+
+                <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
+                  AI-powered payoff plans that adapt as your life changes.
                 </p>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/50 transition-all text-lg px-8 py-6 font-semibold group"
+                    onClick={() => {
+                      trackEvent('hero_cta_click');
+                      navigate('/setup/start');
+                    }}
+                  >
+                    Get Started
+                    <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                  </Button>
+
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-2 text-lg px-8 py-6 font-semibold backdrop-blur-sm"
+                    onClick={() => navigate('/demo/start')}
+                  >
+                    See How It Works
+                  </Button>
+                </div>
+
+                {/* Trust Bar */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8">
+                  {[
+                    { icon: Shield, text: "Bank-grade security" },
+                    { icon: Check, text: "Plaid integration" },
+                    { icon: Check, text: "No credit impact" },
+                    { icon: Check, text: "Built for real people" },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <item.icon className="w-4 h-4 text-primary" />
+                      <span>{item.text}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="text-center p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
-                  <TrendingDown className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Track Your Progress</h3>
-                <p className="text-white/80">
-                  Watch your debt shrink with beautiful visualizations and detailed payoff timelines.
-                </p>
-              </div>
+              {/* Right: Liquid Glass Device Mockup */}
+              <div className="relative group">
+                {/* Ambient glow */}
+                <div className="absolute inset-0 bg-gradient-radial from-primary/30 via-accent/20 to-transparent blur-3xl scale-150 opacity-50 group-hover:opacity-70 transition-opacity" />
+                
+                {/* Neon bloom */}
+                <div className="absolute -inset-20 bg-gradient-conic from-primary via-accent to-primary opacity-20 blur-2xl animate-spin-slow" />
 
-              <div className="text-center p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
-                  <Target className="w-8 h-8 text-white" />
+                {/* Liquid glass container */}
+                <div className="relative group-hover:scale-105 transition-transform duration-700">
+                  {/* Glass reflection layers */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-[3rem] backdrop-blur-xl border border-white/20 shadow-2xl" />
+                  <div className="absolute inset-0 bg-gradient-to-tl from-primary/5 via-transparent to-accent/5 rounded-[3rem]" />
+                  
+                  {/* Device mockup */}
+                  <div className="relative rounded-[3rem] overflow-hidden border-8 border-foreground/10 bg-background shadow-2xl">
+                    <div className="aspect-[9/19] bg-gradient-to-br from-primary/5 via-background to-accent/5 p-8">
+                      {/* Notch */}
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-background rounded-b-3xl" />
+                      
+                      {/* App Preview Content */}
+                      <div className="relative h-full flex flex-col items-center justify-center gap-6 pt-8">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                          <span className="text-2xl font-bold text-primary-foreground">F</span>
+                        </div>
+                        <div className="text-center space-y-2">
+                          <div className="text-2xl font-bold">$0</div>
+                          <div className="text-sm text-muted-foreground">Debt-Free Date</div>
+                        </div>
+                        <div className="w-full space-y-3">
+                          {[70, 50, 85].map((width, i) => (
+                            <div key={i} className="h-16 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 p-3">
+                              <div className="h-2 rounded-full bg-primary/20" style={{ width: `${width}%` }} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ambient light halo */}
+                  <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-primary/30 blur-3xl rounded-full" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">See Your Freedom Date</h3>
-                <p className="text-white/80">
-                  Know exactly when you'll be debt-free and how much you'll save in interest.
-                </p>
               </div>
             </div>
           </div>
         </section>
       </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+        @keyframes gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-float {
+          animation: float ease-in-out infinite;
+        }
+        .animate-gradient {
+          background-size: 200% auto;
+          animation: gradient 3s linear infinite;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 20s linear infinite;
+        }
+        .delay-700 {
+          animation-delay: 0.7s;
+        }
+      `}</style>
     </>
   );
 };

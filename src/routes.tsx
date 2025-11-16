@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { DemoPlanProvider } from "@/context/DemoPlanContext";
 import { RequireAuth } from "@/components/RequireAuth";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 
 // ===== ROUTE METADATA =====
 export const ROUTE_META = [
@@ -96,6 +97,15 @@ const Profile = lazy(() => import("@/pages/Profile"));
 const Scenarios = lazy(() => import("@/pages/Scenarios"));
 const AIAdvisor = lazy(() => import("@/pages/AIAdvisor"));
 const PayoffCalendar = lazy(() => import("@/pages/PayoffCalendar"));
+
+// ===== TEAM PORTAL =====
+const TeamLogin = lazy(() => import("@/pages/team/TeamLogin"));
+const TeamDashboard = lazy(() => import("@/pages/team/TeamDashboard"));
+const TeamUsers = lazy(() => import("@/pages/team/TeamUsers"));
+const TeamPlans = lazy(() => import("@/pages/team/TeamPlans"));
+const TeamLogs = lazy(() => import("@/pages/team/TeamLogs"));
+const TeamAnalytics = lazy(() => import("@/pages/team/TeamAnalytics"));
+const TeamSettings = lazy(() => import("@/pages/team/TeamSettings"));
 const ShareHistory = lazy(() => import("@/pages/ShareHistory"));
 const FinancialInsights = lazy(() => import("@/pages/FinancialInsights"));
 
@@ -130,8 +140,10 @@ const DemoLayoutWrapper = () => (
 
 export function AppRoutes() {
   return (
-    <Suspense fallback={<Loader />}>
-      <Routes>
+    <BrowserRouter>
+      <AnalyticsTracker />
+      <Suspense fallback={<Loader />}>
+        <Routes>
           {/* ===== PUBLIC ROUTES ===== */}
           <Route path="/" element={<Index />} />
           <Route path="/hero" element={<Hero />} />
@@ -201,9 +213,19 @@ export function AppRoutes() {
           <Route path="/mobile-view" element={<RequireAuth><MobileView /></RequireAuth>} />
           <Route path="/debts-new" element={<RequireAuth><DebtsNew /></RequireAuth>} />
           
+          {/* ===== TEAM PORTAL ROUTES ===== */}
+          <Route path="/team/login" element={<TeamLogin />} />
+          <Route path="/team/dashboard" element={<TeamDashboard />} />
+          <Route path="/team/users" element={<TeamUsers />} />
+          <Route path="/team/plans" element={<TeamPlans />} />
+          <Route path="/team/logs" element={<TeamLogs />} />
+          <Route path="/team/analytics" element={<TeamAnalytics />} />
+          <Route path="/team/settings" element={<TeamSettings />} />
+          
           {/* ===== FALLBACK ===== */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+    </BrowserRouter>
   );
 }
