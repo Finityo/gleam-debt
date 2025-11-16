@@ -866,6 +866,7 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+          onboarding_completed: boolean | null
           phone: string | null
           subscription_price_id: string | null
           subscription_product_id: string | null
@@ -882,6 +883,7 @@ export type Database = {
           first_name: string
           id?: string
           last_name: string
+          onboarding_completed?: boolean | null
           phone?: string | null
           subscription_price_id?: string | null
           subscription_product_id?: string | null
@@ -898,6 +900,7 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string
+          onboarding_completed?: boolean | null
           phone?: string | null
           subscription_price_id?: string | null
           subscription_product_id?: string | null
