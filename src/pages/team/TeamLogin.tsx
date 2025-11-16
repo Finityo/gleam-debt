@@ -16,6 +16,7 @@ const TeamLogin = () => {
   const [role, setRole] = useState<"admin" | "support" | "readonly">("support");
   const [loading, setLoading] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -87,6 +88,28 @@ const TeamLogin = () => {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/team/login`,
+      });
+
+      if (error) throw error;
+
+      toast.success("Password reset email sent! Check your inbox.");
+      setResetMode(false);
+      setEmail("");
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      toast.error(error.message || "Failed to send reset email. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <Card className="w-full max-w-md p-8 space-y-6">
@@ -98,12 +121,16 @@ const TeamLogin = () => {
           </div>
           <h1 className="text-2xl font-bold">Team Portal</h1>
           <p className="text-muted-foreground">
-            {isRegisterMode ? "Register for team access" : "Sign in to access the admin dashboard"}
+            {resetMode 
+              ? "Reset your password" 
+              : isRegisterMode 
+              ? "Register for team access" 
+              : "Sign in to access the admin dashboard"}
           </p>
         </div>
 
-        <form onSubmit={isRegisterMode ? handleRegister : handleLogin} className="space-y-4">
-          {isRegisterMode && (
+        <form onSubmit={resetMode ? handlePasswordReset : isRegisterMode ? handleRegister : handleLogin} className="space-y-4">
+          {!resetMode && isRegisterMode && (
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -156,16 +183,18 @@ const TeamLogin = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          {!resetMode && (
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           <Button
             type="submit"
@@ -173,25 +202,46 @@ const TeamLogin = () => {
             disabled={loading}
           >
             {loading 
-              ? (isRegisterMode ? "Creating account..." : "Signing in...") 
-              : (isRegisterMode ? "Create Account" : "Sign In")
+              ? (resetMode ? "Sending reset email..." : isRegisterMode ? "Creating account..." : "Signing in...") 
+              : (resetMode ? "Send Reset Email" : isRegisterMode ? "Create Account" : "Sign In")
             }
           </Button>
         </form>
 
         <div className="text-center space-y-2">
+          {!resetMode && !isRegisterMode && (
+            <button
+              type="button"
+              onClick={() => {
+                setResetMode(true);
+                setPassword("");
+              }}
+              className="text-sm text-primary hover:underline block w-full"
+            >
+              Forgot password?
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
-              setIsRegisterMode(!isRegisterMode);
-              setEmail("");
-              setPassword("");
-              setFirstName("");
-              setLastName("");
+              if (resetMode) {
+                setResetMode(false);
+                setEmail("");
+              } else {
+                setIsRegisterMode(!isRegisterMode);
+                setEmail("");
+                setPassword("");
+                setFirstName("");
+                setLastName("");
+              }
             }}
             className="text-sm text-primary hover:underline"
           >
-            {isRegisterMode ? "Already have an account? Sign in" : "Need an account? Register"}
+            {resetMode 
+              ? "Back to sign in" 
+              : isRegisterMode 
+              ? "Already have an account? Sign in" 
+              : "Need an account? Register"}
           </button>
           <p className="text-xs text-muted-foreground">Authorized team members only</p>
         </div>
