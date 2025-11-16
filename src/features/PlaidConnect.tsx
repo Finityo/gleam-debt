@@ -3,7 +3,8 @@ import { usePlaidLink } from 'react-plaid-link';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export const PlaidConnect = () => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
@@ -106,6 +107,17 @@ export const PlaidConnect = () => {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950">
+        <div className="absolute top-4 left-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="text-neutral-400 hover:text-neutral-200"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
         <div className="text-center">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-cyan-400" />
           <p className="mt-4 text-sm text-neutral-400">Initializing bank connection...</p>
@@ -117,6 +129,17 @@ export const PlaidConnect = () => {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950">
+        <div className="absolute top-4 left-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="text-neutral-400 hover:text-neutral-200"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
         <div className="rounded-2xl border border-red-500/40 bg-neutral-900/70 p-8 text-center shadow-lg shadow-red-500/25">
           <p className="text-sm text-red-300">{error}</p>
           <button
@@ -132,6 +155,17 @@ export const PlaidConnect = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950">
+      <div className="absolute top-4 left-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="text-neutral-400 hover:text-neutral-200"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+      </div>
       <div className="rounded-2xl border border-cyan-500/40 bg-neutral-900/70 p-8 text-center shadow-lg shadow-cyan-500/25">
         <h2 className="text-xl font-semibold text-cyan-300">Connect Your Bank</h2>
         <p className="mt-2 text-sm text-neutral-400">
