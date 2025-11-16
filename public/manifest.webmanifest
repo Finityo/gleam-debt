@@ -1,0 +1,21 @@
+{
+  "name": "Finityo – Debt Simplified",
+  "short_name": "Finityo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#facc15",
+  "description": "Plan, track, and crush your debt with an intelligent payoff engine.",
+  "icons": [
+    {
+      "src": "/finityo-icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    },
+    {
+      "src": "/finityo-icon-final.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
