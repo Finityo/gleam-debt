@@ -149,7 +149,7 @@ const Pricing = () => {
     <>
       <SEOHead
         title="Pricing - Finityo"
-        description="Choose the perfect plan for your debt freedom journey. Essentials ($2.99/mo), Ultimate ($4.99/mo), or Ultimate Plus ($49.99/year with 58% savings). Start today!"
+        description="Choose the perfect plan for your debt freedom journey. Essentials ($2.99/mo) or Ultimate ($4.99/mo). Start your debt-free journey today!"
       />
       <div className="min-h-screen bg-gradient-to-b from-background to-background/80 py-12 px-4">
         <div className="max-w-7xl mx-auto">

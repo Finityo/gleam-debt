@@ -22,7 +22,7 @@ const PricingNew: React.FC = () => {
     {
       id: "essentials",
       name: "Essentials",
-      price: "$4.99",
+      price: "$2.99",
       tagline: "Smarter payoff with visibility.",
       highlights: [
         "Everything in Free",
@@ -35,7 +35,7 @@ const PricingNew: React.FC = () => {
     {
       id: "ultimate",
       name: "Ultimate",
-      price: "$9.99",
+      price: "$4.99",
       tagline: "Full intelligence and coaching.",
       highlights: [
         "Everything in Essentials",

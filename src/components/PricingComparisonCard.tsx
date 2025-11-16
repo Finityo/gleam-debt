@@ -32,7 +32,7 @@ export const PricingComparisonCard = () => {
           <div className="bg-gradient-to-br from-primary/10 to-accent/10 backdrop-blur-xl p-4 text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 animate-pulse" />
             <h4 className="text-sm font-semibold text-primary relative">Ultimate</h4>
-            <p className="text-xs text-primary/70 mt-1 relative">$9.99/mo</p>
+            <p className="text-xs text-primary/70 mt-1 relative">$4.99/mo</p>
           </div>
 
           {/* Features */}
