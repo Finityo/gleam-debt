@@ -145,8 +145,7 @@ export function AppRoutes() {
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* ===== PUBLIC ROUTES ===== */}
-          <Route path="/" element={<Index />} />
-          <Route path="/hero" element={<Hero />} />
+          <Route path="/" element={<Hero />} />
           <Route path="/pricing" element={<PricingNew />} />
           <Route path="/about" element={<About />} />
           <Route path="/privacy" element={<Privacy />} />
