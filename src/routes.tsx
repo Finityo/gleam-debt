@@ -8,6 +8,7 @@ export const ROUTE_META = [
   { path: "/", title: "Home" },
   { path: "/setup/start", title: "Try Setup" },
   { path: "/pricing", title: "Pricing" },
+  { path: "/onboarding", title: "Onboarding" },
   { path: "/blog", title: "Blog" },
   { path: "/auth", title: "Sign In" },
   { path: "/dashboard", title: "Dashboard", protected: true },
@@ -68,6 +69,8 @@ const DemoImportExport = lazy(() => import("@/pages/demo/plan/import"));
 // ===== CORE (PUBLIC) =====
 const Index = lazy(() => import("@/pages/index"));
 const Pricing = lazy(() => import("@/pages/pricing"));
+const PricingNew = lazy(() => import("@/pages/PricingNew"));
+const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const AuthPage = lazy(() => import("@/pages/auth"));
 const Hero = lazy(() => import("@/pages/Hero"));
 const About = lazy(() => import("@/pages/About"));
@@ -132,7 +135,7 @@ export function AppRoutes() {
           {/* ===== PUBLIC ROUTES ===== */}
           <Route path="/" element={<Index />} />
           <Route path="/hero" element={<Hero />} />
-          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/pricing" element={<PricingNew />} />
           <Route path="/about" element={<About />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
@@ -146,6 +149,9 @@ export function AppRoutes() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/signin" element={<SignIn />} />
           <Route path="/auth/signup" element={<SignUp />} />
+          
+          {/* ===== ONBOARDING ===== */}
+          <Route path="/onboarding" element={<Onboarding />} />
           
           {/* ===== SETUP FLOW (PUBLIC) ===== */}
           <Route path="/setup" element={<DemoLayoutWrapper />}>
