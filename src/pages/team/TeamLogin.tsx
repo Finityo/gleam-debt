@@ -60,44 +60,25 @@ const TeamLogin = () => {
     setLoading(true);
 
     try {
-      // Create user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/team/dashboard`,
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-          }
+      // Use backend function to register team member (bypasses RLS recursion)
+      const { data, error } = await supabase.functions.invoke('register-team-member', {
+        body: {
+          email,
+          password,
+          role,
+          first_name: firstName,
+          last_name: lastName,
         }
       });
 
-      if (authError) throw authError;
+      if (error) throw error;
 
-      if (authData.user) {
-        // Add user to team_access table
-        const { error: teamError } = await supabase
-          .from('team_access')
-          .insert({
-            email: email,
-            role: role,
-          });
-
-        if (teamError) {
-          console.error('Error adding to team_access:', teamError);
-          toast.error("Account created but team access failed. Contact admin.");
-          setLoading(false);
-          return;
-        }
-
-        toast.success("Registration successful! Please check your email to confirm.");
-        setIsRegisterMode(false);
-        setEmail("");
-        setPassword("");
-        setFirstName("");
-        setLastName("");
-      }
+      toast.success("Registration successful! You can now sign in.");
+      setIsRegisterMode(false);
+      setEmail("");
+      setPassword("");
+      setFirstName("");
+      setLastName("");
     } catch (error: any) {
       console.error('Registration error:', error);
       toast.error(error.message || "Registration failed. Please try again.");
