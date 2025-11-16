@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,20 @@ const TeamLogin = () => {
   const [loading, setLoading] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [resetMode, setResetMode] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if this is a password recovery link
+    const type = searchParams.get('type');
+    if (type === 'recovery') {
+      setIsUpdatingPassword(true);
+      toast.info("Enter your new password below");
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,6 +124,42 @@ const TeamLogin = () => {
     }
   };
 
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (newPassword !== confirmPassword) {
+        toast.error("Passwords do not match");
+        setLoading(false);
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast.success("Password updated successfully! You can now sign in.");
+      setIsUpdatingPassword(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      navigate('/team/login');
+    } catch (error: any) {
+      console.error('Password update error:', error);
+      toast.error(error.message || "Failed to update password. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <Card className="w-full max-w-md p-8 space-y-6">
@@ -122,7 +171,9 @@ const TeamLogin = () => {
           </div>
           <h1 className="text-2xl font-bold">Team Portal</h1>
           <p className="text-muted-foreground">
-            {resetMode 
+            {isUpdatingPassword
+              ? "Set your new password"
+              : resetMode 
               ? "Reset your password" 
               : isRegisterMode 
               ? "Register for team access" 
@@ -130,8 +181,35 @@ const TeamLogin = () => {
           </p>
         </div>
 
-        <form onSubmit={resetMode ? handlePasswordReset : isRegisterMode ? handleRegister : handleLogin} className="space-y-4">
-          {!resetMode && isRegisterMode && (
+        <form onSubmit={isUpdatingPassword ? handleUpdatePassword : resetMode ? handlePasswordReset : isRegisterMode ? handleRegister : handleLogin} className="space-y-4">
+          {isUpdatingPassword ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  required
+                />
+              </div>
+            </>
+          ) : null}
+
+          {!isUpdatingPassword && !resetMode && isRegisterMode && (
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -172,19 +250,21 @@ const TeamLogin = () => {
               </div>
             </>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="admin@finityo.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          {!isUpdatingPassword && (
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="admin@finityo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
-          {!resetMode && (
+          {!isUpdatingPassword && !resetMode && (
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -203,49 +283,51 @@ const TeamLogin = () => {
             disabled={loading}
           >
             {loading 
-              ? (resetMode ? "Sending reset email..." : isRegisterMode ? "Creating account..." : "Signing in...") 
-              : (resetMode ? "Send Reset Email" : isRegisterMode ? "Create Account" : "Sign In")
+              ? (isUpdatingPassword ? "Updating password..." : resetMode ? "Sending reset email..." : isRegisterMode ? "Creating account..." : "Signing in...") 
+              : (isUpdatingPassword ? "Update Password" : resetMode ? "Send Reset Email" : isRegisterMode ? "Create Account" : "Sign In")
             }
           </Button>
         </form>
 
-        <div className="text-center space-y-2">
-          {!resetMode && !isRegisterMode && (
+        {!isUpdatingPassword && (
+          <div className="text-center space-y-2">
+            {!resetMode && !isRegisterMode && (
+              <button
+                type="button"
+                onClick={() => {
+                  setResetMode(true);
+                  setPassword("");
+                }}
+                className="text-sm text-primary hover:underline block w-full"
+              >
+                Forgot password?
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
-                setResetMode(true);
-                setPassword("");
+                if (resetMode) {
+                  setResetMode(false);
+                  setEmail("");
+                } else {
+                  setIsRegisterMode(!isRegisterMode);
+                  setEmail("");
+                  setPassword("");
+                  setFirstName("");
+                  setLastName("");
+                }
               }}
-              className="text-sm text-primary hover:underline block w-full"
+              className="text-sm text-primary hover:underline"
             >
-              Forgot password?
+              {resetMode 
+                ? "Back to sign in" 
+                : isRegisterMode 
+                ? "Already have an account? Sign in" 
+                : "Need an account? Register"}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={() => {
-              if (resetMode) {
-                setResetMode(false);
-                setEmail("");
-              } else {
-                setIsRegisterMode(!isRegisterMode);
-                setEmail("");
-                setPassword("");
-                setFirstName("");
-                setLastName("");
-              }
-            }}
-            className="text-sm text-primary hover:underline"
-          >
-            {resetMode 
-              ? "Back to sign in" 
-              : isRegisterMode 
-              ? "Already have an account? Sign in" 
-              : "Need an account? Register"}
-          </button>
-          <p className="text-xs text-muted-foreground">Authorized team members only</p>
-        </div>
+            <p className="text-xs text-muted-foreground">Authorized team members only</p>
+          </div>
+        )}
       </Card>
     </div>
   );
