@@ -1071,37 +1071,43 @@ export type Database = {
           assigned_to: string | null
           created_at: string
           description: string | null
+          email: string | null
           id: string
+          name: string | null
           priority: string | null
           resolved_at: string | null
           status: string
           subject: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           assigned_to?: string | null
           created_at?: string
           description?: string | null
+          email?: string | null
           id?: string
+          name?: string | null
           priority?: string | null
           resolved_at?: string | null
           status?: string
           subject: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           assigned_to?: string | null
           created_at?: string
           description?: string | null
+          email?: string | null
           id?: string
+          name?: string | null
           priority?: string | null
           resolved_at?: string | null
           status?: string
           subject?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
