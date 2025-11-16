@@ -18,14 +18,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check subscription status on auth change
-  const checkSubscription = async (userId: string) => {
-    try {
-      await supabase.functions.invoke('check-subscription');
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-    }
-  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -34,11 +26,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        // Check subscription on auth change
-        if (session?.user) {
-          setTimeout(() => checkSubscription(session.user.id), 0);
-        }
       }
     );
 
@@ -47,11 +34,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
-      // Check subscription on initial load
-      if (session?.user) {
-        setTimeout(() => checkSubscription(session.user.id), 0);
-      }
     });
 
     return () => subscription.unsubscribe();

@@ -73,7 +73,22 @@ export const useSubscription = () => {
 
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
-      if (error) throw error;
+      // Handle authentication errors gracefully
+      if (error) {
+        // If it's an auth error, treat as not subscribed
+        if (error.message?.includes('Auth') || error.message?.includes('session')) {
+          setStatus({
+            subscribed: false,
+            tier: null,
+            product_id: null,
+            price_id: null,
+            subscription_end: null,
+            loading: false,
+          });
+          return;
+        }
+        throw error;
+      }
       
       setStatus({
         subscribed: data.subscribed || false,
@@ -90,12 +105,40 @@ export const useSubscription = () => {
   };
 
   useEffect(() => {
+    // Check subscription on mount
     checkSubscription();
     
-    // Refresh subscription status every 60 seconds
-    const interval = setInterval(checkSubscription, 60000);
+    // Set up auth state listener to check subscription when auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session) {
+          checkSubscription();
+        } else {
+          // Clear subscription status when logged out
+          setStatus({
+            subscribed: false,
+            tier: null,
+            product_id: null,
+            price_id: null,
+            subscription_end: null,
+            loading: false,
+          });
+        }
+      }
+    );
     
-    return () => clearInterval(interval);
+    // Refresh subscription status every 60 seconds only if user is authenticated
+    const interval = setInterval(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        checkSubscription();
+      }
+    }, 60000);
+    
+    return () => {
+      subscription.unsubscribe();
+      clearInterval(interval);
+    };
   }, []);
 
   const hasFeature = (feature: keyof typeof TIER_FEATURES.essential): boolean => {
