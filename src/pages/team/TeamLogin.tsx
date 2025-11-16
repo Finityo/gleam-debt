@@ -61,8 +61,8 @@ const TeamLogin = () => {
     setLoading(true);
 
     try {
-      // Use backend function to register team member (bypasses RLS recursion)
-      const { data, error } = await supabase.functions.invoke('register-team-member', {
+      // Use public self-registration endpoint
+      const { data, error } = await supabase.functions.invoke('team-self-register', {
         body: {
           email,
           password,
@@ -73,8 +73,9 @@ const TeamLogin = () => {
       });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      toast.success("Registration successful! You can now sign in.");
+      toast.success(data?.message || "Registration successful! You can now sign in.");
       setIsRegisterMode(false);
       setEmail("");
       setPassword("");
