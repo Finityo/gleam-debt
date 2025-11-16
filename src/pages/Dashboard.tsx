@@ -28,6 +28,8 @@ import ImpactSuite from '@/features/ImpactSuite';
 import EngagementSuite from '@/features/EngagementSuite';
 import IntelligenceSuite from '@/features/IntelligenceSuite';
 import { DEMO } from '@/config/demo';
+import PlanGate from '@/components/PlanGate';
+import ReauthPlaidCard from '@/components/ReauthPlaidCard';
 
 interface Account {
   id: string;
@@ -253,6 +255,9 @@ const Dashboard = () => {
             </div>
           )}
 
+          {/* Plaid Re-authentication Card */}
+          <ReauthPlaidCard />
+
           {/* Quick Stats */}
           {planData?.debts?.length > 0 && (
             <div className="grid gap-4 md:grid-cols-3 mb-6">
@@ -284,17 +289,25 @@ const Dashboard = () => {
           <>
             <FinancialDashboardExtras />
             
-            <AdvancedInsightsSection />
+            <PlanGate feature="canSeeInsights">
+              <AdvancedInsightsSection />
+            </PlanGate>
             
             <PayoffIntelligenceSection />
             
-            <SmartPayoffSuite />
+            <PlanGate feature="canUseWhatIf">
+              <SmartPayoffSuite />
+            </PlanGate>
             
             <ImpactSuite />
             
-            <EngagementSuite />
+            <PlanGate feature="canSeeHeatmap">
+              <EngagementSuite />
+            </PlanGate>
             
-            <IntelligenceSuite />
+            <PlanGate feature="canUseCoach">
+              <IntelligenceSuite />
+            </PlanGate>
             
             <div className="mt-6">
               <EnhancedCoachPanel />
