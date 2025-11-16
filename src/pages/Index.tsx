@@ -7,6 +7,8 @@ import { HeroBG } from "@/components/HeroBG";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { EmailSignup } from "@/components/landing/EmailSignup";
 import { FinalCTA } from "@/components/landing/FinalCTA";
+import { InteractiveCalculator } from "@/components/landing/InteractiveCalculator";
+import { TestimonialsCarousel } from "@/components/landing/TestimonialsCarousel";
 
 export default function Index() {
   return (
@@ -89,6 +91,12 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      {/* Interactive Calculator */}
+      <InteractiveCalculator />
+
+      {/* Testimonials Carousel */}
+      <TestimonialsCarousel />
 
       {/* FAQ Section */}
       <FAQSection />
