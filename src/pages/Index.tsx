@@ -7,6 +7,11 @@ import { HeroBG } from "@/components/HeroBG";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { EmailSignup } from "@/components/landing/EmailSignup";
 import { FinalCTA } from "@/components/landing/FinalCTA";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { PricingSection } from "@/components/landing/PricingSection";
+import { InteractiveCalculator } from "@/components/landing/InteractiveCalculator";
+import { TestimonialsCarousel } from "@/components/landing/TestimonialsCarousel";
+import { InteractiveDemo } from "@/components/InteractiveDemo";
 
 export default function Index() {
   return (
@@ -89,6 +94,21 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      {/* How It Works Section */}
+      <HowItWorks />
+
+      {/* Interactive Calculator Section */}
+      <InteractiveCalculator />
+
+      {/* Interactive Demo Section */}
+      <InteractiveDemo />
+
+      {/* Testimonials Section */}
+      <TestimonialsCarousel />
+
+      {/* Pricing Section */}
+      <PricingSection />
 
       {/* FAQ Section */}
       <FAQSection />
