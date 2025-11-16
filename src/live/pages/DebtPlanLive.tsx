@@ -53,8 +53,8 @@ export default function DebtPlanLive() {
   );
 
   const sortedDebts = useMemo(
-    () => plan ? sortDebtsByStrategy(inputs.debts, inputs.strategy) : inputs.debts,
-    [inputs.debts, inputs.strategy, plan]
+    () => sortDebtsByStrategy(inputs.debts, inputs.strategy),
+    [inputs.debts, inputs.strategy]
   );
 
   const handleCompute = () => {
@@ -64,6 +64,14 @@ export default function DebtPlanLive() {
     }
     compute();
     toast.success("Plan computed successfully!");
+  };
+
+  const handleStrategyChange = (newStrategy: Strategy) => {
+    setInputs({ strategy: newStrategy });
+    if (inputs.debts.length > 0) {
+      // Recompute immediately when strategy changes
+      setTimeout(() => compute(), 50);
+    }
   };
 
   return (
@@ -104,10 +112,7 @@ export default function DebtPlanLive() {
             <Label>Strategy</Label>
             <Select
               value={inputs.strategy}
-              onValueChange={(v) => {
-                setInputs({ strategy: v as Strategy });
-                setTimeout(() => compute(), 100);
-              }}
+              onValueChange={(v) => handleStrategyChange(v as Strategy)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -117,6 +122,11 @@ export default function DebtPlanLive() {
                 <SelectItem value="avalanche">Avalanche (highest APR)</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              {inputs.strategy === "snowball" 
+                ? "Pay smallest debts first for quick wins"
+                : "Pay highest interest debts first to save money"}
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -215,7 +225,13 @@ export default function DebtPlanLive() {
 
           {/* Debt List in Payoff Order */}
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Payoff Order</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Payoff Order</h2>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="capitalize font-medium text-foreground">{inputs.strategy}</span>
+                <span>strategy</span>
+              </div>
+            </div>
             <div className="space-y-3">
               {sortedDebts.filter(d => (d.include ?? true) && d.balance > 0).map((debt, idx) => (
                 <div key={debt.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors">
@@ -227,6 +243,12 @@ export default function DebtPlanLive() {
                       <div className="font-semibold">{debt.name}</div>
                       <div className="text-sm text-muted-foreground">
                         APR: {formatAPR(debt.apr)} • Min: {formatCurrency(debt.minPayment)}
+                        {inputs.strategy === "snowball" && (
+                          <span className="ml-2 text-xs">• Focus: Smallest Balance</span>
+                        )}
+                        {inputs.strategy === "avalanche" && (
+                          <span className="ml-2 text-xs">• Focus: Highest Interest</span>
+                        )}
                       </div>
                     </div>
                   </div>
