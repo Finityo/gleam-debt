@@ -159,7 +159,7 @@ export const PlaidConnect = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/dashboard')}
           className="text-neutral-400 hover:text-neutral-200"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
