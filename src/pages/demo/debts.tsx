@@ -34,7 +34,7 @@ export default function DemoDebts() {
       <div className="max-w-5xl mx-auto px-4 py-10">
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
+          ← Back
         </Button>
         
         <h1 className="text-3xl font-bold text-finityo-textMain mb-2">
@@ -83,7 +83,7 @@ export default function DemoDebts() {
                         <Input
                           type="number"
                           className="pl-7"
-                          placeholder="0"
+                          placeholder="5000"
                           value={displayValue(d.balance)}
                           onChange={(e) => {
                             const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
@@ -103,7 +103,7 @@ export default function DemoDebts() {
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder="0"
+                        placeholder="18.99"
                         value={displayValue(d.apr)}
                         onChange={(e) => {
                           const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
@@ -124,7 +124,7 @@ export default function DemoDebts() {
                         <Input
                           type="number"
                           className="pl-7"
-                          placeholder="0"
+                          placeholder="150"
                           value={displayValue(d.minPayment)}
                           onChange={(e) => {
                             const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
