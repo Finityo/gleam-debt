@@ -5,6 +5,7 @@ import { Check, Shield, Sparkles, TrendingDown, Calendar, Trophy, BarChart3 } fr
 import { useEffect } from "react";
 import { PageShell } from "@/components/PageShell";
 import { PricingComparisonCard } from "@/components/PricingComparisonCard";
+import { InteractiveDemo } from "@/components/InteractiveDemo";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -230,6 +231,17 @@ const Hero = () => {
 
             </div>
           </div>
+        </section>
+
+        {/* Interactive Demo Section */}
+        <section className="py-20 px-4 bg-gradient-to-b from-background via-primary/5 to-background">
+          <div className="max-w-6xl mx-auto text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Watch How It Works</h2>
+            <p className="text-muted-foreground">
+              See the debt payoff calculator in action—from input to freedom date
+            </p>
+          </div>
+          <InteractiveDemo />
         </section>
 
         {/* Testimonials Section */}
