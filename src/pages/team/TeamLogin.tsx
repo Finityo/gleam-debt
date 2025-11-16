@@ -11,7 +11,11 @@ import { Shield } from "lucide-react";
 const TeamLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [role, setRole] = useState<"admin" | "support" | "readonly">("support");
   const [loading, setLoading] = useState(false);
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -51,6 +55,57 @@ const TeamLogin = () => {
     }
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Create user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/team/dashboard`,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          }
+        }
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Add user to team_access table
+        const { error: teamError } = await supabase
+          .from('team_access')
+          .insert({
+            email: email,
+            role: role,
+          });
+
+        if (teamError) {
+          console.error('Error adding to team_access:', teamError);
+          toast.error("Account created but team access failed. Contact admin.");
+          setLoading(false);
+          return;
+        }
+
+        toast.success("Registration successful! Please check your email to confirm.");
+        setIsRegisterMode(false);
+        setEmail("");
+        setPassword("");
+        setFirstName("");
+        setLastName("");
+      }
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      toast.error(error.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <Card className="w-full max-w-md p-8 space-y-6">
@@ -62,11 +117,52 @@ const TeamLogin = () => {
           </div>
           <h1 className="text-2xl font-bold">Team Portal</h1>
           <p className="text-muted-foreground">
-            Sign in to access the admin dashboard
+            {isRegisterMode ? "Register for team access" : "Sign in to access the admin dashboard"}
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={isRegisterMode ? handleRegister : handleLogin} className="space-y-4">
+          {isRegisterMode && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <select
+                  id="role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as "admin" | "support" | "readonly")}
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                  required
+                >
+                  <option value="support">Support</option>
+                  <option value="admin">Admin</option>
+                  <option value="readonly">Read Only</option>
+                </select>
+              </div>
+            </>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -95,12 +191,28 @@ const TeamLogin = () => {
             className="w-full"
             disabled={loading}
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading 
+              ? (isRegisterMode ? "Creating account..." : "Signing in...") 
+              : (isRegisterMode ? "Create Account" : "Sign In")
+            }
           </Button>
         </form>
 
-        <div className="text-center text-sm text-muted-foreground">
-          <p>Authorized team members only</p>
+        <div className="text-center space-y-2">
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegisterMode(!isRegisterMode);
+              setEmail("");
+              setPassword("");
+              setFirstName("");
+              setLastName("");
+            }}
+            className="text-sm text-primary hover:underline"
+          >
+            {isRegisterMode ? "Already have an account? Sign in" : "Need an account? Register"}
+          </button>
+          <p className="text-xs text-muted-foreground">Authorized team members only</p>
         </div>
       </Card>
     </div>
