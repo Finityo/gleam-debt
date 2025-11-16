@@ -48,7 +48,11 @@ const PricingNew: React.FC = () => {
   ];
 
   const handleSelect = (planId: string) => {
+    // Navigate to Stripe checkout or update profile logic here
     console.log("Selected plan:", planId);
+    
+    // For now, just redirect to dashboard
+    // TODO: Wire up Stripe checkout session
     navigate("/dashboard");
   };
 

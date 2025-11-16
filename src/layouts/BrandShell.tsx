@@ -1,20 +1,21 @@
 import React from "react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 
 type BrandShellProps = {
   children: ReactNode;
 };
 
 export const BrandShell: React.FC<BrandShellProps> = ({ children }) => {
-  const navigate = useNavigate();
+  const { goToHome } = useSmartNavigation();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-3 py-4 sm:px-4 md:px-6">
         <header className="mb-4 flex items-center justify-between">
           <button 
-            onClick={() => navigate("/")}
+            onClick={goToHome}
             className="flex items-center gap-2 cursor-pointer"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-400 to-cyan-400 text-xs font-bold text-neutral-900">
