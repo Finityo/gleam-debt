@@ -13,6 +13,7 @@ import { AppProvider } from "@/context/AppStore";
 import { NotificationsPanel } from "@/components/NotificationsPanel";
 import { NextHandler } from "@/components/NextHandler";
 import { AppRoutes } from "@/routes";
+import { BrandShell } from "@/layouts/BrandShell";
 
 const queryClient = new QueryClient();
 
@@ -20,10 +21,10 @@ const AppWrapper = () => {
   useAutoLogout();
   
   return (
-    <>
+    <BrandShell>
       <NextHandler />
       <AppRoutes />
-    </>
+    </BrandShell>
   );
 };
 

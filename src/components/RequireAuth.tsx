@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { OnboardingCheck } from "./OnboardingCheck";
 
 type Props = {
   children: ReactNode;
@@ -24,5 +25,5 @@ export function RequireAuth({ children }: Props) {
     return <Navigate to="/auth/signin" replace />;
   }
 
-  return <>{children}</>;
+  return <OnboardingCheck>{children}</OnboardingCheck>;
 }
