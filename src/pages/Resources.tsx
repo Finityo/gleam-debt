@@ -158,7 +158,7 @@ export default function Resources() {
                   >
                     <div className="flex items-start gap-3 mb-3">
                       <Badge variant="secondary" className="bg-primary/10 text-primary">
-                        {post.category}
+                        Debt Payoff
                       </Badge>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
                         <Calendar className="w-3 h-3" />
