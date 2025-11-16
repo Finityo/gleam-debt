@@ -1,180 +1,164 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Target, Shield, Users, Zap } from 'lucide-react';
-import finityoLogo from '@/assets/finityo-logo.png';
-import { useSmartNavigation } from '@/hooks/useSmartNavigation';
+import { PageShell } from "@/components/PageShell";
+import { Target, Shield, Users, Heart, TrendingUp, Sparkles } from "lucide-react";
+import { Btn } from "@/components/Btn";
 
-const About = () => {
-  const { goToHome } = useSmartNavigation();
-  const navigate = useNavigate();
-
+export default function About() {
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <div className="container mx-auto px-4 py-12 max-w-5xl">
-        <Button
-          variant="ghost"
-          onClick={goToHome}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 w-4 h-4" />
-          Back to Home
-        </Button>
-
-        <div className="text-center mb-12">
-          <img 
-            src={finityoLogo} 
-            alt="Finityo Logo" 
-            className="h-16 mx-auto mb-6"
-          />
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+    <PageShell>
+      <div className="mx-auto max-w-4xl px-4 py-16">
+        {/* Hero Section */}
+        <div className="text-center mb-16 animate-fade-in">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent mb-6 shadow-glow">
+            <img src="/finityo-icon-final.png" alt="Finityo" className="h-12 w-12 rounded-lg" />
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             About Finityo
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Empowering people to achieve financial freedom through proven debt payoff strategies
+            Helping people become debt-free, one smart decision at a time.
           </p>
         </div>
 
-        {/* Mission Section */}
-        <Card className="mb-8">
-          <CardContent className="p-8">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Target className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Our Mission</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  We believe everyone deserves a clear path to becoming debt-free. Finityo was created to simplify 
-                  the debt payoff journey by combining powerful automation with proven financial strategies like 
-                  the snowball and avalanche methods.
-                </p>
-              </div>
-            </div>
-            <p className="text-muted-foreground leading-relaxed">
-              Too many people feel overwhelmed by debt, unsure where to start or how to make meaningful progress. 
-              We built Finityo to change that—providing transparency, guidance, and motivation every step of the way.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Mission Statement */}
+        <div className="glass-card p-8 mb-12 animate-fade-in">
+          <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
+            <Target className="h-7 w-7 text-primary" />
+            Our Mission
+          </h2>
+          <p className="text-muted-foreground text-lg leading-relaxed">
+            Finityo exists to empower individuals and families to achieve financial freedom through 
+            intelligent debt management. We believe that with the right tools, clear visualizations, 
+            and proven strategies, anyone can take control of their debt and build a brighter financial future.
+          </p>
+        </div>
 
         {/* Why We Built This */}
-        <Card className="mb-8">
-          <CardContent className="p-8">
-            <h2 className="text-2xl font-bold mb-6">Why We Built Finityo</h2>
-            <div className="space-y-4">
-              <p className="text-muted-foreground leading-relaxed">
-                The idea for Finityo came from personal experience. Our founder struggled with managing multiple 
-                credit cards and loans, spending hours on spreadsheets trying to figure out the optimal payoff strategy. 
-                The math was confusing, progress felt slow, and motivation was hard to maintain.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                We realized there had to be a better way—a tool that could automatically connect to your accounts, 
-                calculate the best payoff plan, and show you exactly how much faster you could become debt-free with 
-                the right approach.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                That's how Finityo was born: a debt management app designed to make the complex simple and the 
-                overwhelming manageable.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="glass-card p-8 mb-12 animate-fade-in">
+          <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
+            <Heart className="h-7 w-7 text-primary" />
+            Why We Built This
+          </h2>
+          <p className="text-muted-foreground leading-relaxed mb-4">
+            Debt can feel overwhelming and isolating. Traditional tools are either too complex, too expensive, 
+            or simply don't provide the clarity needed to make real progress. We experienced this frustration 
+            firsthand and knew there had to be a better way.
+          </p>
+          <p className="text-muted-foreground leading-relaxed">
+            Finityo was born from a simple idea: what if paying off debt could be visual, strategic, and even 
+            motivating? We combined proven debt payoff methods (snowball and avalanche) with modern design, 
+            automation, and AI insights to create a tool that actually helps people succeed.
+          </p>
+        </div>
 
         {/* What Makes Us Different */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-6 text-center">What Makes Us Different</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="inline-flex p-3 bg-accent/10 rounded-lg mb-4">
-                  <Zap className="w-6 h-6 text-accent" />
-                </div>
-                <h3 className="font-bold mb-2">Automated Connection</h3>
-                <p className="text-sm text-muted-foreground">
-                  Connect your accounts securely through Plaid. No manual entry, no guesswork—just instant, 
-                  accurate debt tracking.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="inline-flex p-3 bg-success/10 rounded-lg mb-4">
-                  <Shield className="w-6 h-6 text-success" />
-                </div>
-                <h3 className="font-bold mb-2">Bank-Level Security</h3>
-                <p className="text-sm text-muted-foreground">
-                  Your financial data is protected with the same encryption standards used by major banks. 
-                  We never see your login credentials.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="inline-flex p-3 bg-primary/10 rounded-lg mb-4">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-bold mb-2">Community-Driven</h3>
-                <p className="text-sm text-muted-foreground">
-                  Built with feedback from real users on their debt-free journey. We're constantly improving 
-                  based on what matters most to you.
-                </p>
-              </CardContent>
-            </Card>
+        <div className="mb-12 animate-fade-in">
+          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
+            What Makes Us Different
+          </h2>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <ValueCard
+              icon={<TrendingUp className="h-6 w-6" />}
+              title="Proven Strategies"
+              description="We use time-tested debt snowball and avalanche methods, backed by financial experts and real results."
+            />
+            
+            <ValueCard
+              icon={<Shield className="h-6 w-6" />}
+              title="Bank-Level Security"
+              description="Your financial data is protected with 256-bit encryption and SOC 2 compliance. We never sell your data."
+            />
+            
+            <ValueCard
+              icon={<Sparkles className="h-6 w-6" />}
+              title="AI-Powered Insights"
+              description="Get personalized recommendations and coaching powered by AI, helping you make smarter decisions faster."
+            />
+            
+            <ValueCard
+              icon={<Users className="h-6 w-6" />}
+              title="Community-Driven"
+              description="Built with feedback from real users tackling real debt. Your success stories inspire our roadmap."
+            />
           </div>
         </div>
 
         {/* Our Commitment */}
-        <Card className="mb-8 bg-gradient-primary">
-          <CardContent className="p-8 text-primary-foreground">
-            <h2 className="text-2xl font-bold mb-4">Our Commitment to You</h2>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <Shield className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <span><strong>Privacy First:</strong> Your financial data is yours. We never sell or share your information.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Target className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <span><strong>Transparency:</strong> Clear strategies, honest math, no hidden fees or upsells.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Zap className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <span><strong>Continuous Improvement:</strong> We're always adding features and refining the experience.</span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="glass-card p-8 mb-12 animate-fade-in">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
+            Our Commitment to You
+          </h2>
+          <ul className="space-y-3 text-muted-foreground">
+            <li className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <span><strong className="text-foreground">Privacy First:</strong> Your financial data stays yours. We never sell or share your information with third parties.</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <span><strong className="text-foreground">Transparency:</strong> No hidden fees, no surprise charges. What you see is what you get.</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <span><strong className="text-foreground">Continuous Improvement:</strong> We're constantly adding new features based on your feedback and the latest financial best practices.</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <span><strong className="text-foreground">Support:</strong> Real people who care about your success. We're here to help you every step of the way.</span>
+            </li>
+          </ul>
+        </div>
 
-        {/* Call to Action */}
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Ready to Start Your Debt-Free Journey?</h2>
-          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Join thousands of users who are taking control of their finances with Finityo. 
-            Connect your accounts, get your personalized plan, and watch your progress accelerate.
+        {/* CTA */}
+        <div className="text-center glass-intense rounded-3xl p-12 animate-fade-in">
+          <h2 className="text-3xl font-bold text-foreground mb-4">
+            Ready to Start Your Journey?
+          </h2>
+          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Join thousands of people who are taking control of their debt with Finityo.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={() => navigate('/auth')}
-              className="text-lg px-8"
-            >
-              Get Started Free
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate('/')}
-              className="text-lg px-8"
-            >
-              Learn More
-            </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/auth?mode=signup" className="w-full sm:w-auto">
+              <Btn variant="cta" className="w-full px-8 py-4 text-lg">
+                Get Started Free
+              </Btn>
+            </a>
+            <a href="/pricing" className="w-full sm:w-auto">
+              <Btn variant="outline" className="w-full px-8 py-4 text-lg border-border hover:bg-white/5">
+                View Pricing
+              </Btn>
+            </a>
           </div>
         </div>
       </div>
+    </PageShell>
+  );
+}
+
+function ValueCard({ icon, title, description }: { 
+  icon: React.ReactNode; 
+  title: string; 
+  description: string; 
+}) {
+  return (
+    <div className="glass-card p-6 hover:shadow-vibrant hover:-translate-y-1 transition-all">
+      <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent mb-4 text-white">
+        {icon}
+      </div>
+      <h3 className="text-lg font-semibold text-foreground mb-2">
+        {title}
+      </h3>
+      <p className="text-muted-foreground text-sm">
+        {description}
+      </p>
     </div>
   );
-};
-
-export default About;
+}
