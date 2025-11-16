@@ -1,14 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
-import { useAnalytics } from "@/hooks/useAnalytics";
 import { Check, Shield, Sparkles, TrendingDown, Calendar, Trophy, BarChart3 } from "lucide-react";
 import { useEffect } from "react";
 import { PageShell } from "@/components/PageShell";
+import { PricingComparisonCard } from "@/components/PricingComparisonCard";
 
 const Hero = () => {
   const navigate = useNavigate();
-  const { trackEvent } = useAnalytics();
 
   useEffect(() => {
     const trackVisit = async () => {
@@ -72,42 +71,60 @@ const Hero = () => {
           <div className="relative z-10 max-w-5xl mx-auto text-center">
             
             {/* iPhone Mockup Centerpiece */}
-            <div className="relative mb-12 flex justify-center">
+            <div className="relative mb-16 flex justify-center animate-fade-in">
               <div className="relative group">
                 {/* Liquid glass plate behind device */}
-                <div className="absolute inset-0 transform scale-110 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-[3rem] border border-white/20 shadow-liquid" />
+                <div className="absolute inset-0 transform scale-110 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-[3rem] border border-white/20 shadow-liquid transition-all duration-500 group-hover:scale-[1.12]" />
                 
                 {/* Glow bloom behind */}
-                <div className="absolute inset-0 -z-10">
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-accent/30 rounded-full blur-[100px]" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-primary/20 rounded-full blur-[80px]" />
+                <div className="absolute inset-0 -z-10 transition-all duration-500 group-hover:scale-110">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-accent/30 rounded-full blur-[100px] group-hover:bg-accent/40" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-primary/20 rounded-full blur-[80px] group-hover:bg-primary/30" />
                 </div>
 
                 {/* Ambient under-glow */}
-                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-64 h-8 bg-primary/20 rounded-full blur-xl" />
+                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-64 h-8 bg-primary/20 rounded-full blur-xl transition-all duration-500 group-hover:w-80 group-hover:bg-primary/30" />
 
-                {/* iPhone Frame (placeholder until real image) */}
-                <div className="relative w-[280px] h-[560px] bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] border-8 border-slate-900 shadow-2xl transform group-hover:rotate-y-6 group-hover:scale-105 transition-transform duration-500 overflow-hidden">
-                  {/* Screen */}
-                  <div className="w-full h-full bg-gradient-to-br from-primary/20 via-background to-accent/20 rounded-[2rem] flex items-center justify-center p-6">
-                    <div className="text-center space-y-4">
-                      <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center">
-                        <TrendingDown className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="text-xl font-bold text-foreground">Your Debt Plan</div>
-                      <div className="text-sm text-muted-foreground">Visualized. Optimized. Done.</div>
-                    </div>
+                {/* iPhone Frame */}
+                <div className="relative w-[280px] h-[560px] bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] border-8 border-slate-900 shadow-2xl transform transition-all duration-500 group-hover:scale-[1.03] group-hover:rotate-y-2 overflow-hidden">
+                  {/* Screen with dashboard preview */}
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 via-background to-accent/20 rounded-[2rem] overflow-hidden relative">
+                    <img 
+                      src="/images/dashboard-preview.png" 
+                      alt="Finityo Dashboard Preview" 
+                      className="w-full h-full object-cover rounded-[2rem]"
+                      onError={(e) => {
+                        // Fallback to placeholder if image not found
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `
+                            <div class="w-full h-full flex items-center justify-center p-6">
+                              <div class="text-center space-y-4">
+                                <div class="w-16 h-16 mx-auto bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                                </div>
+                                <div class="text-xl font-bold text-foreground">Your Debt Plan</div>
+                                <div class="text-sm text-muted-foreground">Visualized. Optimized. Done.</div>
+                              </div>
+                            </div>
+                          `;
+                        }
+                      }}
+                    />
+                    {/* Glass reflection overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none rounded-[2rem]" />
                   </div>
                   
                   {/* Notch */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-slate-900 rounded-b-3xl" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-slate-900 rounded-b-3xl z-10" />
                 </div>
               </div>
             </div>
 
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
-              <Sparkles className="w-4 h-4 text-primary" />
+            {/* Badge with pulse animation */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm animate-pulse">
+              <Sparkles className="w-4 h-4 text-primary animate-fade-in" />
               <span className="text-sm font-medium text-primary">AI-Powered Debt Freedom</span>
             </div>
 
@@ -124,24 +141,24 @@ const Hero = () => {
               AI-powered payoff plans that adapt as your life changes.
             </p>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons with micro-interactions */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/50 transition-all text-lg px-8 py-6 font-semibold"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/50 transition-all duration-300 text-lg px-8 py-6 font-semibold hover:scale-[1.03] active:scale-95 relative overflow-hidden group"
                 onClick={() => {
-                  trackEvent('hero_cta_click');
                   navigate('/setup/start');
                 }}
               >
-                Get Started
-                <Sparkles className="ml-2 w-5 h-5" />
+                <span className="relative z-10">Get Started</span>
+                <Sparkles className="ml-2 w-5 h-5 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-glow/0 via-primary-glow/20 to-primary-glow/0 group-hover:translate-x-full transition-transform duration-700" />
               </Button>
               
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 text-lg px-8 py-6 font-semibold backdrop-blur-sm"
+                className="border-2 text-lg px-8 py-6 font-semibold backdrop-blur-sm hover:scale-[1.03] active:scale-95 transition-all duration-300"
                 onClick={() => navigate('/demo/start')}
               >
                 See How It Works
@@ -171,13 +188,13 @@ const Hero = () => {
         </section>
 
         {/* Features Section */}
-        <section className="relative py-20 px-4">
+        <section className="relative py-24 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               
               {/* Snowball Strategy */}
-              <div className="text-center space-y-4 p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center">
+              <div className="text-center space-y-4 p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group animate-fade-in">
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <TrendingDown className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">Snowball Power</h3>
@@ -185,8 +202,8 @@ const Hero = () => {
               </div>
 
               {/* Avalanche Strategy */}
-              <div className="text-center space-y-4 p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-accent/20 to-accent/10 rounded-2xl flex items-center justify-center">
+              <div className="text-center space-y-4 p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group animate-fade-in" style={{ animationDelay: '100ms' }}>
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-accent/20 to-accent/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <BarChart3 className="w-8 h-8 text-accent" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">Avalanche Savings</h3>
@@ -194,8 +211,8 @@ const Hero = () => {
               </div>
 
               {/* Calendar View */}
-              <div className="text-center space-y-4 p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-success/20 to-success/10 rounded-2xl flex items-center justify-center">
+              <div className="text-center space-y-4 p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group animate-fade-in" style={{ animationDelay: '200ms' }}>
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-success/20 to-success/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Calendar className="w-8 h-8 text-success" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">Visual Timeline</h3>
@@ -203,14 +220,163 @@ const Hero = () => {
               </div>
 
               {/* Celebration */}
-              <div className="text-center space-y-4 p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-warning/20 to-warning/10 rounded-2xl flex items-center justify-center">
+              <div className="text-center space-y-4 p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group animate-fade-in" style={{ animationDelay: '300ms' }}>
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-warning/20 to-warning/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Trophy className="w-8 h-8 text-warning" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">Debt-Free Victory</h3>
                 <p className="text-sm text-muted-foreground">Celebrate milestones. Share your wins. Inspire others.</p>
               </div>
 
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="relative py-24 px-4 bg-gradient-to-b from-transparent to-primary/5">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                What people are saying
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Join thousands who've taken control of their debt
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Testimonial 1 */}
+              <div className="glass rounded-2xl p-6 space-y-4 hover:scale-[1.02] transition-all duration-300 hover:shadow-lg animate-fade-in">
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-5 h-5 text-warning fill-current" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-foreground italic">
+                  "Finally an app that makes my debt payoff make sense. I feel in control again."
+                </p>
+                <p className="text-sm text-muted-foreground font-medium">— Sarah L.</p>
+              </div>
+
+              {/* Testimonial 2 */}
+              <div className="glass rounded-2xl p-6 space-y-4 hover:scale-[1.02] transition-all duration-300 hover:shadow-lg animate-fade-in" style={{ animationDelay: '100ms' }}>
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-5 h-5 text-warning fill-current" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-foreground italic">
+                  "The calendar view and the freedom date are everything. So motivating."
+                </p>
+                <p className="text-sm text-muted-foreground font-medium">— James R.</p>
+              </div>
+
+              {/* Testimonial 3 */}
+              <div className="glass rounded-2xl p-6 space-y-4 hover:scale-[1.02] transition-all duration-300 hover:shadow-lg animate-fade-in" style={{ animationDelay: '200ms' }}>
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-5 h-5 text-warning fill-current" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-foreground italic">
+                  "Best $2.99 I've ever spent. The Plaid sync saves me so much time."
+                </p>
+                <p className="text-sm text-muted-foreground font-medium">— Maria K.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Strategy Comparison Section */}
+        <section className="relative py-24 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Choose your strategy
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Compare debt payoff methods and find what works for you
+              </p>
+            </div>
+
+            <div className="glass rounded-2xl overflow-hidden border border-border/50">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border/20">
+                      <th className="text-left p-6 text-sm font-medium text-muted-foreground">Feature</th>
+                      <th className="text-center p-6 text-sm font-semibold text-primary">Snowball</th>
+                      <th className="text-center p-6 text-sm font-semibold text-accent">Avalanche</th>
+                      <th className="text-center p-6 text-sm font-semibold text-warning">AI Custom</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-border/10">
+                      <td className="p-6 text-foreground">Motivation</td>
+                      <td className="text-center p-6"><Check className="w-5 h-5 text-primary inline" /></td>
+                      <td className="text-center p-6"><Check className="w-5 h-5 text-accent inline opacity-50" /></td>
+                      <td className="text-center p-6"><Check className="w-5 h-5 text-warning inline" /></td>
+                    </tr>
+                    <tr className="border-b border-border/10">
+                      <td className="p-6 text-foreground">Interest saved</td>
+                      <td className="text-center p-6 text-muted-foreground text-sm">Moderate</td>
+                      <td className="text-center p-6"><Check className="w-5 h-5 text-accent inline" /></td>
+                      <td className="text-center p-6"><Check className="w-5 h-5 text-warning inline" /></td>
+                    </tr>
+                    <tr className="border-b border-border/10">
+                      <td className="p-6 text-foreground">Debt-free time</td>
+                      <td className="text-center p-6 text-muted-foreground text-sm">Slower</td>
+                      <td className="text-center p-6"><Check className="w-5 h-5 text-accent inline" /></td>
+                      <td className="text-center p-6"><Check className="w-5 h-5 text-warning inline" /></td>
+                    </tr>
+                    <tr className="border-b border-border/10">
+                      <td className="p-6 text-foreground">Difficulty</td>
+                      <td className="text-center p-6 text-muted-foreground text-sm">Easy</td>
+                      <td className="text-center p-6 text-muted-foreground text-sm">Medium</td>
+                      <td className="text-center p-6 text-muted-foreground text-sm">Adaptive</td>
+                    </tr>
+                    <tr>
+                      <td className="p-6 text-foreground">Best for</td>
+                      <td className="text-center p-6 text-muted-foreground text-sm">Quick wins</td>
+                      <td className="text-center p-6 text-muted-foreground text-sm">Math-first</td>
+                      <td className="text-center p-6 text-muted-foreground text-sm">Personalized</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Plan Comparison Section */}
+        <section className="relative py-24 px-4 bg-gradient-to-b from-primary/5 to-transparent">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Simple pricing, powerful features
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Choose the plan that fits your debt-freedom journey
+              </p>
+            </div>
+
+            <PricingComparisonCard />
+
+            <div className="text-center mt-12">
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/50 transition-all duration-300 text-lg px-8 py-6 font-semibold hover:scale-[1.03] active:scale-95"
+                onClick={() => navigate('/setup/start')}
+              >
+                Start Your Journey
+                <Sparkles className="ml-2 w-5 h-5" />
+              </Button>
             </div>
           </div>
         </section>
