@@ -10,7 +10,7 @@ export default function AppLayout({ children }: Props) {
       <NavDrawer />
       
       <main className="flex-1 w-full overflow-x-hidden">
-        <div className="max-w-5xl mx-auto px-4 pb-20 pt-8">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-6 pb-20 pt-6 sm:pt-8">
           {children}
         </div>
       </main>

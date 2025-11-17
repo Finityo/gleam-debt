@@ -92,12 +92,12 @@ export default function DebtVisualizationPage() {
   });
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-3 sm:p-4 md:p-6">
       <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back
       </Button>
-      <h1 className="text-3xl font-bold mb-6">Debt Overview</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6">Debt Overview</h1>
 
       {/* Payment Strategy Display */}
       <Card className="p-6 mb-6 bg-gradient-card border-primary/20">

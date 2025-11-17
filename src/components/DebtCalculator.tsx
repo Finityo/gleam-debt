@@ -1194,7 +1194,7 @@ export function DebtCalculator() {
 
       {/* Add Debt Dialog */}
       <Dialog open={isAddDebtDialogOpen} onOpenChange={setIsAddDebtDialogOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Debt</DialogTitle>
             <DialogDescription>

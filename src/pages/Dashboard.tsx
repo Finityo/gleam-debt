@@ -177,31 +177,32 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8">
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-foreground">Dashboard</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">Dashboard</h1>
               <p className="text-muted-foreground mt-2">
                 Welcome back{profileData?.first_name ? `, ${profileData.first_name}` : ''}
               </p>
             </div>
-            <div className="flex gap-2 no-print">
+            <div className="flex flex-wrap gap-2 no-print w-full sm:w-auto">
               <Button 
                 size="sm" 
                 onClick={() => navigate('/plaid-connect')}
-                className="bg-gradient-to-r from-cyan-600 via-teal-600 to-cyan-600 hover:from-cyan-500 hover:via-teal-500 hover:to-cyan-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 border-0 transition-all duration-300"
+                className="flex-1 sm:flex-none bg-gradient-to-r from-cyan-600 via-teal-600 to-cyan-600 hover:from-cyan-500 hover:via-teal-500 hover:to-cyan-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 border-0 transition-all duration-300"
               >
-                <Building2 className="w-4 h-4 mr-2" />
-                Connect Bank
+                <Building2 className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Connect Bank</span>
+                <span className="sm:hidden">Bank</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
+              <Button variant="outline" size="sm" onClick={() => navigate('/settings')} className="flex-1 sm:flex-none">
+                <Settings className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Settings</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
+              <Button variant="outline" size="sm" onClick={handleSignOut} className="flex-1 sm:flex-none">
+                <LogOut className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
           </div>
