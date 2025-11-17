@@ -43,7 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       <!-- Logo -->
       <img 
-        src="https://finityo-debt.com/images/logo.png" 
+        src="https://finityo-debt.com/finityo-logo-final.png" 
         alt="Finityo" 
         style="width: 120px; margin-bottom: 25px;"
       />
