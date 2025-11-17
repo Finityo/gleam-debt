@@ -192,7 +192,14 @@ export function AppRoutes() {
           <Route path="/debt-plan" element={<RequireAuth><DebtPlan /></RequireAuth>} />
           <Route path="/debt-chart" element={<RequireAuth><DebtChart /></RequireAuth>} />
           <Route path="/visualization" element={<RequireAuth><DebtVisualization /></RequireAuth>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/scenarios" element={<RequireAuth><Scenarios /></RequireAuth>} />
           <Route path="/financial-insights" element={<RequireAuth><FinancialInsights /></RequireAuth>} />
