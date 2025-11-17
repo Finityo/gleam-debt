@@ -1,22 +1,19 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
-  // Prevent false redirects while auth loads
+  // Prevent false redirects during initial auth load
   if (loading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
+      <div className="w-full h-screen flex items-center justify-center text-white">
+        Loading...
       </div>
     );
   }
 
-  // If user is still null after loading → redirect
+  // After loading completes, only redirect if user is truly missing
   if (!user) {
     return <Navigate to="/auth/signin" replace />;
   }
