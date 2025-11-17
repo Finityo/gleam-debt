@@ -36,7 +36,7 @@ export default function PayoffChartWithEvents({ plan, debts, showEvents = true }
   }));
 
   return (
-    <div className="p-4 border rounded bg-white">
+    <div className="p-4 border border-border/40 rounded-2xl glass">
       <h2 className="text-lg font-semibold mb-2">
         Remaining Balance{showEvents ? " + Payoff Events" : ""}
       </h2>

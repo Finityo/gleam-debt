@@ -45,7 +45,7 @@ export default function ScenarioChart({ debts, settings }: Props) {
   ];
 
   return (
-    <div className="p-4 border rounded bg-white">
+    <div className="p-4 border border-border/40 rounded-2xl glass">
       <h2 className="text-lg font-semibold mb-3">Scenario Comparison</h2>
 
       <div className="space-y-2">

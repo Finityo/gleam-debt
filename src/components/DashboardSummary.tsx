@@ -15,7 +15,7 @@ export default function DashboardSummary({ plan }: Props) {
   if (!summary) return null;
 
   return (
-    <div className="p-4 border rounded space-y-3 max-w-md bg-white">
+    <div className="p-4 border border-border/40 rounded-2xl space-y-3 max-w-md glass">
       <h2 className="text-lg font-semibold">Plan Summary</h2>
 
       <div>

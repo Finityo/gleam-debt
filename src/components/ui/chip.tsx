@@ -12,8 +12,8 @@ export function Chip({ children, active = false, onClick }: ChipProps) {
       onClick={onClick}
       className={`px-3 py-1 rounded-full text-xs border transition-colors ${
         active
-          ? "bg-black text-white border-black"
-          : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+          ? "glass-intense text-foreground border-primary"
+          : "glass text-foreground hover:glass-intense border-border/40"
       }`}
     >
       {children}

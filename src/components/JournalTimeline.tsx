@@ -20,7 +20,7 @@ export default function JournalTimeline({ plan, debts }: Props) {
       {journal.map((entry) => (
         <div
           key={entry.monthIndex}
-          className="p-4 border rounded bg-white space-y-2"
+          className="p-4 border border-border/40 rounded-2xl glass space-y-2"
         >
           <div className="font-semibold">
             Month {entry.monthIndex + 1}

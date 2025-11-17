@@ -29,7 +29,7 @@ export default function RemainingStackedChart({ plan, debts }: Props) {
   );
 
   return (
-    <div className="p-4 border rounded bg-white">
+    <div className="p-4 border border-border/40 rounded-2xl glass">
       <h2 className="text-lg font-semibold mb-2">
         Remaining Balance by Category
       </h2>

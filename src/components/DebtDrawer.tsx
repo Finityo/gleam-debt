@@ -17,7 +17,7 @@ export default function DebtDrawer({ open, onClose, debt }: Props) {
     <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="absolute right-0 top-0 h-full w-80 bg-white shadow-lg p-4 overflow-y-auto"
+        className="absolute right-0 top-0 h-full w-80 glass border-l border-border/40 shadow-lg p-4 overflow-y-auto"
       >
         <h2 className="text-lg font-semibold mb-3">{debt.name}</h2>
 
