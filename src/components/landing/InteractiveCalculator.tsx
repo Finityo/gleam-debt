@@ -70,7 +70,7 @@ export const InteractiveCalculator = () => {
           </p>
         </div>
 
-        <div className="glass rounded-2xl p-8 md:p-12">
+        <div className="glass rounded-2xl p-8 md:p-12 border-gradient-animate card-hover">
           <div className="grid md:grid-cols-2 gap-8">
             {/* Input Section */}
             <div className="space-y-6">

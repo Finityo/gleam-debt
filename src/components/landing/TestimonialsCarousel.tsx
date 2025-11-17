@@ -115,7 +115,7 @@ export const TestimonialsCarousel = () => {
                   key={testimonial.id}
                   className="w-full flex-shrink-0 px-4"
                 >
-                  <div className="glass rounded-2xl p-8 md:p-12 hover:scale-[1.02] transition-all duration-300 border border-border/50">
+                  <div className="glass rounded-2xl p-8 md:p-12 border border-border/50 border-gradient-animate card-hover">
                     {/* Stars */}
                     <div className="flex gap-1 mb-6 justify-center">
                       {Array.from({ length: testimonial.rating }).map((_, i) => (

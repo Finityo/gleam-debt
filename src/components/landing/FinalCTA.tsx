@@ -8,8 +8,8 @@ export function FinalCTA() {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/10 to-transparent" />
       
       <div className="relative mx-auto max-w-4xl px-4">
-        <div className="glass-intense rounded-3xl p-8 md:p-16 text-center border border-glass-border shadow-vibrant">
-          <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-primary to-accent mb-6 shadow-glow animate-pulse">
+        <div className="glass-intense rounded-3xl p-8 md:p-16 text-center border border-glass-border shadow-vibrant border-gradient-animate card-hover">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-primary to-accent mb-6 shadow-glow animate-pulse icon-hover">
             <Sparkles className="h-10 w-10 text-white" />
           </div>
 

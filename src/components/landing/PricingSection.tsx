@@ -58,9 +58,7 @@ export const PricingSection = () => {
           {pricingPlans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative glass rounded-2xl p-8 transition-all duration-300 ${
-                hoveredPlan === plan.id ? "scale-105" : ""
-              } ${
+              className={`relative glass rounded-2xl p-8 border-gradient-animate card-hover ${
                 plan.popular
                   ? "border-2 border-primary shadow-[0_0_60px_hsl(var(--primary)/0.4)]"
                   : "border border-border/50"
