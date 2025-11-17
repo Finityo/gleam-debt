@@ -1,16 +1,45 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowLeft, BookOpen, ArrowRight, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, BookOpen, ArrowRight } from "lucide-react";
 import { blogPosts } from "@/data/blogPosts";
 import { useSmartNavigation } from '@/hooks/useSmartNavigation';
+import { BlogCard } from "@/components/blog/BlogCard";
+import { useEffect, useState } from "react";
+import { loadAllMarkdownPosts, MarkdownPost } from "@/lib/markdownLoader";
 
 const Resources = () => {
   const { goToHome } = useSmartNavigation();
   const navigate = useNavigate();
+  const [markdownPosts, setMarkdownPosts] = useState<MarkdownPost[]>([]);
 
-  // Get the 3 most recent blog posts
-  const recentPosts = blogPosts.slice(0, 3);
+  useEffect(() => {
+    loadAllMarkdownPosts().then(setMarkdownPosts);
+  }, []);
+
+  // Combine markdown and TSX posts, take top 3
+  const allPosts = [
+    ...markdownPosts.map(post => ({
+      slug: post.slug,
+      title: post.title,
+      description: post.description,
+      date: post.date,
+      readTime: post.readTime || "5 min read",
+      category: post.category,
+      image: post.image,
+    })),
+    ...blogPosts.slice(0, 3).map(post => ({
+      slug: post.slug,
+      title: post.title,
+      description: post.excerpt,
+      date: post.date,
+      readTime: post.readTime,
+      category: "Article",
+      image: "/images/blog-default.png",
+    }))
+  ]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -66,42 +95,17 @@ const Resources = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {recentPosts.map((post) => (
-              <article
+            {allPosts.map((post) => (
+              <BlogCard
                 key={post.slug}
-                className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
-                onClick={() => navigate(`/blog/${post.slug}`)}
-              >
-                <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  <post.icon className="w-16 h-16 text-primary/60" />
-                </div>
-                
-                <div className="p-6">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{post.date}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{post.readTime}</span>
-                    </div>
-                  </div>
-
-                  <h3 className="text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
-                    {post.title}
-                  </h3>
-
-                  <p className="text-muted-foreground mb-4 line-clamp-3">
-                    {post.excerpt}
-                  </p>
-
-                  <div className="flex items-center text-primary font-medium">
-                    Read more
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </article>
+                slug={post.slug}
+                title={post.title}
+                description={post.description}
+                date={post.date}
+                readTime={post.readTime}
+                category={post.category}
+                image={post.image}
+              />
             ))}
           </div>
         </section>
