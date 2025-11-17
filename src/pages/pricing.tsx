@@ -151,7 +151,7 @@ const Pricing = () => {
         title="Pricing - Finityo"
         description="Choose the perfect plan for your debt freedom journey. Essentials ($2.99/mo) or Ultimate ($4.99/mo). Start your debt-free journey today!"
       />
-      <div className="min-h-screen bg-gradient-to-b from-background to-background/80 py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90 py-12 px-4">
         <div className="max-w-7xl mx-auto">
           <Button
             variant="ghost"
@@ -171,7 +171,7 @@ const Pricing = () => {
           </div>
 
           <div className="max-w-md mx-auto mb-8">
-            <Card className="glass">
+            <Card className="glass-intense border-border/40">
               <CardHeader>
                 <CardTitle className="text-center">Have a discount code?</CardTitle>
                 <CardDescription className="text-center">
@@ -200,8 +200,8 @@ const Pricing = () => {
             {Object.entries(PRICING_TIERS).map(([key, tier]) => (
               <Card 
                 key={key} 
-                className={`relative flex flex-col ${
-                  tier.popular ? 'border-primary shadow-lg scale-105' : ''
+                className={`relative flex flex-col glass-intense border-border/40 ${
+                  tier.popular ? 'border-primary/60 shadow-vibrant scale-105' : ''
                 }`}
               >
                 {tier.badge && (

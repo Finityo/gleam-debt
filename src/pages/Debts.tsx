@@ -181,10 +181,10 @@ export default function DebtsPage() {
         </div>
 
         {state.debts.length === 0 && (
-          <Card>
+          <Card className="glass-intense border-border/40">
             <div className="text-center py-12">
-              <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-lg font-medium">No debts added yet</p>
+              <CreditCard className="h-12 w-12 mx-auto text-primary mb-4" />
+              <p className="text-lg font-medium text-foreground">No debts added yet</p>
               <p className="text-sm text-muted-foreground mt-1">
                 Add your first debt to get started
               </p>

@@ -327,10 +327,10 @@ const Dashboard = () => {
           
           {/* Show connect button when no accounts */}
           {accounts.length === 0 && (
-            <Card>
+            <Card className="glass-intense border-primary/30">
               <CardContent className="pt-6">
                 <div className="text-center space-y-4">
-                  <p className="text-muted-foreground">
+                  <p className="text-foreground">
                     Connect your bank account to get started
                   </p>
                   <Button 

@@ -78,10 +78,10 @@ export default function ShareHistory() {
         </div>
 
       {items.length === 0 && (
-        <Card>
+        <Card className="glass-intense border-border/40">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Share2 className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">No shared plans yet</p>
+            <Share2 className="h-12 w-12 text-primary mb-4" />
+            <p className="text-lg font-medium text-foreground">No shared plans yet</p>
             <p className="text-sm text-muted-foreground mt-1">
               Share your debt payoff plan to get started
             </p>

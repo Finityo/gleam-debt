@@ -100,8 +100,8 @@ export default function DebtVisualizationPage() {
       <h1 className="text-2xl sm:text-3xl font-bold mb-6">Debt Overview</h1>
 
       {/* Payment Strategy Display */}
-      <Card className="p-6 mb-6 bg-gradient-card border-primary/20">
-        <h3 className="text-xl font-semibold mb-4">💰 Payment Strategy</h3>
+      <Card className="p-6 mb-6 glass-intense border-primary/30">
+        <h3 className="text-xl font-semibold mb-4 text-foreground">💰 Payment Strategy</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <div className="text-sm text-muted-foreground">Extra Monthly Payment</div>
@@ -125,21 +125,21 @@ export default function DebtVisualizationPage() {
 
       {/* Totals */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="p-4">
+        <Card className="p-4 glass-intense border-primary/30">
           <div className="text-sm text-muted-foreground">Total Debt</div>
-          <div className="text-2xl font-bold mt-1">${totalDebt.toFixed(2)}</div>
+          <div className="text-2xl font-bold mt-1 text-foreground">${totalDebt.toFixed(2)}</div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-4 glass-intense border-accent/30">
           <div className="text-sm text-muted-foreground">Available Credit</div>
-          <div className="text-2xl font-bold mt-1">${totalAvailableCredit.toFixed(2)}</div>
+          <div className="text-2xl font-bold mt-1 text-foreground">${totalAvailableCredit.toFixed(2)}</div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-4 glass-intense border-warning/30">
           <div className="text-sm text-muted-foreground">Utilization</div>
-          <div className="text-2xl font-bold mt-1">{utilization.toFixed(1)}%</div>
+          <div className="text-2xl font-bold mt-1 text-foreground">{utilization.toFixed(1)}%</div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-4 glass-intense border-success/30">
           <div className="text-sm text-muted-foreground">Debts in Plan</div>
-          <div className="text-2xl font-bold mt-1">{debts.filter(d => d.include !== false).length}</div>
+          <div className="text-2xl font-bold mt-1 text-foreground">{debts.filter(d => d.include !== false).length}</div>
         </Card>
       </div>
 

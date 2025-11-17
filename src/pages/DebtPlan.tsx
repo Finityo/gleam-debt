@@ -64,7 +64,7 @@ export default function DebtPlanPage() {
       </Button>
       <h1 className="text-2xl sm:text-3xl font-bold mb-6">Debt Plan</h1>
 
-      <Card className="p-6 mb-6">
+      <Card className="p-6 mb-6 glass-intense border-border/40">
         {/* Advanced Options Toggle */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">

@@ -52,25 +52,25 @@ export default function PayoffCalendarPage() {
         Back
       </Button>
       <h1 className="text-2xl sm:text-3xl font-bold mb-6">Payoff Calendar</h1>
-      <Card className="overflow-x-auto">
+      <Card className="overflow-x-auto glass-intense border-border/40">
         <table className="w-full min-w-[720px] border-collapse">
           <thead>
-            <tr className="border-b">
-              <th className="text-left p-3">Month</th>
-              <th className="text-right p-3">Outflow</th>
-              <th className="text-right p-3">Interest</th>
-              <th className="text-right p-3">Principal</th>
-              <th className="text-left p-3">Payoffs</th>
+            <tr className="border-b border-primary/30 glass">
+              <th className="text-left p-3 text-foreground">Month</th>
+              <th className="text-right p-3 text-foreground">Outflow</th>
+              <th className="text-right p-3 text-foreground">Interest</th>
+              <th className="text-right p-3 text-foreground">Principal</th>
+              <th className="text-left p-3 text-foreground">Payoffs</th>
             </tr>
           </thead>
           <tbody>
             {cal.map(m => (
-              <tr key={m.monthIndex} className="border-b hover:bg-muted/50">
-                <td className="p-3">{m.monthLabel}</td>
-                <td className="text-right p-3">${m.totalOutflow.toFixed(2)}</td>
-                <td className="text-right p-3">${m.totalInterest.toFixed(2)}</td>
-                <td className="text-right p-3">${m.totalPrincipal.toFixed(2)}</td>
-                <td className="p-3">{m.payoffs.map(p => p.name).join(", ") || "—"}</td>
+              <tr key={m.monthIndex} className="border-b border-border/20 hover:glass transition-colors">
+                <td className="p-3 text-foreground">{m.monthLabel}</td>
+                <td className="text-right p-3 text-foreground">${m.totalOutflow.toFixed(2)}</td>
+                <td className="text-right p-3 text-muted-foreground">${m.totalInterest.toFixed(2)}</td>
+                <td className="text-right p-3 text-foreground">${m.totalPrincipal.toFixed(2)}</td>
+                <td className="p-3 text-foreground">{m.payoffs.map(p => p.name).join(", ") || "—"}</td>
               </tr>
             ))}
           </tbody>
