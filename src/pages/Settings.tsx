@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useApp } from "@/context/AppStore";
+import { useAuth } from "@/hooks/useAuth";
 import AppLayout from "@/layouts/AppLayout";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/ui/button";
@@ -12,10 +14,29 @@ import { toast } from "sonner";
 import { useAppearance } from "@/hooks/useAppearance";
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const { state, updateSettings } = useApp();
   const [localSettings, setLocalSettings] = useState(state.settings);
   const { settings: appearanceSettings, saveSettings: saveAppearanceSettings } = useAppearance();
   const [localAppearance, setLocalAppearance] = useState(appearanceSettings);
+
+  // Fix: Do NOT redirect until auth state has fully resolved
+  const sessionLoaded = !loading;
+  
+  if (!sessionLoaded) {
+    return (
+      <div className="flex items-center justify-center h-[50vh] text-foreground/70">
+        Loading settings…
+      </div>
+    );
+  }
+
+  // After loading, if still no user → redirect
+  if (!user && sessionLoaded) {
+    navigate('/auth/signin', { replace: true });
+    return null;
+  }
 
   function handleChange(key: string, value: any) {
     setLocalSettings({ ...localSettings, [key]: value });
