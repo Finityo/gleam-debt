@@ -65,7 +65,7 @@ export function PlanVersionHistory() {
           Version History
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh]">
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Plan Version History</DialogTitle>
           <DialogDescription>
@@ -73,7 +73,7 @@ export function PlanVersionHistory() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-4 h-[60vh]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[60vh]">
           {/* Version List */}
           <ScrollArea className="border rounded-lg">
             <div className="p-4 space-y-2">

@@ -119,10 +119,10 @@ export default function DebtsPage() {
           Back
         </Button>
         
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <CreditCard className="h-8 w-8" />
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+              <CreditCard className="h-6 w-6 md:h-8 md:w-8" />
               My Debts
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -130,23 +130,25 @@ export default function DebtsPage() {
             </p>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Import from Excel
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowImport(true)} className="flex-1 sm:flex-none">
+              <Upload className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Import from Excel</span>
+              <span className="sm:hidden">Import</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={handleExportCSV}>
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
+            <Button variant="outline" size="sm" onClick={handleExportCSV} className="flex-1 sm:flex-none">
+              <Download className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">Export</span>
             </Button>
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="flex-1 sm:flex-none">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Debt
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-[95vw] sm:max-w-lg">
                 <DialogHeader>
                   <DialogTitle>Add New Debt</DialogTitle>
                 </DialogHeader>
@@ -170,11 +172,11 @@ export default function DebtsPage() {
 
         <div className="grid gap-2">
           {state.debts.map((debt) => (
-            <div key={debt.id} className="glass p-3 rounded-2xl animate-fade-in hover:shadow-liquid transition-all">
-              <div className="flex items-center justify-between gap-3">
+            <div key={debt.id} className="glass p-4 rounded-2xl animate-fade-in hover:shadow-liquid transition-all">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm text-foreground/90 mb-2 truncate">{debt.name}</h3>
-                  <div className="grid grid-cols-3 gap-3 text-xs">
+                  <h3 className="font-medium text-base sm:text-sm text-foreground/90 mb-2 truncate">{debt.name}</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                     <div>
                       <div className="text-foreground/50 mb-0.5">Balance</div>
                       <div className="font-semibold text-sm text-foreground/90">
@@ -194,15 +196,15 @@ export default function DebtsPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-1.5 flex-shrink-0">
+                <div className="flex gap-1.5 flex-shrink-0 mt-3 sm:mt-0">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setQuickEditDebt(debt)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs flex-1 sm:flex-none"
                   >
-                    <Edit2 className="h-3.5 w-3.5 mr-1" />
-                    Edit
+                    <Edit2 className="h-3.5 w-3.5 sm:mr-1" />
+                    <span className="hidden sm:inline">Edit</span>
                   </Button>
 
                   <Button

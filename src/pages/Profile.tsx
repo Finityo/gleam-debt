@@ -122,7 +122,7 @@ export default function Profile() {
     <AppLayout>
       <div className="space-y-6 max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
             Profile Settings
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
@@ -248,15 +248,15 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 pb-8">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pb-8">
           <Btn 
             onClick={handleSave} 
             disabled={saving}
-            className="bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:opacity-90 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 text-white"
+            className="w-full sm:w-auto bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:opacity-90 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 text-white"
           >
             {saving ? "Saving..." : "Save Changes"}
           </Btn>
-          <Btn onClick={handleSignOut} variant="outline" className="border-purple-500/40 bg-slate-900/30 hover:bg-purple-500/10 hover:border-purple-400/60 text-purple-200 hover:text-purple-100 hover:shadow-purple-400/20 transition-all duration-300">
+          <Btn onClick={handleSignOut} variant="outline" className="w-full sm:w-auto border-purple-500/40 bg-slate-900/30 hover:bg-purple-500/10 hover:border-purple-400/60 text-purple-200 hover:text-purple-100 hover:shadow-purple-400/20 transition-all duration-300">
             Sign Out
           </Btn>
         </div>

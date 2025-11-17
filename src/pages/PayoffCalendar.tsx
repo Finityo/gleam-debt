@@ -46,12 +46,12 @@ export default function PayoffCalendarPage() {
   }, [plan, debts]);
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-3 sm:p-4 md:p-6">
       <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back
       </Button>
-      <h1 className="text-3xl font-bold mb-6">Payoff Calendar</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6">Payoff Calendar</h1>
       <Card className="overflow-x-auto">
         <table className="w-full min-w-[720px] border-collapse">
           <thead>

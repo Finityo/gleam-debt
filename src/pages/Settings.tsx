@@ -31,8 +31,8 @@ export default function SettingsPage() {
     <AppLayout>
       <div className="space-y-6 animate-fade-in max-w-4xl">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Settings className="h-8 w-8" />
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <Settings className="h-6 w-6 sm:h-8 sm:w-8" />
             Settings
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -176,11 +176,11 @@ export default function SettingsPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={handleCancel}>
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button onClick={handleSave}>
+              <Button onClick={handleSave} className="w-full sm:w-auto">
                 Save Settings
               </Button>
             </div>
