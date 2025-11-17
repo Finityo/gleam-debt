@@ -180,6 +180,108 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </Card>
+
+        {/* Appearance Settings */}
+        <Card className="p-6">
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Appearance
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Customize the visual style of your dashboard
+              </p>
+            </div>
+
+            {/* Glass Blur */}
+            <div className="space-y-3">
+              <Label htmlFor="glassBlur" className="text-base font-medium">
+                Glass Blur Intensity
+              </Label>
+              <Select
+                value={localAppearance.glassBlur}
+                onValueChange={(value: "light" | "standard" | "ultra") =>
+                  setLocalAppearance({ ...localAppearance, glassBlur: value })
+                }
+              >
+                <SelectTrigger id="glassBlur" className="h-12">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Light (8px)</SelectItem>
+                  <SelectItem value="standard">Standard (12px)</SelectItem>
+                  <SelectItem value="ultra">Ultra (18px)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Transparency */}
+            <div className="space-y-3">
+              <Label htmlFor="transparency" className="text-base font-medium">
+                Background Transparency
+              </Label>
+              <Select
+                value={localAppearance.transparency}
+                onValueChange={(value: "solid" | "standard" | "ultra") =>
+                  setLocalAppearance({ ...localAppearance, transparency: value })
+                }
+              >
+                <SelectTrigger id="transparency" className="h-12">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="solid">Solid (95%)</SelectItem>
+                  <SelectItem value="standard">Standard (60%)</SelectItem>
+                  <SelectItem value="ultra">Ultra Glass (30%)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Accent Color */}
+            <div className="space-y-3">
+              <Label htmlFor="accentColor" className="text-base font-medium">
+                Accent Color
+              </Label>
+              <Select
+                value={localAppearance.accentColor}
+                onValueChange={(value: "purple" | "teal" | "gold" | "blue") =>
+                  setLocalAppearance({ ...localAppearance, accentColor: value })
+                }
+              >
+                <SelectTrigger id="accentColor" className="h-12">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="purple">Purple (Default)</SelectItem>
+                  <SelectItem value="teal">Teal</SelectItem>
+                  <SelectItem value="gold">Gold</SelectItem>
+                  <SelectItem value="blue">Blue</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Motion Toggle */}
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div className="space-y-1">
+                <Label htmlFor="motionEnabled" className="text-base font-medium cursor-pointer">
+                  Enable Animations
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Disable all micro-animations and transitions
+                </p>
+              </div>
+              <Switch
+                id="motionEnabled"
+                checked={localAppearance.motionEnabled}
+                onCheckedChange={(checked) =>
+                  setLocalAppearance({ ...localAppearance, motionEnabled: checked })
+                }
+              />
+            </div>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t">

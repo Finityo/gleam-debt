@@ -907,6 +907,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          appearance_settings: Json | null
           created_at: string
           first_name: string
           id: string
@@ -924,6 +925,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          appearance_settings?: Json | null
           created_at?: string
           first_name: string
           id?: string
@@ -941,6 +943,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          appearance_settings?: Json | null
           created_at?: string
           first_name?: string
           id?: string

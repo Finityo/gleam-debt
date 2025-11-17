@@ -82,10 +82,10 @@ export function NavDrawer() {
                 key={item.to}
                 to={item.to}
                 className={`
-                  flex items-center gap-3 px-3 py-2 rounded-lg
+                  flex items-center gap-3 px-3 py-2 rounded-lg sidebar-active-bar
                   text-sm transition-all duration-200
                   ${active 
-                    ? "bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 font-medium" 
+                    ? "bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 font-medium active" 
                     : "text-muted-foreground hover:bg-accent/10 hover:text-foreground"
                   }
                 `}
@@ -94,7 +94,7 @@ export function NavDrawer() {
                   if (window.innerWidth < 768) setOpen(false);
                 }}
               >
-                <Icon className="h-5 w-5 flex-shrink-0" />
+                <Icon className="h-5 w-5 flex-shrink-0 icon-hover" />
                 <span className={`transition-opacity ${collapsed ? "md:opacity-0 md:w-0 md:hidden" : "opacity-100"}`}>
                   {item.label}
                 </span>

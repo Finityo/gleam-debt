@@ -44,10 +44,11 @@ export function useAppearance() {
       .from("profiles")
       .select("appearance_settings")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (!error && data?.appearance_settings) {
-      setSettings({ ...defaultSettings, ...data.appearance_settings });
+    if (!error && data && data.appearance_settings) {
+      const settings = data.appearance_settings as Record<string, any>;
+      setSettings({ ...defaultSettings, ...settings });
     }
   }
 
@@ -58,7 +59,7 @@ export function useAppearance() {
 
     await supabase
       .from("profiles")
-      .update({ appearance_settings: newSettings })
+      .update({ appearance_settings: newSettings as any })
       .eq("user_id", user.id);
   }
 
