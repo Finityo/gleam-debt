@@ -116,7 +116,7 @@ export function CoachSuggestions({ shareId, coachName = "Coach" }: Props) {
               <div
                 key={comment.id}
                 className={`border rounded-base p-3 ${
-                  comment.resolved ? "bg-gray-50 text-gray-600" : "bg-white"
+                  comment.resolved ? "glass text-muted-foreground" : "glass-intense"
                 }`}
               >
                 <div className="flex justify-between items-start mb-2">

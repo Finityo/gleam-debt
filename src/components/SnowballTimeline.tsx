@@ -15,7 +15,7 @@ export default function SnowballTimeline({ plan }: Props) {
   if (!data.length) return null;
 
   return (
-    <div className="p-4 border rounded space-y-3 max-w-md bg-white">
+    <div className="p-4 border border-border/40 rounded-2xl space-y-3 max-w-md glass">
       <h2 className="text-lg font-semibold">Snowball Pool Growth</h2>
 
       <ul className="list-inside space-y-1">

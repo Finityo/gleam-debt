@@ -22,7 +22,7 @@ export function Btn({
 
   const styles = {
     primary: "bg-black text-white hover:bg-gray-900 transition-all",
-    outline: "border border-gray-300 hover:bg-gray-50 transition-all",
+    outline: "border border-border/40 hover:glass transition-all",
     subtle: "text-gray-700 hover:text-black transition-all",
     danger: "border border-red-300 text-red-700 hover:bg-red-50 transition-all",
     cta: "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:scale-105 active:scale-95 shadow-lg transition-all",

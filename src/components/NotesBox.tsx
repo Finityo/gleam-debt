@@ -8,7 +8,7 @@ export default function NotesBox() {
   const { notes, setNotes } = usePlan();
 
   return (
-    <div className="p-4 border rounded bg-white space-y-2 max-w-xl">
+    <div className="p-4 border border-border/40 rounded-2xl glass space-y-2 max-w-xl">
       <h2 className="text-lg font-semibold">My Notes</h2>
 
       <textarea

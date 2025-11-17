@@ -8,70 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 240 20% 99%;
-    --foreground: 260 30% 12%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 260 30% 12%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 260 30% 12%;
-
-    --primary: 270 70% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 270 80% 65%;
-
-    --secondary: 260 25% 96%;
-    --secondary-foreground: 260 30% 12%;
-
-    --muted: 260 20% 96%;
-    --muted-foreground: 260 15% 45%;
-
-    --accent: 180 85% 55%;
-    --accent-foreground: 0 0% 100%;
-    --accent-glow: 180 90% 65%;
-
-    --success: 145 75% 50%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 35 95% 60%;
-    --warning-foreground: 0 0% 100%;
-
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 260 20% 90%;
-    --input: 260 20% 94%;
-    --ring: 270 70% 55%;
-
-    --radius: 0.75rem;
-
-    --gradient-primary: linear-gradient(135deg, hsl(270 70% 55%), hsl(180 85% 55%));
-    --gradient-hero: linear-gradient(180deg, hsl(262 83% 58%), hsl(243 75% 59%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(260 25% 98%));
-    
-    /* Liquid Glass Variables */
-    --glass-bg: 0 0% 100% / 0.4;
-    --glass-border: 260 20% 90% / 0.2;
-    --glass-blur: 24px;
-    --glass-shadow: 0 8px 32px 0 rgb(0 0 0 / 0.08), 0 2px 8px 0 rgb(0 0 0 / 0.04);
-    
-    --liquid-glass-bg: 0 0% 100% / 0.25;
-    --liquid-glass-border: 260 20% 95% / 0.3;
-    --liquid-glass-blur: 32px;
-    --liquid-glass-shimmer: linear-gradient(135deg, hsl(0 0% 100% / 0.1) 0%, hsl(0 0% 100% / 0) 50%, hsl(0 0% 100% / 0.1) 100%);
-    
-    --shadow-vibrant: 0 20px 60px -15px hsl(270 70% 55% / 0.4);
-    --shadow-glow: 0 0 40px hsl(270 80% 65% / 0.3);
-    --shadow-accent: 0 10px 40px -10px hsl(180 85% 55% / 0.3);
-    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.25);
-    --shadow-liquid: 0 8px 32px -4px rgb(0 0 0 / 0.12), 0 20px 48px -8px rgb(0 0 0 / 0.08), inset 0 1px 0 0 rgb(255 255 255 / 0.1);
-
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-liquid: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .dark {
+    /* Finityo Dark Theme - Forced Globally */
     --background: 220 50% 10%;
     --foreground: 210 40% 98%;
 
@@ -108,11 +45,13 @@ All colors MUST be HSL.
     --input: 220 35% 20%;
     --ring: 270 85% 65%;
 
+    --radius: 0.75rem;
+
     --gradient-primary: linear-gradient(135deg, hsl(270 85% 65%), hsl(180 90% 60%));
     --gradient-hero: linear-gradient(135deg, hsl(180 75% 15%), hsl(220 50% 10%), hsl(270 50% 18%));
     --gradient-card: linear-gradient(145deg, hsl(220 40% 14%), hsl(220 35% 18%));
     
-    /* Liquid Glass Variables - Dark Mode */
+    /* Liquid Glass Variables - Finityo Glassmorphic Style */
     --glass-bg: 220 40% 14% / 0.3;
     --glass-border: 210 40% 98% / 0.1;
     --glass-blur: 28px;
@@ -129,6 +68,9 @@ All colors MUST be HSL.
     --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.25);
     --shadow-liquid: 0 8px 32px -4px rgb(0 0 0 / 0.3), 0 20px 48px -8px rgb(0 0 0 / 0.2), inset 0 1px 0 0 rgb(255 255 255 / 0.05);
 
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-liquid: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
     /* ==== Finityo Glass – Palette & helpers ==== */
     --fin-bg-a: 180 60% 12%;
     --fin-bg-b: 220 55% 12%;
@@ -139,6 +81,11 @@ All colors MUST be HSL.
     --fin-accent-teal: 180 90% 50%;
     --fin-accent-cyan: 187 95% 55%;
     --fin-accent-magenta: 270 91% 65%;
+
+    /* ==== Finityo-specific text ==== */
+    --finityo-textMain: 210 40% 98%;
+    --finityo-textBody: 210 20% 80%;
+    --finityo-bg: 220 50% 10%;
   }
 }
 
@@ -214,12 +161,12 @@ All colors MUST be HSL.
     @apply text-primary hover:text-primary-glow underline;
   }
 
-  /* Dark mode prose adjustments */
-  .dark .prose p {
+  /* Prose text adjustments */
+  .prose p {
     @apply text-foreground/85;
   }
   
-  .dark .prose ul, .dark .prose ol {
+  .prose ul, .prose ol {
     @apply text-foreground/85;
   }
 }

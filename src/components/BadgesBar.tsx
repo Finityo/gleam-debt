@@ -19,7 +19,7 @@ export default function BadgesBar({ plan }: Props) {
       {badges.map((b) => (
         <span
           key={b.id}
-          className="px-3 py-1 text-sm rounded-full border bg-white"
+          className="px-3 py-1 text-sm rounded-full border glass border-border/40"
         >
           {b.label}
         </span>

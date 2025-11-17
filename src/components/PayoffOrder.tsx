@@ -19,7 +19,7 @@ export default function PayoffOrder({ plan, debts }: Props) {
   const nameMap = Object.fromEntries(debts.map((d) => [d.id, d.name]));
 
   return (
-    <div className="p-4 border rounded space-y-2 max-w-md bg-white">
+    <div className="p-4 border border-border/40 rounded-2xl space-y-2 max-w-md glass">
       <h2 className="text-lg font-semibold">Payoff Order</h2>
       <ol className="list-decimal list-inside space-y-1">
         {order.map((o) => (

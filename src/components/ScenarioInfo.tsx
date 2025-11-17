@@ -17,7 +17,7 @@ export default function ScenarioInfo() {
       <p className="text-xs text-gray-500">Strategy info</p>
 
       {open && (
-        <div className="absolute z-10 mt-2 w-64 p-3 bg-white border rounded shadow text-sm space-y-2">
+        <div className="absolute z-10 mt-2 w-64 p-3 glass border border-border/40 rounded-2xl shadow-lg text-sm space-y-2">
           <div>
             <strong>Snowball</strong><br />
             Start with smallest balances.<br />

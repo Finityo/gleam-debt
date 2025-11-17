@@ -36,7 +36,7 @@ export function MonthDetailAccordion({ months, maxDisplay = 24 }: Props) {
         {months.slice(0, maxDisplay).map((month) => (
           <details
             key={month.monthIndex}
-            className="border rounded-base p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+            className="border border-border/40 rounded-base p-3 cursor-pointer hover:glass transition-colors"
           >
             <summary className="font-medium text-sm">
               Month {month.monthIndex + 1} — Remaining ${month.remaining.toLocaleString()}
@@ -45,7 +45,7 @@ export function MonthDetailAccordion({ months, maxDisplay = 24 }: Props) {
               {month.payments.map((payment) => (
                 <div
                   key={payment.debtId}
-                  className="text-xs bg-gray-50 p-2 rounded grid grid-cols-2 gap-2"
+                  className="text-xs glass p-2 rounded grid grid-cols-2 gap-2"
                 >
                   <div className="font-medium col-span-2">{payment.debtName}</div>
                   <div>
