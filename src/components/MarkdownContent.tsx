@@ -7,10 +7,10 @@ interface MarkdownContentProps {
 
 export const MarkdownContent = ({ content }: MarkdownContentProps) => {
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      className="prose prose-lg max-w-none dark:prose-invert"
-      components={{
+    <div className="prose prose-lg max-w-none dark:prose-invert">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
         // Customize heading rendering
         h1: ({ children }) => (
           <h1 className="text-4xl font-bold text-foreground mb-6 mt-8">{children}</h1>
@@ -81,9 +81,10 @@ export const MarkdownContent = ({ content }: MarkdownContentProps) => {
         td: ({ children }) => (
           <td className="border border-border px-4 py-2 text-foreground/90">{children}</td>
         ),
-      }}
-    >
-      {content}
-    </ReactMarkdown>
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 };
