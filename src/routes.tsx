@@ -11,6 +11,7 @@ export const ROUTE_META = [
   { path: "/pricing", title: "Pricing" },
   { path: "/onboarding", title: "Onboarding" },
   { path: "/blog", title: "Blog" },
+  { path: "/resources", title: "Resources" },
   { path: "/auth", title: "Sign In" },
   { path: "/dashboard", title: "Dashboard", protected: true },
   { path: "/debts", title: "Manage Debts", protected: true },
@@ -80,6 +81,7 @@ const Terms = lazy(() => import("@/pages/Terms"));
 const Disclosures = lazy(() => import("@/pages/Disclosures"));
 const Blog = lazy(() => import("@/pages/Blog"));
 const BlogPost = lazy(() => import("@/pages/BlogPost"));
+const Resources = lazy(() => import("@/pages/Resources"));
 const Sitemap = lazy(() => import("@/pages/Sitemap"));
 const Install = lazy(() => import("@/pages/Install"));
 
@@ -153,6 +155,7 @@ export function AppRoutes() {
           <Route path="/disclosures" element={<Disclosures />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/resources" element={<Resources />} />
           <Route path="/sitemap" element={<Sitemap />} />
           <Route path="/install" element={<Install />} />
           
