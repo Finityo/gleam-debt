@@ -8,8 +8,10 @@ export type DebtExportRow = {
   apr: number;
   minPayment: number;
   dueDay?: number;
+  dueDate?: string;
   category?: string;
   last4?: string;
+  notes?: string;
 };
 
 export function debtToCSV(debts: DebtExportRow[]): string {
@@ -50,25 +52,28 @@ export async function parseExcelFile(file: File): Promise<DebtExportRow[]> {
         
         const parsed: DebtExportRow[] = [];
         
-        // Skip header row (first row)
-        for (let i = 1; i < rows.length; i++) {
+        // Skip header row (index 0) and sample row (index 1)
+        for (let i = 2; i < rows.length; i++) {
           const row = rows[i];
           if (!row || row.length < 3) continue;
           
-          const name = String(row[0] || "").trim();
-          const last4 = String(row[1] || "").trim();
-          const balance = String(row[2] || "").replace(/[$,]/g, '');
+          const creditor = String(row[0] || "").trim();
+          const balance = String(row[1] || "").replace(/[$,]/g, '');
+          const apr = String(row[2] || "").replace(/%/g, '');
           const minPayment = String(row[3] || "").replace(/[$,]/g, '');
-          const apr = String(row[4] || "").replace(/%/g, '');
+          const dueDate = row[4] ? String(row[4]).trim() : "";
+          const notes = row[5] ? String(row[5]).trim() : "";
           
-          if (!name || name === "") continue;
+          // Skip empty rows or sample row
+          if (!creditor || creditor === "" || creditor.toLowerCase().includes("sample")) continue;
           
           parsed.push({
-            name,
-            last4,
+            name: creditor,
             balance: parseFloat(balance) || 0,
-            minPayment: parseFloat(minPayment) || 0,
             apr: parseFloat(apr) || 0,
+            minPayment: parseFloat(minPayment) || 0,
+            dueDate: dueDate || undefined,
+            notes: notes || undefined,
           });
         }
         
@@ -103,4 +108,61 @@ export function parseExcelPaste(pasteText: string): DebtExportRow[] {
   }
 
   return parsed;
+}
+
+// Export template XLSX file for user to fill in
+export function downloadTemplate() {
+  const wb = XLSX.utils.book_new();
+  
+  // Create worksheet with headers and sample row
+  const data = [
+    ["Creditor", "Balance", "APR (%)", "Minimum Payment", "Due Date (MM/DD/YYYY)", "Notes"],
+    ["Sample Credit Card", 1200, 19.99, 45, "01/15/2026", "Sample debt — replace with your own"]
+  ];
+  
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  
+  // Set column widths for better readability
+  ws['!cols'] = [
+    { wch: 25 },  // Creditor
+    { wch: 12 },  // Balance
+    { wch: 10 },  // APR
+    { wch: 18 },  // Minimum Payment
+    { wch: 22 },  // Due Date
+    { wch: 40 },  // Notes
+  ];
+  
+  XLSX.utils.book_append_sheet(wb, ws, "Debts");
+  XLSX.writeFile(wb, "Finityo_Debt_Import_Template.xlsx");
+}
+
+// Export current debts to XLSX
+export function exportDebtsToXLSX(debts: DebtExportRow[]) {
+  const wb = XLSX.utils.book_new();
+  
+  const data = [
+    ["Creditor", "Balance", "APR (%)", "Minimum Payment", "Due Date (MM/DD/YYYY)", "Notes"],
+    ...debts.map(d => [
+      d.name,
+      d.balance,
+      d.apr,
+      d.minPayment,
+      d.dueDate || "",
+      d.notes || ""
+    ])
+  ];
+  
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  
+  ws['!cols'] = [
+    { wch: 25 },
+    { wch: 12 },
+    { wch: 10 },
+    { wch: 18 },
+    { wch: 22 },
+    { wch: 40 },
+  ];
+  
+  XLSX.utils.book_append_sheet(wb, ws, "Debts");
+  XLSX.writeFile(wb, "Finityo_My_Debts.xlsx");
 }
