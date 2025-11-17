@@ -152,7 +152,7 @@ const AIAdvisor = () => {
         title="AI Financial Advisor - Finityo"
         description="Get personalized debt management advice from our AI financial advisor"
       />
-      <div className="min-h-screen bg-gradient-subtle p-4">
+      <div className="min-h-screen py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <Button
             variant="ghost"
@@ -162,7 +162,7 @@ const AIAdvisor = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
-          <Card className="flex flex-col" style={{ height: 'calc(100vh - 6rem)' }}>
+          <Card className="flex flex-col glass-intense border-border/40" style={{ height: 'calc(100vh - 6rem)' }}>
             <div className="p-6 border-b space-y-4 flex-shrink-0">
               <div>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -174,9 +174,9 @@ const AIAdvisor = () => {
                 </p>
               </div>
               
-              <Alert variant="destructive" className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900">
-                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
-                <AlertDescription className="text-amber-800 dark:text-amber-200 text-sm">
+              <Alert variant="destructive" className="glass-intense border-warning/40">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                <AlertDescription className="text-foreground text-sm">
                   <strong>Disclaimer:</strong> This AI chatbot is for informational and educational purposes only. It does not constitute professional financial, legal, or tax advice. The information provided should not be relied upon as a substitute for consultation with qualified financial advisors, accountants, or legal professionals. Always consult with licensed professionals before making financial decisions. Finityo assumes no liability for actions taken based on information provided by this AI tool.
                 </AlertDescription>
               </Alert>

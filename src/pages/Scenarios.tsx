@@ -87,10 +87,10 @@ Minimum Only: ${result.minimum.summary.finalMonthIndex + 1} months
       </div>
 
       {scenarios.length === 0 && (
-        <Card>
+        <Card className="glass-intense border-border/40">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <BarChart3 className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">No scenarios yet</p>
+            <BarChart3 className="h-12 w-12 text-primary mb-4" />
+            <p className="text-lg font-medium text-foreground">No scenarios yet</p>
             <p className="text-sm text-muted-foreground mt-1">
               Create your first scenario to get started
             </p>
