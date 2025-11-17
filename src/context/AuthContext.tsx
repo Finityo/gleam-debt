@@ -41,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     const redirectUrl = `${window.location.origin}/`;
+    const fullName = `${firstName} ${lastName}`.trim();
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -50,25 +51,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data: {
           first_name: firstName,
           last_name: lastName,
-          full_name: `${firstName} ${lastName}`.trim(),
+          full_name: fullName,
         },
       },
     });
 
     if (error) throw error;
     
-    // Send welcome email after successful signup
+    // Send welcome email immediately after successful signup
     if (data.user) {
       try {
         await supabase.functions.invoke('send-welcome-email', {
           body: { 
-            email: data.user.email,
-            name: data.user.user_metadata?.full_name || firstName
+            email: email,
+            name: fullName || email.split("@")[0]
           }
         });
-        console.log('Welcome email sent successfully');
-      } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError);
+        console.log('Welcome email sent to:', email);
+      } catch (emailErr) {
+        console.error('Welcome email failed:', emailErr);
         // Don't throw - signup was successful even if email fails
       }
     }
