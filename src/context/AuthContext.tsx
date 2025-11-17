@@ -6,6 +6,7 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  sessionLoaded: boolean;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -98,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, sessionLoaded: !loading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

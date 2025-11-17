@@ -15,14 +15,13 @@ import { useAppearance } from "@/hooks/useAppearance";
 
 export default function SettingsPage() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, sessionLoaded } = useAuth();
   const { state, updateSettings } = useApp();
   const [localSettings, setLocalSettings] = useState(state.settings);
   const { settings: appearanceSettings, saveSettings: saveAppearanceSettings } = useAppearance();
   const [localAppearance, setLocalAppearance] = useState(appearanceSettings);
 
   // Fix: Do NOT redirect until auth state has fully resolved
-  const sessionLoaded = !loading;
   
   if (!sessionLoaded) {
     return (
