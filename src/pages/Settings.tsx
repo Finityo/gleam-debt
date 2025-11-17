@@ -6,12 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, DollarSign, TrendingUp } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Settings, DollarSign, TrendingUp, Palette } from "lucide-react";
 import { toast } from "sonner";
+import { useAppearance } from "@/hooks/useAppearance";
 
 export default function SettingsPage() {
   const { state, updateSettings } = useApp();
   const [localSettings, setLocalSettings] = useState(state.settings);
+  const { settings: appearanceSettings, saveSettings: saveAppearanceSettings } = useAppearance();
+  const [localAppearance, setLocalAppearance] = useState(appearanceSettings);
 
   function handleChange(key: string, value: any) {
     setLocalSettings({ ...localSettings, [key]: value });
@@ -19,11 +23,13 @@ export default function SettingsPage() {
 
   function handleSave() {
     updateSettings(localSettings);
+    saveAppearanceSettings(localAppearance);
     toast.success("Settings saved successfully");
   }
 
   function handleCancel() {
     setLocalSettings(state.settings);
+    setLocalAppearance(appearanceSettings);
     toast.info("Changes discarded");
   }
 
