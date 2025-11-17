@@ -81,6 +81,7 @@ const Terms = lazy(() => import("@/pages/Terms"));
 const Disclosures = lazy(() => import("@/pages/Disclosures"));
 const Blog = lazy(() => import("@/pages/Blog"));
 const BlogPost = lazy(() => import("@/pages/BlogPost"));
+const BlogList = lazy(() => import("@/pages/BlogList"));
 const Resources = lazy(() => import("@/pages/Resources"));
 const Sitemap = lazy(() => import("@/pages/Sitemap"));
 const Install = lazy(() => import("@/pages/Install"));
@@ -151,13 +152,13 @@ export function AppRoutes() {
           <Route path="/pricing" element={<PricingNew />} />
           <Route path="/about" element={<About />} />
           <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/disclosures" element={<Disclosures />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/sitemap" element={<Sitemap />} />
-          <Route path="/install" element={<Install />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/disclosures" element={<Disclosures />} />
+            <Route path="/blog" element={<BlogList />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/sitemap" element={<Sitemap />} />
+            <Route path="/install" element={<Install />} />
           
           {/* ===== AUTH ROUTES ===== */}
           <Route path="/auth" element={<AuthPage />} />

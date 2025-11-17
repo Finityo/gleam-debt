@@ -12,6 +12,7 @@ import { PricingSection } from "@/components/landing/PricingSection";
 import { InteractiveCalculator } from "@/components/landing/InteractiveCalculator";
 import { TestimonialsCarousel } from "@/components/landing/TestimonialsCarousel";
 import { InteractiveDemo } from "@/components/InteractiveDemo";
+import { ComparisonTable } from "@/components/landing/ComparisonTable";
 
 export default function Index() {
   return (
@@ -106,6 +107,9 @@ export default function Index() {
 
       {/* Testimonials Section */}
       <TestimonialsCarousel />
+
+      {/* Feature Comparison Table */}
+      <ComparisonTable />
 
       {/* Pricing Section */}
       <PricingSection />
