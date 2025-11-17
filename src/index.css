@@ -2,6 +2,143 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   FINITYO MICRO-INTERACTIONS & ANIMATIONS
+   ============================================ */
+
+@layer utilities {
+  /* Card Hover Effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.005] hover:shadow-[0_8px_30px_hsl(var(--primary)/0.25)] active:scale-[0.99];
+  }
+  
+  /* Button Ripple Effect */
+  .btn-ripple {
+    @apply relative overflow-hidden;
+  }
+  
+  .btn-ripple::after {
+    content: '';
+    @apply absolute inset-0 bg-white/20 rounded-xl opacity-0 scale-0 transition-all duration-500;
+  }
+  
+  .btn-ripple:active::after {
+    @apply opacity-100 scale-100;
+  }
+  
+  /* Button Glow Hover */
+  .btn-glow {
+    @apply transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--accent)/0.6)];
+  }
+  
+  /* Icon Hover Rotate */
+  .icon-hover {
+    @apply transition-transform duration-200 hover:rotate-3;
+  }
+  
+  /* Row Hover Highlight */
+  .row-hover {
+    @apply transition-colors duration-200 hover:bg-primary/5;
+  }
+  
+  /* Animated Border Gradient */
+  .border-gradient-animate {
+    @apply relative;
+  }
+  
+  .border-gradient-animate::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl p-[2px] bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] opacity-0 transition-opacity duration-300;
+    animation: borderSweep 8s linear infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  
+  .border-gradient-animate:hover::before {
+    @apply opacity-100;
+  }
+  
+  /* Inner Glow Stroke for Buttons */
+  .btn-inner-glow {
+    @apply relative;
+  }
+  
+  .btn-inner-glow::before {
+    content: '';
+    @apply absolute inset-[1px] rounded-xl border border-white/0 transition-all duration-300;
+  }
+  
+  .btn-inner-glow:hover::before {
+    @apply border-white/30 shadow-[inset_0_0_12px_hsl(var(--accent)/0.4)];
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Sidebar Active Item Gradient Bar */
+  .sidebar-active-bar {
+    @apply relative;
+  }
+  
+  .sidebar-active-bar::before {
+    content: '';
+    @apply absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-accent opacity-0 transition-opacity duration-300;
+  }
+  
+  .sidebar-active-bar.active::before {
+    @apply opacity-100;
+    animation: slideDown 0.3s ease-out;
+  }
+  
+  /* Glass Blur Variations */
+  .glass-blur-light {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  .glass-blur-standard {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  .glass-blur-ultra {
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  
+  /* Transparency Variations */
+  .glass-solid {
+    @apply bg-[hsl(var(--card))]/95;
+  }
+  
+  .glass-standard {
+    @apply bg-[hsl(var(--card))]/60;
+  }
+  
+  .glass-ultra {
+    @apply bg-[hsl(var(--card))]/30;
+  }
+}
+
+@keyframes borderSweep {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
