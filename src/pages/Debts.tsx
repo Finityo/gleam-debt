@@ -13,10 +13,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2, CreditCard, Download, Upload, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, Edit2, CreditCard, Download, Upload, ArrowLeft, FileSpreadsheet } from "lucide-react";
 import type { Debt } from "@/lib/computeDebtPlan";
 import { toast } from "sonner";
-import { debtToCSV, downloadCSV, parseExcelFile } from "@/lib/csvExport";
+import { debtToCSV, downloadCSV, parseExcelFile, downloadTemplate, exportDebtsToXLSX } from "@/lib/csvExport";
 import { DebtQuickEdit } from "@/components/DebtQuickEdit";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
 
@@ -111,6 +111,23 @@ export default function DebtsPage() {
     toast.success("CSV exported");
   }
 
+  function handleExportXLSX() {
+    exportDebtsToXLSX(
+      state.debts.map((d) => ({
+        name: d.name,
+        balance: d.balance,
+        apr: d.apr,
+        minPayment: d.minPayment,
+      }))
+    );
+    toast.success("Excel file exported");
+  }
+
+  function handleDownloadTemplate() {
+    downloadTemplate();
+    toast.success("Template downloaded");
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
@@ -131,14 +148,19 @@ export default function DebtsPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="flex-1 sm:flex-none">
+              <FileSpreadsheet className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Download Template</span>
+              <span className="sm:hidden">Template</span>
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setShowImport(true)} className="flex-1 sm:flex-none">
               <Upload className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Import from Excel</span>
+              <span className="hidden sm:inline">Import Excel/CSV</span>
               <span className="sm:hidden">Import</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={handleExportCSV} className="flex-1 sm:flex-none">
+            <Button variant="outline" size="sm" onClick={handleExportXLSX} className="flex-1 sm:flex-none">
               <Download className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Export CSV</span>
+              <span className="hidden sm:inline">Export Excel</span>
               <span className="sm:hidden">Export</span>
             </Button>
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
