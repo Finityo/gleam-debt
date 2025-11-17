@@ -3,12 +3,20 @@ import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { blogPosts } from "@/data/blogPosts";
+import { markdownPostFiles } from "@/data/markdownBlogPosts";
+import { parseAllMarkdownPosts } from "@/lib/markdownParser";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 const BlogPost = () => {
   const navigate = useNavigate();
   const { slug } = useParams();
   
-  const post = blogPosts.find(p => p.slug === slug);
+  // Combine TSX posts and markdown posts
+  const markdownPosts = parseAllMarkdownPosts(markdownPostFiles);
+  const allPosts = [...blogPosts, ...markdownPosts];
+  
+  const post = allPosts.find(p => p.slug === slug);
+  const isMarkdownPost = markdownPosts.some(p => p.slug === slug);
 
   if (!post) {
     navigate('/blog');
@@ -73,7 +81,11 @@ const BlogPost = () => {
         </header>
 
         <div className="prose prose-lg max-w-none dark:prose-invert">
-          {post.content}
+          {isMarkdownPost ? (
+            <MarkdownContent content={typeof post.content === 'string' ? post.content : ''} />
+          ) : (
+            post.content
+          )}
         </div>
 
         <footer className="mt-12 pt-8 border-t border-border">

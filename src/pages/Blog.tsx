@@ -3,11 +3,17 @@ import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
 import { ArrowLeft, Calendar, Clock, ArrowRight } from "lucide-react";
 import { blogPosts } from "@/data/blogPosts";
+import { markdownPostFiles } from "@/data/markdownBlogPosts";
+import { parseAllMarkdownPosts } from "@/lib/markdownParser";
 import { useSmartNavigation } from '@/hooks/useSmartNavigation';
 
 const Blog = () => {
   const { goToHome } = useSmartNavigation();
   const navigate = useNavigate();
+
+  // Combine TSX posts and markdown posts
+  const markdownPosts = parseAllMarkdownPosts(markdownPostFiles);
+  const allPosts = [...blogPosts, ...markdownPosts];
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -46,7 +52,7 @@ const Blog = () => {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post) => (
+          {allPosts.map((post) => (
             <article
               key={post.slug}
               className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-vibrant hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
