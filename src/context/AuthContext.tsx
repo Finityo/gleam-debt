@@ -50,23 +50,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data: {
           first_name: firstName,
           last_name: lastName,
+          full_name: `${firstName} ${lastName}`.trim(),
         },
       },
     });
 
     if (error) throw error;
     
-    // Send welcome email
-    try {
-      await supabase.functions.invoke('send-welcome-email', {
-        body: { 
-          email,
-          name: firstName 
-        }
-      });
-    } catch (emailError) {
-      console.error('Failed to send welcome email:', emailError);
-      // Don't throw - signup was successful even if email fails
+    // Send welcome email after successful signup
+    if (data.user) {
+      try {
+        await supabase.functions.invoke('send-welcome-email', {
+          body: { 
+            email: data.user.email,
+            name: data.user.user_metadata?.full_name || firstName
+          }
+        });
+        console.log('Welcome email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Don't throw - signup was successful even if email fails
+      }
     }
     
     // Session is set by onAuthStateChange
