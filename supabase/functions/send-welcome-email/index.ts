@@ -1,8 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -23,13 +21,29 @@ const handler = async (req: Request): Promise<Response> => {
     
     if (!email) {
       return new Response(
-        JSON.stringify({ success: false, error: "Missing email" }), 
+        JSON.stringify({ ok: false, error: "Missing email" }), 
         { 
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
     }
+
+    // Check if RESEND_API_KEY is configured
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    if (!apiKey) {
+      console.log("RESEND_API_KEY not configured - running in test mode");
+      return new Response(
+        JSON.stringify({ ok: true, testMode: true, message: "Email would be sent in production" }), 
+        { 
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const resend = new Resend(apiKey);
+    const displayName = name || email.split("@")[0];
 
     console.log("Sending welcome email to:", email);
 
@@ -38,78 +52,112 @@ const handler = async (req: Request): Promise<Response> => {
       to: [email],
       subject: "Welcome to Finityo 🚀 Your Debt-Free Journey Starts Now",
       html: `
-  <div style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 30px;">
-    <div style="max-width: 550px; margin: 0 auto; background: white; border-radius: 14px; padding: 35px; text-align: center;">
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <div style="background: #f5f5f5; padding: 30px 15px;">
+    <div style="max-width: 550px; margin: 0 auto; background: white; border-radius: 14px; padding: 35px 25px; text-align: center;">
 
       <!-- Logo -->
-      <img 
-        src="https://finityo-debt.com/finityo-logo-final.png" 
-        alt="Finityo" 
-        style="width: 120px; margin-bottom: 25px;"
-      />
+      <div style="margin-bottom: 25px;">
+        <img 
+          src="https://finityo-debt.com/finityo-logo-final.png" 
+          alt="Finityo" 
+          style="width: 120px; height: auto; display: inline-block;"
+        />
+      </div>
 
       <!-- Header -->
-      <h1 style="font-size: 26px; color: #111; margin-bottom: 10px;">
-        Welcome to Finityo 🎉
+      <h1 style="font-size: 26px; color: #111; margin: 0 0 10px 0; font-weight: 600;">
+        Welcome to Finityo, ${displayName}! 🎉
       </h1>
 
       <!-- Subheader -->
-      <p style="font-size: 16px; color: #444; line-height: 24px;">
-        You're officially taking the first step toward becoming debt-free.
+      <p style="font-size: 16px; color: #444; line-height: 24px; margin: 0 0 20px 0;">
+        You're officially taking the first step toward becoming debt-free.<br>
         We're excited to walk this journey with you.
       </p>
 
-      <hr style="margin: 30px 0; border: none; border-bottom: 1px solid #eaeaea;" />
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #eaeaea;" />
 
       <!-- Motivation section -->
-      <p style="font-size: 15px; color: #555; line-height: 22px;">
+      <p style="font-size: 15px; color: #555; line-height: 22px; margin: 0 0 20px 0;">
         Every great comeback starts with a single move — and you just made yours.
         You now have access to tools that help you organize, track, and crush your debt
         with clarity and confidence.
       </p>
 
-      <!-- Button -->
-      <a 
-        href="https://finityo-debt.com"
-        style="
-          display: inline-block; 
-          margin-top: 20px; 
-          background: #111; 
-          color: white; 
-          padding: 12px 22px; 
-          border-radius: 8px; 
-          text-decoration: none;
-          font-size: 15px;
-        "
-      >Open Your Dashboard</a>
+      <!-- Dashboard Button -->
+      <div style="margin: 25px 0;">
+        <a 
+          href="https://finityo-debt.com/dashboard"
+          style="
+            display: inline-block; 
+            background: #111; 
+            color: white; 
+            padding: 14px 28px; 
+            border-radius: 8px; 
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+          "
+        >Open Your Dashboard</a>
+      </div>
 
-      <hr style="margin: 30px 0; border: none; border-bottom: 1px solid #eaeaea;" />
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #eaeaea;" />
 
       <!-- Blog Section -->
-      <h2 style="font-size: 20px; color: #111; margin-bottom: 8px;">Learn & Build Momentum</h2>
+      <h2 style="font-size: 20px; color: #111; margin: 0 0 12px 0; font-weight: 600;">
+        Learn & Build Momentum
+      </h2>
 
-      <p style="font-size: 15px; color: #444; margin-bottom: 10px;">
-        Start with one of our most popular articles:
+      <p style="font-size: 15px; color: #444; margin: 0 0 15px 0; line-height: 22px;">
+        Start with one of our most popular articles to accelerate your debt-free journey.
       </p>
 
-      <a 
-        href="https://finityo-debt.com/blog"
-        style="color: #0066ff; font-size: 15px; text-decoration: underline;"
-      >Visit the Finityo Blog</a>
+      <!-- Blog CTA Button -->
+      <div style="margin: 20px 0;">
+        <a 
+          href="https://www.finityo-debt.com/blog"
+          style="
+            display: inline-block; 
+            background: #0066ff; 
+            color: white; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+          "
+        >View The Blog</a>
+      </div>
 
-      <p style="margin-top: 25px; font-size: 12px; color: #888;">
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #eaeaea;" />
+
+      <!-- Footer -->
+      <p style="margin: 20px 0 0 0; font-size: 14px; color: #666; line-height: 20px;">
+        <strong>Your journey to debt freedom starts now.</strong>
+      </p>
+
+      <p style="margin: 15px 0 0 0; font-size: 12px; color: #888;">
         No spam. Helpful insights only.
       </p>
 
     </div>
   </div>
+</body>
+</html>
 `,
     });
 
     console.log("Welcome email sent successfully:", result);
 
     return new Response(
-      JSON.stringify({ success: true, result }), 
+      JSON.stringify({ ok: true, data: result.data }), 
       { 
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -119,7 +167,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Welcome email error:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }), 
+      JSON.stringify({ ok: false, error: error.message }), 
       { 
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
