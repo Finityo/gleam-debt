@@ -10,7 +10,7 @@ const corsHeaders = {
 
 interface WelcomeEmailRequest {
   email: string;
-  firstName?: string;
+  name?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -19,80 +19,36 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, firstName }: WelcomeEmailRequest = await req.json();
+    const { email, name }: WelcomeEmailRequest = await req.json();
     
     console.log("Sending welcome email to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "Finityo <onboarding@resend.dev>",
+      from: "Finityo <support@finityo-debt.com>",
       to: [email],
-      subject: "Welcome to Finityo — Your First Move Toward Freedom",
+      subject: "Welcome to Finityo 🚀 Your Debt-Free Journey Starts Now",
       html: `
-        <div style="font-family: Helvetica, Arial, sans-serif; padding: 30px; max-width: 640px; margin: auto; background: #ffffff; color: #111;">
+        <div style="font-family:Arial, sans-serif; max-width:600px; margin:auto; padding:20px; text-align:center;">
+          <img src="https://www.finityo-debt.com/icon512.png" width="120" style="margin-bottom:20px;" />
 
-          <!-- Logo -->
-          <div style="text-align: center; margin-bottom: 25px;">
-            <img src="https://finityo-debt.com/logo.png" alt="Finityo Logo" style="width:130px; border-radius: 24px;">
-          </div>
+          <h1 style="color:#111;">Welcome to Finityo!</h1>
 
-          <!-- Heading -->
-          <h1 style="text-align: center; font-size: 28px; margin-bottom: 10px; color: #111;">
-            Welcome to Finityo${firstName ? `, ${firstName}` : ''}
-          </h1>
-
-          <p style="font-size: 16px; line-height: 1.6; text-align: center; margin-bottom: 20px;">
-            You just made your first move toward becoming debt-free — and that's a big deal.
+          <p style="font-size:16px; line-height:1.6; color:#333;">
+            Hi ${name || "there"},<br><br>
+            You just took the first step toward becoming debt-free — and that's not small thing.
+            We're here to guide you with smart strategies, clear visual tools, and motivation
+            every step of the way.
           </p>
 
-          <p style="font-size: 16px; line-height: 1.6; text-align: center; margin-bottom: 25px;">
-            Finityo gives you a clear payoff plan, a freedom date, and the tools to build momentum.  
-            You're not doing this alone — the system is built to guide you step-by-step.
+          <p style="font-size:16px; line-height:1.6; color:#333;">
+            Explore our latest tips and strategies on the blog:<br>
+            <a href="https://www.finityo-debt.com/blog" style="color:#0070f3; text-decoration:none;">
+              Visit the Finityo Blog →
+            </a>
           </p>
 
-          <!-- CTA Buttons -->
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="https://finityo-debt.com/setup/start"
-               style="background:#6C3DF5; color:#fff; padding:14px 28px; border-radius:10px; 
-                      font-size:16px; text-decoration:none; display:inline-block; margin-bottom:10px;">
-              Get Started
-            </a>
-            <br>
-            <a href="https://finityo-debt.com/blog"
-               style="color:#6C3DF5; font-size:15px; text-decoration:none;">
-              Explore the Blog
-            </a>
-          </div>
-
-          <!-- Divider -->
-          <hr style="border:0; border-top:1px solid #eee; margin:30px 0;">
-
-          <!-- What to Do Next -->
-          <h2 style="font-size:20px; margin-bottom:10px;">Your Next Steps</h2>
-          <ul style="font-size:16px; line-height:1.7; padding-left:20px; color:#333;">
-            <li>Connect your bank with Plaid (Ultimate plan)</li>
-            <li>Add your debts manually or via import</li>
-            <li>Choose Snowball, Avalanche, or AI Hybrid</li>
-            <li>See your exact debt-free date</li>
-            <li>Check your payoff calendar and track progress</li>
-          </ul>
-
-          <!-- Blog CTA -->
-          <div style="margin-top: 25px;">
-            <p style="font-size: 16px; line-height: 1.6;">
-              Want real tips and strategies while you build your plan?
-              Our blog has simple breakdowns you can put to use immediately:
-            </p>
-
-            <a href="https://finityo-debt.com/blog"
-               style="display:inline-block; margin-top:10px; font-size:15px; color:#0d6efd; text-decoration:none;">
-              ➜ Visit the Finityo Blog
-            </a>
-          </div>
-
-          <!-- Footer -->
-          <p style="font-size:13px; text-align:center; margin-top:40px; color:#888;">
-            Finityo — Debt Simplified <br>
-            © 2024 Finityo. All rights reserved.
+          <p style="margin-top:30px; font-size:14px; color:#555;">
+            Stay focused. Stay consistent. You've got this.
           </p>
         </div>
       `,
@@ -100,7 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Welcome email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, result: emailResponse }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -108,9 +64,9 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error in send-welcome-email function:", error);
+    console.error("Welcome email error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ success: false, error: error.message }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

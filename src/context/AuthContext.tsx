@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await supabase.functions.invoke('send-welcome-email', {
         body: { 
           email,
-          firstName 
+          name: firstName 
         }
       });
     } catch (emailError) {
