@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Loader2, Send, Bot, User, AlertTriangle, ArrowLeft } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,6 +18,7 @@ type Message = {
 
 const AIAdvisor = () => {
   const navigate = useNavigate();
+  const { session, user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -35,15 +37,13 @@ const AIAdvisor = () => {
     setIsLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Optionally fetch user's debt data for context (only if logged in)
+      // Fetch user's debt data for context
       let debtContext = null;
-      if (session) {
+      if (session && user) {
         const { data: debts } = await supabase
           .from("debts")
           .select("name, balance, apr, min_payment")
-          .eq("user_id", session.user.id);
+          .eq("user_id", user.id);
         
         if (debts && debts.length > 0) {
           debtContext = {
@@ -56,14 +56,14 @@ const AIAdvisor = () => {
 
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-financial-advisor`;
       
+      if (!session?.access_token) {
+        throw new Error("You must be logged in to use the AI advisor");
+      }
+      
       const headers: HeadersInit = {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
       };
-      
-      // Add auth token only if logged in
-      if (session) {
-        headers.Authorization = `Bearer ${session.access_token}`;
-      }
       
       const resp = await fetch(CHAT_URL, {
         method: "POST",
