@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { DemoPlanProvider } from "@/context/DemoPlanContext";
 import { RequireAuth } from "@/components/RequireAuth";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 
 // ===== ROUTE METADATA =====
