@@ -1138,6 +1138,66 @@ export type Database = {
         }
         Relationships: []
       }
+      team_invites: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          email: string
+          expires_at: string
+          id: string
+          role: string
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          email: string
+          expires_at: string
+          id?: string
+          role: string
+          token: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          role?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
+      team_registration_attempts: {
+        Row: {
+          attempted_at: string | null
+          email: string | null
+          id: string
+          ip_address: string
+          success: boolean | null
+        }
+        Insert: {
+          attempted_at?: string | null
+          email?: string | null
+          id?: string
+          ip_address: string
+          success?: boolean | null
+        }
+        Update: {
+          attempted_at?: string | null
+          email?: string | null
+          id?: string
+          ip_address?: string
+          success?: boolean | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           account_id: string | null
@@ -1357,6 +1417,27 @@ export type Database = {
         }
         Relationships: []
       }
+      welcome_emails_sent: {
+        Row: {
+          email: string
+          id: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       plaid_link_conversion_stats: {
@@ -1397,6 +1478,7 @@ export type Database = {
         Returns: boolean
       }
       hash_ip_address: { Args: { ip_text: string }; Returns: string }
+      is_team_admin: { Args: { _email: string }; Returns: boolean }
       log_plaid_api_call: {
         Args: {
           p_endpoint: string
