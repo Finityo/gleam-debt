@@ -13,7 +13,7 @@ const TeamLogin = () => {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [role, setRole] = useState<"admin" | "support" | "readonly">("support");
+  const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [resetMode, setResetMode] = useState(false);
@@ -29,6 +29,14 @@ const TeamLogin = () => {
     if (type === 'recovery') {
       setIsUpdatingPassword(true);
       toast.info("Enter your new password below");
+    }
+
+    // Check if there's an invite token in URL
+    const inviteToken = searchParams.get('token');
+    if (inviteToken) {
+      setToken(inviteToken);
+      setIsRegisterMode(true);
+      toast.info("Complete your registration using the invite link");
     }
   }, [searchParams]);
 
@@ -74,12 +82,15 @@ const TeamLogin = () => {
     setLoading(true);
 
     try {
-      // Use public self-registration endpoint
+      if (!token) {
+        throw new Error("Registration requires an invite token. Please contact your administrator.");
+      }
+
+      // Use secure token-based registration endpoint
       const { data, error } = await supabase.functions.invoke('team-self-register', {
         body: {
-          email,
+          token,
           password,
-          role,
           first_name: firstName,
           last_name: lastName,
         }
@@ -90,7 +101,7 @@ const TeamLogin = () => {
 
       toast.success(data?.message || "Registration successful! You can now sign in.");
       setIsRegisterMode(false);
-      setEmail("");
+      setToken("");
       setPassword("");
       setFirstName("");
       setLastName("");
@@ -211,6 +222,27 @@ const TeamLogin = () => {
 
           {!isUpdatingPassword && !resetMode && isRegisterMode && (
             <>
+              {!token && (
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-sm text-yellow-800">
+                    Team registration requires an invite link. Please contact your administrator.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="invite-token">Invite Token</Label>
+                <Input
+                  id="invite-token"
+                  type="text"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="Enter your invite token"
+                  required
+                  readOnly={!!searchParams.get('token')}
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
@@ -219,7 +251,6 @@ const TeamLogin = () => {
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -229,28 +260,12 @@ const TeamLogin = () => {
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    required
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as "admin" | "support" | "readonly")}
-                  className="w-full h-10 px-3 rounded-md border border-input bg-background"
-                  required
-                >
-                  <option value="support">Support</option>
-                  <option value="admin">Admin</option>
-                  <option value="readonly">Read Only</option>
-                </select>
-              </div>
             </>
           )}
-          {!isUpdatingPassword && (
+          {!isUpdatingPassword && !isRegisterMode && (
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -272,19 +287,25 @@ const TeamLogin = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder={isRegisterMode ? "Min 10 chars with uppercase, number, special char" : ""}
                 required
               />
+              {isRegisterMode && (
+                <p className="text-xs text-muted-foreground">
+                  Password must be at least 10 characters and include uppercase, lowercase, number, and special character
+                </p>
+              )}
             </div>
           )}
 
           <Button
             type="submit"
             className="w-full"
-            disabled={loading}
+            disabled={loading || (isRegisterMode && !token)}
           >
             {loading 
-              ? (isUpdatingPassword ? "Updating password..." : resetMode ? "Sending reset email..." : isRegisterMode ? "Creating account..." : "Signing in...") 
-              : (isUpdatingPassword ? "Update Password" : resetMode ? "Send Reset Email" : isRegisterMode ? "Create Account" : "Sign In")
+              ? (isUpdatingPassword ? "Updating password..." : resetMode ? "Sending reset email..." : isRegisterMode ? "Completing registration..." : "Signing in...") 
+              : (isUpdatingPassword ? "Update Password" : resetMode ? "Send Reset Email" : isRegisterMode ? "Complete Registration" : "Sign In")
             }
           </Button>
         </form>
