@@ -9,8 +9,11 @@ verify_jwt = false
 [functions.team-self-register]
 verify_jwt = false
 
+[functions.create-team-invite]
+verify_jwt = true
+
 [functions.migrate-demo]
 verify_jwt = true
 
 [functions.send-welcome-email]
-verify_jwt = false
+verify_jwt = true
