@@ -127,7 +127,7 @@ export function useUnifiedPlan() {
       pieSeries,
       debtPaymentMatrix,
       calendarRows,
-      debtsUsed: demoCtx.debtsUsed ?? plan.debts ?? [],
+      debtsUsed: demoCtx.debtsUsed ?? demoCtx.inputs?.debts ?? [],
       settingsUsed: demoCtx.settingsUsed ?? {},
       recompute: demoCtx.recompute ?? (() => {}),
     };

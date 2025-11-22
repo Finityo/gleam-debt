@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { computeDebtPlan, type PlanResult } from "@/lib/debtPlan";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 
 type Props = { debts?: any[]; settings?: any };
 
 export default function ScenarioCompareChart({ debts, settings }: Props) {
-  const { plan: enginePlan, debtsUsed, settingsUsed } = useDebtEngineFromStore();
+  const { plan: enginePlan, debtsUsed, settingsUsed } = useUnifiedPlan();
 
   const scenarios = useMemo(() => {
     const activeDebts = debts && debts.length ? debts : debtsUsed;
