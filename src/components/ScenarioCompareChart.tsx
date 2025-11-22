@@ -1,28 +1,41 @@
 import { useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { computeDebtPlan } from "@/lib/computeDebtPlan";
+import { computeDebtPlan } from "@/lib/debtPlan";
+import { useDebtEngine } from "@/engine/DebtEngineContext";
 
 type Props = {
-  debts: any[];
-  settings: any;
+  debts?: any[];
+  settings?: any;
 };
 
 export default function ScenarioCompareChart({ debts, settings }: Props) {
+  const { plan: enginePlan } = useDebtEngine();
+  
   const scenarios = useMemo(() => {
-    if (!debts?.length) return null;
+    // Use engine plan as baseline, or compute from props
+    const activeDebts = debts ?? enginePlan?.debts ?? [];
+    const activeSettings = settings ?? {
+      extraMonthly: enginePlan?.totals?.outflowMonthly ?? 0,
+      oneTimeExtra: 0,
+      strategy: enginePlan?.strategy ?? "snowball",
+    };
 
-    // Current plan
-    const currentPlan = computeDebtPlan(debts, {
-      extraMonthly: settings.extra_monthly || 0,
-      oneTimeExtra: settings.one_time || 0,
-      strategy: settings.strategy || "snowball",
+    if (!activeDebts?.length) return null;
+
+    // Current plan (use engine plan if available)
+    const currentPlan = enginePlan ?? computeDebtPlan({
+      debts: activeDebts,
+      extraMonthly: activeSettings.extraMonthly || 0,
+      oneTimeExtra: activeSettings.oneTimeExtra || 0,
+      strategy: activeSettings.strategy || "snowball",
     });
 
     // Minimum-only plan (no extra payments)
-    const minOnlyPlan = computeDebtPlan(debts, {
+    const minOnlyPlan = computeDebtPlan({
+      debts: activeDebts,
       extraMonthly: 0,
       oneTimeExtra: 0,
-      strategy: settings.strategy || "snowball",
+      strategy: activeSettings.strategy || "snowball",
     });
 
     // Build chart data from plan months
@@ -38,10 +51,10 @@ export default function ScenarioCompareChart({ debts, settings }: Props) {
       
       // Calculate remaining balance for each month
       const currentRemaining = currentMonth 
-        ? currentMonth.payments.reduce((sum, p) => sum + p.balanceEnd, 0)
+        ? currentMonth.payments.reduce((sum, p) => sum + p.endingBalance, 0)
         : 0;
       const minOnlyRemaining = minOnlyMonth
-        ? minOnlyMonth.payments.reduce((sum, p) => sum + p.balanceEnd, 0)
+        ? minOnlyMonth.payments.reduce((sum, p) => sum + p.endingBalance, 0)
         : 0;
 
       chartData.push({
@@ -56,13 +69,13 @@ export default function ScenarioCompareChart({ debts, settings }: Props) {
       currentPlan,
       minOnlyPlan,
     };
-  }, [debts, settings]);
+  }, [debts, settings, enginePlan]);
 
   if (!scenarios) return null;
 
   const { chartData, currentPlan, minOnlyPlan } = scenarios;
-  const monthsSaved = minOnlyPlan.summary.finalMonthIndex - currentPlan.summary.finalMonthIndex;
-  const interestSaved = minOnlyPlan.totalInterest - currentPlan.totalInterest;
+  const monthsSaved = minOnlyPlan.totals.monthsToDebtFree - currentPlan.totals.monthsToDebtFree;
+  const interestSaved = minOnlyPlan.totals.interest - currentPlan.totals.interest;
 
   return (
     <div className="p-4 border rounded-lg bg-card space-y-4">
@@ -72,19 +85,19 @@ export default function ScenarioCompareChart({ debts, settings }: Props) {
         <div>
           <div className="text-muted-foreground">Current Plan</div>
           <div className="font-semibold">
-            {currentPlan.summary.finalMonthIndex + 1} months
+            {currentPlan.totals.monthsToDebtFree} months
           </div>
           <div className="text-xs text-muted-foreground">
-            ${currentPlan.totalInterest.toFixed(2)} interest
+            ${currentPlan.totals.interest.toFixed(2)} interest
           </div>
         </div>
         <div>
           <div className="text-muted-foreground">Minimum Only</div>
           <div className="font-semibold">
-            {minOnlyPlan.summary.finalMonthIndex + 1} months
+            {minOnlyPlan.totals.monthsToDebtFree} months
           </div>
           <div className="text-xs text-muted-foreground">
-            ${minOnlyPlan.totalInterest.toFixed(2)} interest
+            ${minOnlyPlan.totals.interest.toFixed(2)} interest
           </div>
         </div>
       </div>
