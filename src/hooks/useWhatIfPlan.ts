@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from "react";
 import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
-import { computeDebtPlan } from "@/lib/debtPlan";
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
 
 export function useWhatIfPlan() {
   const { debtsUsed, settingsUsed, plan: baselinePlan } =
@@ -18,9 +18,9 @@ export function useWhatIfPlan() {
   });
 
   const whatIfPlan = useMemo(() => {
-    return computeDebtPlan({
+    return computeDebtPlanUnified({
       debts: debtsUsed as any,
-      strategy: whatIf.strategy,
+      strategy: whatIf.strategy as any,
       extraMonthly: Number(whatIf.extraMonthly),
       oneTimeExtra: Number(whatIf.oneTimeExtra),
       startDate: settingsUsed.startDate,

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, RefreshCw, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import AppLayout from "@/layouts/AppLayout";
-import { computeDebtPlan } from "@/lib/debtPlan";
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
 
 export default function ScenariosPage() {
   const navigate = useNavigate();
