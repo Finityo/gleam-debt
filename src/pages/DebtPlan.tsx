@@ -4,23 +4,14 @@ import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
 export default function DebtPlan() {
   const { plan, debtsUsed, settingsUsed } = useDebtEngineFromStore();
 
-  const summary = plan?.totals || plan?.summary || {};
   const months = plan?.months || [];
   const lastMonth = months.length ? months[months.length - 1] : null;
 
-  const totalDebt = summary.principal ?? summary.totalDebt ?? 0;
-  const monthlyOutflow = summary.outflowMonthly ?? summary.monthlySnowball ?? settingsUsed?.extraMonthly ?? 0;
-  const monthsToDebtFree =
-    summary.monthsToDebtFree ??
-    (months.length ? months.length : 0);
-  const totalInterest =
-    summary.interest ??
-    summary.totalInterest ??
-    0;
-  const payoffDateISO =
-    summary.debtFreeDateISO ??
-    lastMonth?.dateISO ??
-    null;
+  const totalDebt = plan?.totals?.principal ?? 0;
+  const monthlyOutflow = plan?.totals?.outflowMonthly ?? settingsUsed?.extraMonthly ?? 0;
+  const monthsToDebtFree = plan?.totals?.monthsToDebtFree ?? months.length;
+  const totalInterest = plan?.totals?.interest ?? 0;
+  const payoffDateISO = lastMonth?.dateISO ?? null;
 
   const orderedDebts = useMemo(() => {
     const list = plan?.debts || debtsUsed || [];
