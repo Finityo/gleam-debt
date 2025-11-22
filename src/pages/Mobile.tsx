@@ -1,5 +1,5 @@
 import React from "react";
-import { usePlan } from "@/context/PlanContext";
+import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
 import { Debt } from "@/lib/computeDebtPlan";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 const formatAPR = (apr: number) => `${apr.toFixed(2)}%`;
 
 export default function MobileViewPage() {
-  const { plan, compute, debts, settings } = usePlan();
+  const { plan, debtsUsed, settingsUsed, recompute } = useNormalizedPlan();
   const navigate = useNavigate();
 
   // Helper to get debt type from name
@@ -54,15 +54,15 @@ export default function MobileViewPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Strategy</div>
-                <div className="text-xl font-bold text-primary capitalize">{settings.strategy}</div>
+                <div className="text-xl font-bold text-primary capitalize">{settingsUsed?.strategy || 'snowball'}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Extra Monthly</div>
-                <div className="text-xl font-bold text-foreground">${settings.extraMonthly}</div>
+                <div className="text-xl font-bold text-foreground">${settingsUsed?.extraMonthly || 0}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground mb-1">One-Time (Month 1)</div>
-                <div className="text-xl font-bold text-foreground">${settings.oneTimeExtra}</div>
+                <div className="text-xl font-bold text-foreground">${settingsUsed?.oneTimeExtra || 0}</div>
               </div>
             </div>
           </CardContent>
@@ -85,13 +85,13 @@ export default function MobileViewPage() {
             <p className="text-muted-foreground mb-4">
               Create your debt payoff plan to see your active debts
             </p>
-            <Button onClick={compute} size="lg">
+            <Button onClick={recompute} size="lg">
               Compute Plan
             </Button>
           </Card>
         ) : (
           <div className="space-y-4">
-            {debts.filter(d => d.include !== false).map(debt => {
+            {(debtsUsed || []).filter((d: any) => d.include !== false).map((debt: any) => {
               const progress = calculateProgress(debt);
               const dueDay = debt.dueDay || 15;
 
