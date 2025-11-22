@@ -1,6 +1,17 @@
-# Legacy Files
+# Legacy Folder — Archived Pages
 
-This folder contains outdated/deprecated components that have been replaced by newer versions.
+These files were moved out of the active app because they were outdated,
+duplicated, or replaced with new versions.
+
+## Purpose
+- Reduce noise in Lovable's page search
+- Prevent confusion from seeing multiple similar pages (Hero, Pricing, etc.)
+- Ensure developers only modify the current live code
+
+## Structure
+- `/demo` — old demo flows before setup migration
+- `/plan-old` — old plan pages prior to the new engine
+- Misc outdated components replaced by normalized plan structure
 
 ## Archived Demo Files (src/legacy/demo/):
 - **DemoChartPolished.tsx** - Old demo chart (replaced by routed demo flow)
@@ -15,5 +26,7 @@ This folder contains outdated/deprecated components that have been replaced by n
 - **Mobile.tsx** - Old mobile view (replaced by routed mobile pages)
 - **pricing.tsx** - Old pricing page (replaced by PricingNew.tsx)
 
-These files are kept for reference only and are not used in the active application.
-All routes are now properly defined in src/routes.tsx.
+## Rules
+1. Do NOT import legacy files into the main codebase.
+2. Do NOT route legacy pages in routes.tsx.
+3. They are kept for code reference ONLY.
