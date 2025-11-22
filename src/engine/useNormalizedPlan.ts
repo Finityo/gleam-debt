@@ -22,7 +22,7 @@ export function useNormalizedPlan() {
   const months = useMemo(() => {
     const raw = plan?.months ?? [];
     return raw.map((m: any, idx: number) => ({
-      monthIndex: toNum(m.monthIndex, idx),
+      monthIndex: toNum(m.monthIndex, idx + 1),
       dateISO: m.dateISO ?? null,
       totals: {
         outflow: toNum(m.totals?.outflow),
@@ -58,7 +58,7 @@ export function useNormalizedPlan() {
     const list = plan?.debts || debtsUsed || [];
     return [...list].map((d: any, idx: number) => ({
       ...d,
-      order: toNum(d.order, idx),
+      order: toNum(d.order, idx + 1),
       apr: safeAPR(d.apr),
       balance: toNum(d.balance),
       minPayment: toNum(d.minPayment ?? d.minimumPayment),
@@ -83,5 +83,14 @@ export function useNormalizedPlan() {
     }
   }, [recompute]);
 
-  return { plan, months, totals, orderedDebts, payoffDateISO, debtsUsed, settingsUsed, recompute: safeRecompute };
+  return {
+    plan,
+    months,
+    totals,
+    orderedDebts,
+    payoffDateISO,
+    debtsUsed,
+    settingsUsed,
+    recompute: safeRecompute,
+  };
 }

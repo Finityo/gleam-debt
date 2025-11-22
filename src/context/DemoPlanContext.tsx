@@ -25,11 +25,14 @@ type Ctx = {
   addDebt: () => void;
   removeDebt: (id: string) => void;
   plan: PlanResult | null;
+  debtsUsed: DebtInput[];
+  settingsUsed: any;
   compute: () => void;
+  recompute: () => void;
   reset: () => void;
 };
 
-const DemoPlanContext = createContext<Ctx | null>(null);
+export const DemoPlanContext = createContext<Ctx | null>(null);
 
 export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
   const [inputs, setInputsState] = useState<Inputs>({
@@ -127,7 +130,15 @@ function DemoPlanInner({
     addDebt,
     removeDebt,
     plan,
+    debtsUsed: inputs.debts,
+    settingsUsed: {
+      strategy: inputs.strategy,
+      extraMonthly: inputs.extraMonthly,
+      oneTimeExtra: inputs.oneTimeExtra,
+      startDate: inputs.startDate,
+    },
     compute,
+    recompute: compute,
     reset,
   };
 
