@@ -4,10 +4,10 @@
 // FILE: src/components/PaymentCalendar.tsx
 
 import React from "react";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 
 export default function PaymentCalendar() {
-  const { plan } = useDebtEngineFromStore();
+  const { plan } = useUnifiedPlan();
 
   if (!plan?.months?.length) {
     return <div className="text-muted-foreground text-sm">No payment data available.</div>;

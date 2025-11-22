@@ -4,12 +4,12 @@
 // FILE: src/hooks/useWhatIfPlan.ts
 
 import { useMemo, useState } from "react";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 import { computeDebtPlan } from "@/lib/debtPlan";
 
 export function useWhatIfPlan() {
   const { debtsUsed, settingsUsed, plan: baselinePlan } =
-    useDebtEngineFromStore();
+    useUnifiedPlan();
 
   const [whatIf, setWhatIf] = useState({
     extraMonthly: settingsUsed.extraMonthly,
@@ -19,7 +19,7 @@ export function useWhatIfPlan() {
 
   const whatIfPlan = useMemo(() => {
     return computeDebtPlan({
-      debts: debtsUsed,
+      debts: debtsUsed as any,
       strategy: whatIf.strategy,
       extraMonthly: Number(whatIf.extraMonthly),
       oneTimeExtra: Number(whatIf.oneTimeExtra),

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { usePlanCharts } from "@/engine/usePlanCharts";
+import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 import { SafeRender } from "@/components/SafeRender";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function DebtChartPage() {
   const navigate = useNavigate();
-  const { plan, lineSeries, totals, recompute } = usePlanCharts();
+  const { plan, lineSeries, totals, recompute } = useUnifiedPlan();
 
   const data = useMemo(() => {
     if (!plan) return [];

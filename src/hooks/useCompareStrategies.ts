@@ -4,18 +4,18 @@
 // FILE: src/hooks/useCompareStrategies.ts
 
 import { useMemo } from "react";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 import { computeDebtPlan } from "@/lib/debtPlan";
 
 export function useCompareStrategies() {
-  const { debtsUsed, settingsUsed, plan: baseline } = useDebtEngineFromStore();
+  const { debtsUsed, settingsUsed, plan: baseline } = useUnifiedPlan();
 
   const alternativeStrategy =
     baseline?.strategy === "snowball" ? "avalanche" : "snowball";
 
   const altPlan = useMemo(() => {
     return computeDebtPlan({
-      debts: debtsUsed,
+      debts: debtsUsed as any,
       strategy: alternativeStrategy,
       extraMonthly: settingsUsed.extraMonthly,
       oneTimeExtra: settingsUsed.oneTimeExtra,

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { usePlanCharts } from "@/engine/usePlanCharts";
+import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 import { SafeRender } from "@/components/SafeRender";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function PayoffCalendarPage() {
   const navigate = useNavigate();
-  const { plan, calendarRows, debtsUsed, recompute, orderedDebts } = usePlanCharts();
+  const { plan, calendarRows, debtsUsed, recompute, orderedDebts } = useUnifiedPlan();
 
   if (!plan) {
     return (

@@ -5,6 +5,7 @@ import { useDebtEngine } from "@/engine/DebtEngineContext";
  * Helper hook for pages that already sit under DebtEngineProvider.
  * Keeps usage clean: const { plan, recompute } = useDebtEngineFromStore();
  */
+/* DEPRECATED by Track D — Engine now routed exclusively through useUnifiedPlan */
 export function useDebtEngineFromStore() {
   const { plan, debtsUsed, settingsUsed } = useDebtEngine();
   

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { usePlanCharts } from "@/engine/usePlanCharts";
+import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 import { SafeRender } from "@/components/SafeRender";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,7 +26,7 @@ function pickColor(name: string): string {
 
 export default function DebtVisualizationPage() {
   const navigate = useNavigate();
-  const { plan, months, debtsUsed, settingsUsed, recompute, debtPaymentMatrix, orderedDebts } = usePlanCharts();
+  const { plan, months, debtsUsed, settingsUsed, recompute, debtPaymentMatrix, orderedDebts } = useUnifiedPlan();
 
   if (!plan) {
     return (
@@ -71,9 +71,9 @@ export default function DebtVisualizationPage() {
 
   // Calculate key totals from engine
   const totalDebt = plan.totals.principal;
-  const totalAvailableCredit = debtsUsed
-    .filter(d => d.include === false)
-    .reduce((sum, d) => sum + d.balance, 0);
+  const totalAvailableCredit = orderedDebts
+    .filter((d: any) => d.include === false)
+    .reduce((sum: number, d: any) => sum + (d.balance || d.originalBalance || 0), 0);
 
   const utilization = totalDebt > 0
     ? (totalDebt / (totalDebt + totalAvailableCredit)) * 100
@@ -81,15 +81,15 @@ export default function DebtVisualizationPage() {
 
   // Prepare pie chart data from debts
   const pieData = useMemo(() => {
-    const included = debtsUsed.filter(d => d.include !== false);
-    const sum = included.reduce((s, d) => s + d.balance, 0);
+    const included = orderedDebts.filter((d: any) => d.include !== false && (d.included !== false));
+    const sum = included.reduce((s: number, d: any) => s + (d.balance || d.originalBalance || 0), 0);
     if (sum === 0) return [];
-    return included.map(d => ({
+    return included.map((d: any) => ({
       label: d.name,
-      value: ((d.balance / sum) * 100),
+      value: (((d.balance || d.originalBalance || 0) / sum) * 100),
       color: pickColor(d.name),
     }));
-  }, [debtsUsed]);
+  }, [orderedDebts]);
 
   // Simple Pie SVG
   const radius = 80;
@@ -176,7 +176,7 @@ export default function DebtVisualizationPage() {
         </Card>
         <Card className="p-4 glass-intense border-success/30">
           <div className="text-sm text-muted-foreground">Debts in Plan</div>
-          <div className="text-2xl font-bold mt-1 text-foreground">{debtsUsed.filter(d => d.include !== false).length}</div>
+          <div className="text-2xl font-bold mt-1 text-foreground">{orderedDebts.filter((d: any) => d.include !== false && d.included !== false).length}</div>
         </Card>
       </div>
 
