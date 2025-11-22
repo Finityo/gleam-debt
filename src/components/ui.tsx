@@ -16,8 +16,9 @@ export function Btn({ children, className="", onClick, variant="primary", disabl
       onClick={onClick}
       disabled={disabled}
       className={`
-        px-4 py-2 rounded-xl text-sm font-medium transition
+        px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150
         disabled:opacity-40 disabled:cursor-not-allowed
+        touch-native active:scale-95
         ${styles[variant] ?? styles.primary}
         ${variant === "primary" ? "shadow-glass" : ""}
         ${className}
