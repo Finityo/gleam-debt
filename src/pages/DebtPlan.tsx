@@ -1,18 +1,53 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
 
 export default function DebtPlan() {
   const navigate = useNavigate();
-  const { plan, debtsUsed, settingsUsed, recompute } = useDebtEngineFromStore();
+  const { plan, months, totals, debtsUsed, settingsUsed, recompute } = useNormalizedPlan();
 
-  const months = plan?.months || [];
+  if (!plan) {
+    return (
+      <div className="p-4 pb-24">
+        {/* TOP NAV */}
+        <div className="flex items-center justify-between mb-4 gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+          >
+            Back
+          </button>
+          <button
+            onClick={recompute}
+            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+          >
+            Recalculate
+          </button>
+        </div>
+
+        <h2 className="text-xl font-semibold mb-2">Your Debt Plan</h2>
+        <p className="text-muted-foreground">No plan computed yet.</p>
+
+        {/* BOTTOM STICKY BAR */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 shadow-2xl border-t border-neutral-200 dark:border-neutral-800 p-3 flex items-center justify-between gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+          >
+            Back
+          </button>
+          <button
+            onClick={recompute}
+            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+          >
+            Recalculate
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const lastMonth = months.length ? months[months.length - 1] : null;
-
-  const totalDebt = plan?.totals?.principal ?? 0;
-  const monthlyOutflow = plan?.totals?.outflowMonthly ?? settingsUsed?.extraMonthly ?? 0;
-  const monthsToDebtFree = plan?.totals?.monthsToDebtFree ?? months.length;
-  const totalInterest = plan?.totals?.interest ?? 0;
   const payoffDateISO = lastMonth?.dateISO ?? null;
 
   const orderedDebts = useMemo(() => {
@@ -51,23 +86,23 @@ export default function DebtPlan() {
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="text-xs text-muted-foreground">Total Debt</div>
           <div className="text-xl font-semibold mt-1">
-            {Number(totalDebt).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+            {Number(totals.principal).toLocaleString("en-US", { style: "currency", currency: "USD" })}
           </div>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="text-xs text-muted-foreground">Monthly Snowball</div>
           <div className="text-xl font-semibold mt-1">
-            {Number(monthlyOutflow).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+            {Number(totals.outflowMonthly).toLocaleString("en-US", { style: "currency", currency: "USD" })}
           </div>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="text-xs text-muted-foreground">Months to Debt-Free</div>
-          <div className="text-xl font-semibold mt-1">{monthsToDebtFree || "—"}</div>
+          <div className="text-xl font-semibold mt-1">{totals.monthsToDebtFree || "—"}</div>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="text-xs text-muted-foreground">Total Interest</div>
           <div className="text-xl font-semibold mt-1">
-            {Number(totalInterest).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+            {Number(totals.interest).toLocaleString("en-US", { style: "currency", currency: "USD" })}
           </div>
         </div>
       </div>
