@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function PayoffCalendarPage() {
   const navigate = useNavigate();
-  const { plan, debtsUsed, recompute } = useDebtEngineFromStore();
+  const { plan, months, debtsUsed, recompute } = useNormalizedPlan();
 
   if (!plan) {
     return (
@@ -52,7 +52,7 @@ export default function PayoffCalendarPage() {
 
   // Generate calendar data from plan
   const cal = useMemo(() => {
-    return plan.months.map(month => {
+    return months.map(month => {
       const closedDebts = month.payments.filter(p => p.endingBalance <= 0.01 && p.totalPaid > 0);
       const payoffs = closedDebts.map(p => {
         const debt = debtsUsed.find(d => d.id === p.debtId);

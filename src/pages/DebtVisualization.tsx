@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -25,7 +25,7 @@ function pickColor(name: string): string {
 
 export default function DebtVisualizationPage() {
   const navigate = useNavigate();
-  const { plan, debtsUsed, settingsUsed, recompute } = useDebtEngineFromStore();
+  const { plan, months, debtsUsed, settingsUsed, recompute } = useNormalizedPlan();
 
   if (!plan) {
     return (
@@ -211,7 +211,7 @@ export default function DebtVisualizationPage() {
           </thead>
           <tbody>
             {debtsUsed.map((d, i) => {
-              const payoffMonth = plan?.months.find(m => 
+              const payoffMonth = months.find(m =>
                 m.payments.some(p => p.debtId === d.id && p.endingBalance <= 0.01 && p.totalPaid > 0)
               );
               

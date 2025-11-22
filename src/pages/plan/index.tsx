@@ -1,10 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
 
 export default function PlanPage() {
   const navigate = useNavigate();
-  const { plan, recompute } = useDebtEngineFromStore();
+  const { plan, months, totals, recompute } = useNormalizedPlan();
 
   if (!plan) {
     return (

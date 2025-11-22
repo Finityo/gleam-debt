@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -7,12 +7,12 @@ import { useNavigate } from "react-router-dom";
 
 export default function DebtChartPage() {
   const navigate = useNavigate();
-  const { plan, recompute } = useDebtEngineFromStore();
+  const { plan, months, recompute } = useNormalizedPlan();
 
   const data = useMemo(() => {
     if (!plan) return [];
     // Calculate remaining principal over time
-    return plan.months.map((month) => ({
+    return months.map((month) => ({
       label: `M${month.monthIndex + 1}`,
       remaining: month.payments.reduce((sum, p) => sum + p.endingBalance, 0),
     }));
