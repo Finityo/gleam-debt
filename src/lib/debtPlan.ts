@@ -50,6 +50,7 @@ export interface DebtInput {
   dueDay?: number;        // 1..28
   include?: boolean;      // default true
   notes?: string;
+  category?: string;      // optional category for compatibility
 }
 
 export interface ComputeParams {
