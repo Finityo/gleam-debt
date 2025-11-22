@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
+import { usePlanCharts } from "@/engine/usePlanCharts";
+import { SafeRender } from "@/components/SafeRender";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -7,16 +8,15 @@ import { useNavigate } from "react-router-dom";
 
 export default function DebtChartPage() {
   const navigate = useNavigate();
-  const { plan, months, recompute } = useNormalizedPlan();
+  const { plan, lineSeries, totals, recompute } = usePlanCharts();
 
   const data = useMemo(() => {
     if (!plan) return [];
-    // Calculate remaining principal over time
-    return months.map((month) => ({
-      label: `M${month.monthIndex + 1}`,
-      remaining: month.payments.reduce((sum, p) => sum + p.endingBalance, 0),
+    return lineSeries.map((pt) => ({
+      label: `M${pt.x}`,
+      remaining: pt.remainingBalance,
     }));
-  }, [plan]);
+  }, [plan, lineSeries]);
 
   if (!plan) {
     return (
@@ -75,6 +75,7 @@ export default function DebtChartPage() {
   const path = points.map((p, i) => (i === 0 ? `M ${p[0]} ${p[1]}` : `L ${p[0]} ${p[1]}`)).join(" ");
 
   return (
+    <SafeRender fallback={<div className="p-4 text-sm text-muted-foreground">Charts loading...</div>}>
     <div className="p-4 pb-24">
       {/* TOP NAV */}
       <div className="flex items-center justify-between mb-4 gap-3">
@@ -134,5 +135,6 @@ export default function DebtChartPage() {
         </button>
       </div>
     </div>
+    </SafeRender>
   );
 }

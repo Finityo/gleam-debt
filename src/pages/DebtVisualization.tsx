@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
+import { usePlanCharts } from "@/engine/usePlanCharts";
+import { SafeRender } from "@/components/SafeRender";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -25,7 +26,7 @@ function pickColor(name: string): string {
 
 export default function DebtVisualizationPage() {
   const navigate = useNavigate();
-  const { plan, months, debtsUsed, settingsUsed, recompute } = useNormalizedPlan();
+  const { plan, months, debtsUsed, settingsUsed, recompute, debtPaymentMatrix, orderedDebts } = usePlanCharts();
 
   if (!plan) {
     return (
@@ -114,6 +115,7 @@ export default function DebtVisualizationPage() {
   });
 
   return (
+    <SafeRender fallback={<div className="p-4 text-sm text-muted-foreground">Loading visualization...</div>}>
     <div className="p-4 pb-24">
       {/* TOP NAV */}
       <div className="flex items-center justify-between mb-4 gap-3">
@@ -246,5 +248,6 @@ export default function DebtVisualizationPage() {
         </button>
       </div>
     </div>
+    </SafeRender>
   );
 }
