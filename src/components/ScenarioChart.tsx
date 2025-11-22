@@ -2,12 +2,18 @@
 // src/components/ScenarioChart.tsx
 // ===================================
 import React from "react";
-import { Debt, UserSettings } from "@/lib/computeDebtPlan";
+import type { DebtInput } from "@/lib/debtPlan";
 import { scenarioCompareWithMilestones } from "@/lib/scenarioCompareMilestones";
 
 type Props = {
-  debts: Debt[];
-  settings: UserSettings;
+  debts: DebtInput[];
+  settings: {
+    strategy?: "snowball" | "avalanche";
+    extraMonthly?: number;
+    oneTimeExtra?: number;
+    startDate?: string;
+    maxMonths?: number;
+  };
 };
 
 export default function ScenarioChart({ debts, settings }: Props) {
@@ -26,20 +32,20 @@ export default function ScenarioChart({ debts, settings }: Props) {
   const data = [
     {
       name: "Snowball",
-      months: snowball.summary.finalMonthIndex + 1,
-      interest: snowball.totalInterest,
+      months: snowball.totals.monthsToDebtFree ?? snowball.months.length,
+      interest: snowball.totals.interest,
       half: half.snowball?.monthIndex != null ? half.snowball.monthIndex + 1 : null,
     },
     {
       name: "Avalanche",
-      months: avalanche.summary.finalMonthIndex + 1,
-      interest: avalanche.totalInterest,
+      months: avalanche.totals.monthsToDebtFree ?? avalanche.months.length,
+      interest: avalanche.totals.interest,
       half: half.avalanche?.monthIndex != null ? half.avalanche.monthIndex + 1 : null,
     },
     {
       name: "Minimum",
-      months: minimum.summary.finalMonthIndex + 1,
-      interest: minimum.totalInterest,
+      months: minimum.totals.monthsToDebtFree ?? minimum.months.length,
+      interest: minimum.totals.interest,
       half: null,
     },
   ];

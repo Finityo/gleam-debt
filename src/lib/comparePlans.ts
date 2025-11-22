@@ -1,14 +1,14 @@
 // ===================================
 // src/lib/comparePlans.ts
 // ===================================
-import { DebtPlan } from "@/lib/computeDebtPlan";
+import type { PlanResult } from "@/lib/debtPlan";
 
-export function comparePlans(real: DebtPlan, minOnly: DebtPlan) {
-  const monthsReal = real.summary.finalMonthIndex + 1;
-  const monthsMin = minOnly.summary.finalMonthIndex + 1;
+export function comparePlans(real: PlanResult, minOnly: PlanResult) {
+  const monthsReal = real.totals.monthsToDebtFree ?? real.months.length;
+  const monthsMin = minOnly.totals.monthsToDebtFree ?? minOnly.months.length;
 
-  const interestReal = real.totalInterest;
-  const interestMin = minOnly.totalInterest;
+  const interestReal = real.totals.interest;
+  const interestMin = minOnly.totals.interest;
 
   return {
     monthsReal,
@@ -19,7 +19,7 @@ export function comparePlans(real: DebtPlan, minOnly: DebtPlan) {
     interestMin,
     interestSaved: interestMin - interestReal,
 
-    debtFreeDateReal: real.debtFreeDate,
-    debtFreeDateMin: minOnly.debtFreeDate,
+    debtFreeDateReal: real.months[real.months.length - 1]?.dateISO ?? real.startDateISO,
+    debtFreeDateMin: minOnly.months[minOnly.months.length - 1]?.dateISO ?? minOnly.startDateISO,
   };
 }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Btn } from "@/components/Btn";
-import { computeDebtPlan } from "@/lib/computeDebtPlan";
+import { computeDebtPlan } from "@/lib/debtPlan";
 
 export default function DemoComparePage() {
   const { inputs } = useDemoPlan();
@@ -15,8 +15,8 @@ export default function DemoComparePage() {
   const settings = { strategy: inputs.strategy, extraMonthly: inputs.extraMonthly, oneTimeExtra: inputs.oneTimeExtra };
 
   // Compute both approaches fresh
-  const snow = computeDebtPlan(debts, { ...settings, strategy: "snowball" });
-  const aval = computeDebtPlan(debts, { ...settings, strategy: "avalanche" });
+  const snow = computeDebtPlan({ debts, ...settings, strategy: "snowball" });
+  const aval = computeDebtPlan({ debts, ...settings, strategy: "avalanche" });
 
   return (
     <PageShell>
@@ -43,10 +43,10 @@ export default function DemoComparePage() {
                 Pay smallest‐balance first.
               </p>
               <div className="text-2xl font-bold text-finityo-textMain">
-                {snow.summary.finalMonthIndex + 1} months
+                {snow.totals.monthsToDebtFree ?? snow.months.length} months
               </div>
               <div className="text-sm text-finityo-textBody">
-                Interest: ${Math.round(snow.totalInterest).toLocaleString()}
+                Interest: ${Math.round(snow.totals.interest).toLocaleString()}
               </div>
             </Card>
 
@@ -58,10 +58,10 @@ export default function DemoComparePage() {
                 Pay highest APR first.
               </p>
               <div className="text-2xl font-bold text-finityo-textMain">
-                {aval.summary.finalMonthIndex + 1} months
+                {aval.totals.monthsToDebtFree ?? aval.months.length} months
               </div>
               <div className="text-sm text-finityo-textBody">
-                Interest: ${Math.round(aval.totalInterest).toLocaleString()}
+                Interest: ${Math.round(aval.totals.interest).toLocaleString()}
               </div>
             </Card>
           </div>

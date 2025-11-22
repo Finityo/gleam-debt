@@ -2,12 +2,12 @@
 // src/components/PayoffOrder.tsx
 // ===================================
 import React from "react";
-import { DebtPlan, Debt } from "@/lib/computeDebtPlan";
+import type { PlanResult, DebtInput } from "@/lib/debtPlan";
 import { getPayoffOrder } from "@/lib/payoffOrder";
 
 type Props = {
-  plan: DebtPlan;
-  debts: Debt[];
+  plan: PlanResult;
+  debts: DebtInput[];
 };
 
 export default function PayoffOrder({ plan, debts }: Props) {

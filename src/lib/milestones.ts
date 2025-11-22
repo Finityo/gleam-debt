@@ -1,7 +1,7 @@
 // ===================================
 // src/lib/milestones.ts
 // ===================================
-import { DebtPlan } from "@/lib/computeDebtPlan";
+import type { PlanResult } from "@/lib/debtPlan";
 import { remainingByMonth } from "@/lib/remaining";
 
 export type Milestone = {
@@ -11,7 +11,7 @@ export type Milestone = {
   remaining: number;
 };
 
-export function getMilestones(plan: DebtPlan): Milestone[] {
+export function getMilestones(plan: PlanResult): Milestone[] {
   if (!plan || !plan.months.length) return [];
 
   const remaining = remainingByMonth(plan);
@@ -29,12 +29,21 @@ export function getMilestones(plan: DebtPlan): Milestone[] {
   const out: Milestone[] = [];
 
   // --- First Debt Paid ---
-  const firstMonth = plan.summary.firstDebtPaidMonth;
+  // Find first month where at least one debt reaches 0 balance
+  let firstMonth: number | null = null;
+  for (let i = 0; i < plan.months.length; i++) {
+    const hasPayoff = plan.months[i].payments.some(p => p.endingBalance <= 0);
+    if (hasPayoff) {
+      firstMonth = i;
+      break;
+    }
+  }
+
   if (firstMonth != null) {
     out.push({
       label: "First Debt Paid",
       monthIndex: firstMonth,
-      dateStr: plan.months[firstMonth] ? plan.debtFreeDate : "",
+      dateStr: plan.months[firstMonth]?.dateISO ?? "",
       remaining: remaining[firstMonth]?.remaining ?? 0,
     });
   }
@@ -53,18 +62,18 @@ export function getMilestones(plan: DebtPlan): Milestone[] {
     out.push({
       label: cp.label,
       monthIndex: hit.monthIndex,
-      dateStr: plan.debtFreeDate, // simplified — can refine to actual month label if stored
+      dateStr: m.dateISO,
       remaining: hit.remaining,
     });
   }
 
   // --- Final payoff ---
-  const finalIdx = plan.summary.finalMonthIndex;
+  const finalIdx = plan.months.length - 1;
   if (finalIdx >= 0) {
     out.push({
       label: "Debt-Free!",
       monthIndex: finalIdx,
-      dateStr: plan.debtFreeDate,
+      dateStr: plan.months[finalIdx]?.dateISO ?? "",
       remaining: 0,
     });
   }

@@ -1,12 +1,12 @@
 // ===================================
 // src/lib/remaining.ts
 // ===================================
-import { DebtPlan } from "@/lib/computeDebtPlan";
+import type { PlanResult } from "@/lib/debtPlan";
 
-export function remainingByMonth(plan: DebtPlan) {
+export function remainingByMonth(plan: PlanResult) {
   return plan.months.map((m) => {
     const remaining = m.payments.reduce(
-      (acc, p) => acc + p.balanceEnd,
+      (acc, p) => acc + p.endingBalance,
       0
     );
     return {

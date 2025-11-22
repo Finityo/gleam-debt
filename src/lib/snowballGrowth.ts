@@ -1,17 +1,17 @@
 // ===================================
 // src/lib/snowballGrowth.ts
 // ===================================
-import { DebtPlan } from "@/lib/computeDebtPlan";
+import type { PlanResult } from "@/lib/debtPlan";
 
 export type SnowballPoint = {
   monthIndex: number;
   amount: number;
 };
 
-export function snowballGrowth(plan: DebtPlan): SnowballPoint[] {
+export function snowballGrowth(plan: PlanResult): SnowballPoint[] {
   if (!plan.months.length) return [];
   return plan.months.map((m) => ({
     monthIndex: m.monthIndex,
-    amount: m.totalPaid,
+    amount: m.totals.outflow,
   }));
 }

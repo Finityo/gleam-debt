@@ -1,25 +1,42 @@
 // ===================================
 // src/lib/scenarioCompare.ts
 // ===================================
-import { Debt, UserSettings, DebtPlan, computeDebtPlan } from "@/lib/computeDebtPlan";
+import { computeDebtPlan } from "@/lib/debtPlan";
+import type { DebtInput, PlanResult } from "@/lib/debtPlan";
 import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
 
+export type ScenarioSettings = {
+  strategy?: "snowball" | "avalanche";
+  extraMonthly?: number;
+  oneTimeExtra?: number;
+  startDate?: string;
+  maxMonths?: number;
+};
+
 export function scenarioCompare(
-  debts: Debt[],
-  settings: UserSettings
+  debts: DebtInput[],
+  settings: ScenarioSettings
 ): {
-  snowball: DebtPlan;
-  avalanche: DebtPlan;
-  minimum: DebtPlan;
+  snowball: PlanResult;
+  avalanche: PlanResult;
+  minimum: PlanResult;
 } {
-  const snowball = computeDebtPlan(debts, {
-    ...settings,
+  const snowball = computeDebtPlan({
+    debts,
     strategy: "snowball",
+    extraMonthly: settings.extraMonthly ?? 0,
+    oneTimeExtra: settings.oneTimeExtra ?? 0,
+    startDate: settings.startDate,
+    maxMonths: settings.maxMonths,
   });
 
-  const avalanche = computeDebtPlan(debts, {
-    ...settings,
+  const avalanche = computeDebtPlan({
+    debts,
     strategy: "avalanche",
+    extraMonthly: settings.extraMonthly ?? 0,
+    oneTimeExtra: settings.oneTimeExtra ?? 0,
+    startDate: settings.startDate,
+    maxMonths: settings.maxMonths,
   });
 
   const minimum = computeMinimumOnly(debts);

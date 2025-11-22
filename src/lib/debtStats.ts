@@ -1,10 +1,10 @@
 // ===================================
 // src/lib/debtStats.ts
 // ===================================
-import { Debt, DebtPlan } from "@/lib/computeDebtPlan";
+import type { PlanResult, DebtInput } from "@/lib/debtPlan";
 import { getPayoffOrder } from "./payoffOrder";
 
-export function getDebtStats(plan: DebtPlan, debts: Debt[]) {
+export function getDebtStats(plan: PlanResult, debts: DebtInput[]) {
   const payoff = getPayoffOrder(plan);
   const payoffMap = Object.fromEntries(
     payoff.map((p) => [p.debtId, p.monthIndex])
@@ -20,8 +20,8 @@ export function getDebtStats(plan: DebtPlan, debts: Debt[]) {
     plan.months.forEach((m) => {
       m.payments.forEach((p) => {
         if (p.debtId === d.id) {
-          interestPaid += p.interest;
-          principalPaid += p.principal;
+          interestPaid += p.interestAccrued;
+          principalPaid += p.totalPaid - p.interestAccrued;
         }
       });
     });
