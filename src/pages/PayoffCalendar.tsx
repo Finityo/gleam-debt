@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
+import { usePlanCharts } from "@/engine/usePlanCharts";
+import { SafeRender } from "@/components/SafeRender";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -7,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function PayoffCalendarPage() {
   const navigate = useNavigate();
-  const { plan, months, debtsUsed, recompute } = useNormalizedPlan();
+  const { plan, calendarRows, debtsUsed, recompute, orderedDebts } = usePlanCharts();
 
   if (!plan) {
     return (
@@ -50,27 +51,23 @@ export default function PayoffCalendarPage() {
     );
   }
 
-  // Generate calendar data from plan
+  // Use calendarRows from usePlanCharts
   const cal = useMemo(() => {
-    return months.map(month => {
-      const closedDebts = month.payments.filter(p => p.endingBalance <= 0.01 && p.totalPaid > 0);
-      const payoffs = closedDebts.map(p => {
-        const debt = debtsUsed.find(d => d.id === p.debtId);
+    return calendarRows.map(row => ({
+      monthIndex: row.monthIndex,
+      monthLabel: `Month ${row.monthIndex}`,
+      totalOutflow: row.outflow,
+      totalInterest: row.interest,
+      totalPrincipal: row.principal,
+      payoffs: row.paidOffDebts.map((id: string) => {
+        const debt = orderedDebts.find((d: any) => d.id === id);
         return { name: debt?.name || "Unknown" };
-      });
-      
-      return {
-        monthIndex: month.monthIndex,
-        monthLabel: `Month ${month.monthIndex + 1}`,
-        totalOutflow: month.totals.outflow,
-        totalInterest: month.totals.interest,
-        totalPrincipal: month.totals.outflow - month.totals.interest,
-        payoffs,
-      };
-    });
-  }, [plan, debtsUsed]);
+      }),
+    }));
+  }, [calendarRows, orderedDebts]);
 
   return (
+    <SafeRender fallback={<div className="p-4 text-sm text-muted-foreground">Loading calendar...</div>}>
     <div className="p-4 pb-24">
       {/* TOP NAV */}
       <div className="flex items-center justify-between mb-4 gap-3">
@@ -132,5 +129,6 @@ export default function PayoffCalendarPage() {
         </button>
       </div>
     </div>
+    </SafeRender>
   );
 }
