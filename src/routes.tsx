@@ -101,6 +101,7 @@ const Profile = lazy(() => import("@/pages/Profile"));
 const Scenarios = lazy(() => import("@/pages/Scenarios"));
 const AIAdvisor = lazy(() => import("@/pages/AIAdvisor"));
 const PayoffCalendar = lazy(() => import("@/pages/PayoffCalendar"));
+const SharePreview = lazy(() => import("@/pages/Plan/SharePreview"));
 
 // ===== TEAM PORTAL =====
 const TeamLogin = lazy(() => import("@/pages/team/TeamLogin"));
@@ -206,6 +207,7 @@ export function AppRoutes() {
           <Route path="/ai-advisor" element={<RequireAuth><AIAdvisor /></RequireAuth>} />
           <Route path="/payoff-calendar" element={<RequireAuth><PayoffCalendar /></RequireAuth>} />
           <Route path="/share/history" element={<RequireAuth><ShareHistory /></RequireAuth>} />
+          <Route path="/plan/share" element={<RequireAuth><SharePreview /></RequireAuth>} />
           
           {/* ===== ADMIN ROUTES ===== */}
           <Route path="/admin" element={<RequireAuth><AdminDashboard /></RequireAuth>} />
