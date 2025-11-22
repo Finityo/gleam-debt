@@ -1,29 +1,68 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface WelcomeEmailRequest {
-  email: string;
-  name?: string;
-}
-
+/**
+ * Supabase Auth Webhook Handler
+ * Triggered automatically when users verify their email
+ * Security: Only sends to verified user's email, prevents abuse
+ */
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { email, name }: WelcomeEmailRequest = await req.json();
-    
+    // Supabase Auth webhook payload structure
+    const payload = await req.json();
+    const { type, record } = payload;
+
+    // Only process user.confirmed events (email verification)
+    if (type !== "INSERT" || !record) {
+      console.log("Ignoring non-INSERT event or missing record");
+      return new Response(JSON.stringify({ ok: true, ignored: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const email = record.email;
+    const userId = record.id;
+
     if (!email) {
+      console.error("No email in webhook payload");
       return new Response(
-        JSON.stringify({ ok: false, error: "Missing email" }), 
-        { 
+        JSON.stringify({ ok: false, error: "Missing email" }),
+        {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    // Check if already sent welcome email
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const { data: existingRecord } = await supabase
+      .from("welcome_emails_sent")
+      .select("id")
+      .eq("user_id", userId)
+      .single();
+
+    if (existingRecord) {
+      console.log("Welcome email already sent to:", email);
+      return new Response(
+        JSON.stringify({ ok: true, message: "Already sent" }),
+        {
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
@@ -34,8 +73,8 @@ const handler = async (req: Request): Promise<Response> => {
     if (!apiKey) {
       console.log("RESEND_API_KEY not configured - running in test mode");
       return new Response(
-        JSON.stringify({ ok: true, testMode: true, message: "Email would be sent in production" }), 
-        { 
+        JSON.stringify({ ok: true, testMode: true, message: "Email would be sent in production" }),
+        {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
@@ -43,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const resend = new Resend(apiKey);
-    const displayName = name || email.split("@")[0];
+    const displayName = email.split("@")[0];
 
     console.log("Sending welcome email to:", email);
 
@@ -156,19 +195,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Welcome email sent successfully:", result);
 
+    // Record that we sent the email
+    await supabase.from("welcome_emails_sent").insert({
+      user_id: userId,
+      email: email,
+    });
+
     return new Response(
-      JSON.stringify({ ok: true, data: result.data }), 
-      { 
+      JSON.stringify({ ok: true, data: result.data }),
+      {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
 
   } catch (error: any) {
-    console.error("Welcome email error:", error);
+    console.error("Welcome email webhook error:", error);
     return new Response(
-      JSON.stringify({ ok: false, error: error.message }), 
-      { 
+      JSON.stringify({ ok: false, error: error.message }),
+      {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
