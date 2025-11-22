@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
-import { computeDebtPlan, type Strategy, type PlanResult, type DebtInput } from "@/lib/debtPlan";
+import React, { createContext, useContext, useState } from "react";
+import { type Strategy, type PlanResult, type DebtInput } from "@/lib/debtPlan";
+import { DebtEngineProvider, useDebtEngine } from "@/engine/DebtEngineContext";
 
 // Demo debts (clean set; tweak freely)
 const seedDebts: DebtInput[] = [
@@ -37,7 +38,6 @@ export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
     oneTimeExtra: 1000,
     strategy: "snowball",
   });
-  const [plan, setPlan] = useState<PlanResult | null>(null);
 
   const setInputs = (patch: Partial<Inputs>) =>
     setInputsState(prev => ({ ...prev, ...patch }));
@@ -70,18 +70,6 @@ export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
   const removeDebt = (id: string) =>
     setInputsState(prev => ({ ...prev, debts: prev.debts.filter(d => d.id !== id) }));
 
-  const compute = () => {
-    const result = computeDebtPlan({
-      debts: inputs.debts,
-      extraMonthly: inputs.extraMonthly,
-      oneTimeExtra: inputs.oneTimeExtra,
-      strategy: inputs.strategy,
-      startDate: inputs.startDate,
-    });
-    setPlan(result);
-    console.log("✅ DEMO PLAN", result.totals);
-  };
-
   const reset = () => {
     setInputsState({
       debts: seedDebts,
@@ -90,13 +78,58 @@ export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
       strategy: "snowball",
       startDate: undefined,
     });
-    setPlan(null);
   };
 
-  const value = useMemo(
-    () => ({ inputs, setInputs, updateDebt, addDebt, removeDebt, plan, compute, reset }),
-    [inputs, plan]
+  return (
+    <DebtEngineProvider
+      debts={inputs.debts}
+      settings={{
+        strategy: inputs.strategy,
+        extraMonthly: inputs.extraMonthly,
+        oneTimeExtra: inputs.oneTimeExtra,
+        startDate: inputs.startDate,
+      }}
+    >
+      <DemoPlanInner
+        inputs={inputs}
+        setInputs={setInputs}
+        updateDebt={updateDebt}
+        addDebt={addDebt}
+        removeDebt={removeDebt}
+        reset={reset}
+      >
+        {children}
+      </DemoPlanInner>
+    </DebtEngineProvider>
   );
+}
+
+function DemoPlanInner({
+  inputs,
+  setInputs,
+  updateDebt,
+  addDebt,
+  removeDebt,
+  reset,
+  children,
+}: any) {
+  const { plan } = useDebtEngine();
+
+  const compute = () => {
+    // Plan is auto-computed by engine, just log
+    console.log("✅ DEMO PLAN", plan?.totals);
+  };
+
+  const value = {
+    inputs,
+    setInputs,
+    updateDebt,
+    addDebt,
+    removeDebt,
+    plan,
+    compute,
+    reset,
+  };
 
   return <DemoPlanContext.Provider value={value}>{children}</DemoPlanContext.Provider>;
 }

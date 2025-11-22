@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
 import { computeDebtPlan } from "@/lib/computeDebtPlan";
 import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
+import { DebtEngineProvider, useDebtEngine } from "@/engine/DebtEngineContext";
 
 export type Scenario = {
   id: string;

@@ -10,6 +10,7 @@ import { PlanProvider } from "@/context/PlanContext";
 import { ScenarioProvider } from "@/context/ScenarioContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { AppProvider } from "@/context/AppStore";
+import { DebtEngineProvider } from "@/engine/DebtEngineContext";
 import { NotificationsPanel } from "@/components/NotificationsPanel";
 import { NextHandler } from "@/components/NextHandler";
 import { AppRoutes } from "@/routes";
@@ -34,14 +35,16 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <AppProvider>
-              <ScenarioProvider>
-                <PlanProvider>
-                  <AppWrapper />
-                  <NotificationsPanel />
-                  <Toaster />
-                  <Sonner />
-                </PlanProvider>
-              </ScenarioProvider>
+              <DebtEngineProvider debts={[]} settings={{}}>
+                <ScenarioProvider>
+                  <PlanProvider>
+                    <AppWrapper />
+                    <NotificationsPanel />
+                    <Toaster />
+                    <Sonner />
+                  </PlanProvider>
+                </ScenarioProvider>
+              </DebtEngineProvider>
             </AppProvider>
           </AuthProvider>
         </BrowserRouter>

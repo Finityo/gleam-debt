@@ -16,19 +16,15 @@ export type ShareCardPreviewProps = {
 export const ShareCardPreview = React.forwardRef<HTMLDivElement, ShareCardPreviewProps>(
   ({ plan, debts = [], userName }, ref) => {
     const totalDebt =
-      plan?.totalDebt ??
-      plan?.summary?.totalDebt ??
+      plan?.totals?.principal ??
       debts.reduce((s: number, d: any) => s + (Number(d.balance) || 0), 0);
 
     const monthlySnowball =
-      plan?.monthlySnowball ??
-      plan?.summary?.monthlySnowball ??
-      plan?.settings?.extraMonthly ??
+      plan?.totals?.outflowMonthly ??
       0;
 
     const payoffDate =
-      plan?.debtFreeDate ??
-      plan?.summary?.debtFreeDate ??
+      plan?.months?.[plan.months.length - 1]?.dateISO ??
       null;
 
     const topDebts = debts
