@@ -13,6 +13,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Plus, Trash2, Edit2, CreditCard, Download, Upload, ArrowLeft, FileSpreadsheet } from "lucide-react";
 import type { Debt } from "@/lib/computeDebtPlan";
 import { toast } from "sonner";
@@ -21,7 +32,7 @@ import { DebtQuickEdit } from "@/components/DebtQuickEdit";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
 
 export default function DebtsPage() {
-  const { state, addDebt, updateDebt, deleteDebt } = useApp();
+  const { state, addDebt, updateDebt, deleteDebt, clearDebts } = useApp();
   const navigate = useNavigate();
   const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -128,6 +139,11 @@ export default function DebtsPage() {
     toast.success("Template downloaded");
   }
 
+  async function handleClearAll() {
+    await clearDebts();
+    toast.success("All debts cleared");
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
@@ -148,6 +164,31 @@ export default function DebtsPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            {state.debts.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="flex-1 sm:flex-none">
+                    <Trash2 className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Delete All</span>
+                    <span className="sm:hidden">Clear</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete all debts?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all {state.debts.length} debt(s). This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Delete All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="flex-1 sm:flex-none">
               <FileSpreadsheet className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Download Template</span>
