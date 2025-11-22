@@ -70,19 +70,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (error) throw error;
     
-    // Send welcome email if email is confirmed
-    if (data.session?.user?.email_confirmed_at) {
+    const user = data.session?.user;
+    
+    // Safety check
+    if (!user) return;
+    
+    const isConfirmed = !!user.email_confirmed_at;
+    const alreadySent = user.user_metadata?.welcome_sent === true;
+    
+    // Send welcome email only if email is confirmed and not already sent
+    if (isConfirmed && !alreadySent) {
       try {
         await supabase.functions.invoke('send-welcome-email', {
           body: {
             event: "client.email_confirmed",
             user: {
-              email: data.session.user.email,
-              name: data.session.user.user_metadata?.full_name ?? "there",
+              email: user.email,
+              name: user.user_metadata?.full_name ?? "there",
             },
           },
         });
-        console.log('Welcome email sent to:', data.session.user.email);
+        
+        // Mark welcome email as sent in user metadata
+        await supabase.auth.updateUser({
+          data: { welcome_sent: true }
+        });
+        
+        console.log('Welcome email sent to:', user.email);
       } catch (emailErr) {
         console.error('Welcome email failed:', emailErr);
         // Don't throw - signin was successful even if email fails
