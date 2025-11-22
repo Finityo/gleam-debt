@@ -22,6 +22,7 @@ type Ctx = {
   addDebt: (d: Partial<Debt>) => Promise<void>;
   updateDebt: (id: string, patch: Partial<Debt>) => Promise<void>;
   deleteDebt: (id: string) => Promise<void>;
+  clearDebts: () => Promise<void>;
   updateSettings: (patch: Partial<UserSettings>) => Promise<void>;
   updateNotes: (notes: string) => void;
   computeNow: () => void;
@@ -226,6 +227,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const clearDebts = async () => {
+    if (!user) return;
+
+    // Delete all debts from database
+    const { error } = await supabase
+      .from("debts")
+      .delete()
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error clearing debts:", error);
+      return;
+    }
+
+    setState((s) => {
+      // Sync with PlanAPI for Plan page
+      PlanAPI.writeAndCompute(user.id, {
+        debts: [],
+        settings: s.settings,
+      }, `Cleared all debts`).catch(err => 
+        console.error("Error syncing with PlanAPI:", err)
+      );
+      
+      return { ...s, debts: [], plan: null };
+    });
+  };
+
   const updateDebts = (debts: Debt[]) => {
     setState((s) => {
       const plan = debts.length ? computeDebtPlan(debts, s.settings) : null;
@@ -287,6 +315,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         addDebt,
         updateDebt,
         deleteDebt,
+        clearDebts,
         updateDebts,
         updateSettings,
         updateNotes,
