@@ -16,8 +16,29 @@ export default function DemoPayoffCalendarPage() {
   if (!plan) {
     return (
       <PageShell>
-        <div className="max-w-3xl mx-auto px-4 py-12 text-center text-finityo-textBody">
-          No plan found — compute first.
+        <div className="p-4 pb-24">
+          {/* TOP NAV */}
+          <div className="flex items-center justify-between mb-4 gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+            >
+              Back
+            </button>
+          </div>
+
+          <h1 className="text-3xl font-bold mb-4">Payoff Calendar</h1>
+          <p>No plan found — compute first.</p>
+
+          {/* BOTTOM STICKY BAR */}
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 shadow-2xl border-t border-neutral-200 dark:border-neutral-800 p-3 flex items-center justify-between gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+            >
+              Back
+            </button>
+          </div>
         </div>
       </PageShell>
     );
@@ -25,11 +46,18 @@ export default function DemoPayoffCalendarPage() {
 
   return (
     <PageShell>
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+      <div className="p-4 pb-24">
+        {/* TOP NAV */}
+        <div className="flex items-center justify-between mb-4 gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+          >
+            Back
+          </button>
+        </div>
+
+        <div className="max-w-3xl mx-auto">
         
         <h1 className="text-3xl font-bold text-finityo-textMain mb-2">
           Payoff Calendar
@@ -84,11 +112,16 @@ export default function DemoPayoffCalendarPage() {
             })}
           </div>
         </PopIn>
+        </div>
 
-        <div className="pt-8">
-          <Btn variant="outline" onClick={() => history.back()}>
+        {/* BOTTOM STICKY BAR */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 shadow-2xl border-t border-neutral-200 dark:border-neutral-800 p-3 flex items-center justify-between gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+          >
             Back
-          </Btn>
+          </button>
         </div>
       </div>
     </PageShell>

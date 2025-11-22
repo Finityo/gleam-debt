@@ -6,8 +6,8 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function DebtChartPage() {
-  const { plan } = useDebtEngineFromStore();
   const navigate = useNavigate();
+  const { plan, recompute } = useDebtEngineFromStore();
 
   const data = useMemo(() => {
     if (!plan) return [];
@@ -20,15 +20,41 @@ export default function DebtChartPage() {
 
   if (!plan) {
     return (
-      <div className="container mx-auto p-6">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+      <div className="p-4 pb-24">
+        {/* TOP NAV */}
+        <div className="flex items-center justify-between mb-4 gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+          >
+            Back
+          </button>
+          <button
+            onClick={recompute}
+            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+          >
+            Recalculate
+          </button>
+        </div>
+
         <h1 className="text-3xl font-bold mb-4">Debt Chart</h1>
-        <Card className="p-6">
-          <p className="mb-4">No plan computed yet.</p>
-        </Card>
+        <p>No plan computed yet.</p>
+
+        {/* BOTTOM STICKY BAR */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 shadow-2xl border-t border-neutral-200 dark:border-neutral-800 p-3 flex items-center justify-between gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+          >
+            Back
+          </button>
+          <button
+            onClick={recompute}
+            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+          >
+            Recalculate
+          </button>
+        </div>
       </div>
     );
   }
@@ -49,12 +75,25 @@ export default function DebtChartPage() {
   const path = points.map((p, i) => (i === 0 ? `M ${p[0]} ${p[1]}` : `L ${p[0]} ${p[1]}`)).join(" ");
 
   return (
-    <div className="container mx-auto p-6">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
-      </Button>
-      <h1 className="text-3xl font-bold mb-6">Debt Remaining Over Time</h1>
+    <div className="p-4 pb-24">
+      {/* TOP NAV */}
+      <div className="flex items-center justify-between mb-4 gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+        >
+          Back
+        </button>
+        <button
+          onClick={recompute}
+          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+        >
+          Recalculate
+        </button>
+      </div>
+
+      <div className="container mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Debt Remaining Over Time</h1>
       <Card className="p-6 overflow-x-auto">
         <svg width={w} height={h} className="border border-border bg-background">
           {/* axes */}
@@ -77,6 +116,23 @@ export default function DebtChartPage() {
           ))}
         </div>
       </Card>
+      </div>
+
+      {/* BOTTOM STICKY BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 shadow-2xl border-t border-neutral-200 dark:border-neutral-800 p-3 flex items-center justify-between gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+        >
+          Back
+        </button>
+        <button
+          onClick={recompute}
+          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+        >
+          Recalculate
+        </button>
+      </div>
     </div>
   );
 }

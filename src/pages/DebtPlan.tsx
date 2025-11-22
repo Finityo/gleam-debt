@@ -1,8 +1,10 @@
 import React, { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
 
 export default function DebtPlan() {
-  const { plan, debtsUsed, settingsUsed } = useDebtEngineFromStore();
+  const navigate = useNavigate();
+  const { plan, debtsUsed, settingsUsed, recompute } = useDebtEngineFromStore();
 
   const months = plan?.months || [];
   const lastMonth = months.length ? months[months.length - 1] : null;
@@ -19,9 +21,26 @@ export default function DebtPlan() {
   }, [plan, debtsUsed]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Your Debt Plan</h1>
+    <div className="p-4 pb-24">
+      {/* TOP NAV */}
+      <div className="flex items-center justify-between mb-4 gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+        >
+          Back
+        </button>
+        <button
+          onClick={recompute}
+          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+        >
+          Recalculate
+        </button>
+      </div>
+
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold tracking-tight">Your Debt Plan</h1>
         <div className="text-sm text-muted-foreground">
           Strategy: <span className="font-medium text-foreground">{plan?.strategy || settingsUsed?.strategy || "snowball"}</span>
         </div>
@@ -89,6 +108,23 @@ export default function DebtPlan() {
             </div>
           ))
         )}
+      </div>
+      </div>
+
+      {/* BOTTOM STICKY BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 shadow-2xl border-t border-neutral-200 dark:border-neutral-800 p-3 flex items-center justify-between gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+        >
+          Back
+        </button>
+        <button
+          onClick={recompute}
+          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+        >
+          Recalculate
+        </button>
       </div>
     </div>
   );

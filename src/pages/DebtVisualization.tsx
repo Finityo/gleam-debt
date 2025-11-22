@@ -24,20 +24,46 @@ function pickColor(name: string): string {
 }
 
 export default function DebtVisualizationPage() {
-  const { plan, debtsUsed, settingsUsed } = useDebtEngineFromStore();
   const navigate = useNavigate();
+  const { plan, debtsUsed, settingsUsed, recompute } = useDebtEngineFromStore();
 
   if (!plan) {
     return (
-      <div className="container mx-auto p-6">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+      <div className="p-4 pb-24">
+        {/* TOP NAV */}
+        <div className="flex items-center justify-between mb-4 gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+          >
+            Back
+          </button>
+          <button
+            onClick={recompute}
+            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+          >
+            Recalculate
+          </button>
+        </div>
+
         <h1 className="text-3xl font-bold mb-4">Debt Visualization</h1>
-        <Card className="p-6">
-          <p className="mb-4">No plan computed yet.</p>
-        </Card>
+        <p>No plan computed yet.</p>
+
+        {/* BOTTOM STICKY BAR */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 shadow-2xl border-t border-neutral-200 dark:border-neutral-800 p-3 flex items-center justify-between gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+          >
+            Back
+          </button>
+          <button
+            onClick={recompute}
+            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+          >
+            Recalculate
+          </button>
+        </div>
       </div>
     );
   }
@@ -88,12 +114,25 @@ export default function DebtVisualizationPage() {
   });
 
   return (
-    <div className="container mx-auto p-3 sm:p-4 md:p-6">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
-      </Button>
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6">Debt Overview</h1>
+    <div className="p-4 pb-24">
+      {/* TOP NAV */}
+      <div className="flex items-center justify-between mb-4 gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+        >
+          Back
+        </button>
+        <button
+          onClick={recompute}
+          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+        >
+          Recalculate
+        </button>
+      </div>
+
+      <div className="container mx-auto">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6">Debt Overview</h1>
 
       {/* Payment Strategy Display */}
       <Card className="p-6 mb-6 glass-intense border-primary/30">
@@ -189,6 +228,23 @@ export default function DebtVisualizationPage() {
           </tbody>
         </table>
       </Card>
+      </div>
+
+      {/* BOTTOM STICKY BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 shadow-2xl border-t border-neutral-200 dark:border-neutral-800 p-3 flex items-center justify-between gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.99]"
+        >
+          Back
+        </button>
+        <button
+          onClick={recompute}
+          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 active:scale-[0.99]"
+        >
+          Recalculate
+        </button>
+      </div>
     </div>
   );
 }
