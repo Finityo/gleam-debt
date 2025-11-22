@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
+import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 
 export default function DebtPlan() {
   const navigate = useNavigate();
-  const { plan, months, totals, debtsUsed, settingsUsed, recompute } = useNormalizedPlan();
+  const { plan, months, totals, debtsUsed, settingsUsed, recompute } = useUnifiedPlan();
 
   if (!plan) {
     return (
