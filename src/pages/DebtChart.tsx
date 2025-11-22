@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
-import { usePlan } from "@/context/PlanContext";
+import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function DebtChartPage() {
-  const { plan, compute, debts } = usePlan();
+  const { plan } = useDebtEngineFromStore();
   const navigate = useNavigate();
 
   const data = useMemo(() => {
@@ -14,7 +14,7 @@ export default function DebtChartPage() {
     // Calculate remaining principal over time
     return plan.months.map((month) => ({
       label: `M${month.monthIndex + 1}`,
-      remaining: month.payments.reduce((sum, p) => sum + p.balanceEnd, 0),
+      remaining: month.payments.reduce((sum, p) => sum + p.endingBalance, 0),
     }));
   }, [plan]);
 
@@ -28,7 +28,6 @@ export default function DebtChartPage() {
         <h1 className="text-3xl font-bold mb-4">Debt Chart</h1>
         <Card className="p-6">
           <p className="mb-4">No plan computed yet.</p>
-          <Button onClick={compute}>Compute Plan</Button>
         </Card>
       </div>
     );

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, RefreshCw, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import AppLayout from "@/layouts/AppLayout";
+import { computeDebtPlan } from "@/lib/debtPlan";
 
 export default function ScenariosPage() {
   const navigate = useNavigate();
@@ -43,10 +44,14 @@ export default function ScenariosPage() {
     const result = compareCurrent();
     if (!result) return;
 
+    const snowballMonths = result.snowball.totals.monthsToDebtFree ?? result.snowball.months.length;
+    const avalancheMonths = result.avalanche.totals.monthsToDebtFree ?? result.avalanche.months.length;
+    const minimumMonths = result.minimum.totals.monthsToDebtFree ?? result.minimum.months.length;
+
     const msg = `
-Snowball: ${result.snowball.summary.finalMonthIndex + 1} months
-Avalanche: ${result.avalanche.summary.finalMonthIndex + 1} months
-Minimum Only: ${result.minimum.summary.finalMonthIndex + 1} months
+Snowball: ${snowballMonths} months
+Avalanche: ${avalancheMonths} months
+Minimum Only: ${minimumMonths} months
     `.trim();
 
     alert(msg);
@@ -130,13 +135,15 @@ Minimum Only: ${result.minimum.summary.finalMonthIndex + 1} months
                 {s.plan && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Months:</span>
-                    <span className="font-medium">{s.plan.summary.finalMonthIndex + 1}</span>
+                    <span className="font-medium">
+                      {s.plan.totals.monthsToDebtFree ?? s.plan.months.length}
+                    </span>
                   </div>
                 )}
                 {s.plan && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Interest:</span>
-                    <span className="font-medium">${s.plan.totalInterest.toFixed(2)}</span>
+                    <span className="font-medium">${s.plan.totals.interest.toFixed(2)}</span>
                   </div>
                 )}
               </div>
