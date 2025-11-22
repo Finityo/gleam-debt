@@ -56,7 +56,7 @@ export default function DebtVisualizationPage() {
     ? (totalDebt / (totalDebt + totalAvailableCredit)) * 100
     : 0;
 
-  // Prepare pie chart data from debts
+  // Prepare pie chart data from debts (use engine debts when available)
   const pieData = useMemo(() => {
     const included = debts.filter(d => d.include !== false);
     const sum = included.reduce((s, d) => s + d.balance, 0);

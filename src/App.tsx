@@ -6,10 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
-import { PlanProvider } from "@/context/PlanContext";
 import { ScenarioProvider } from "@/context/ScenarioContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { AppProvider } from "@/context/AppStore";
+import { AppProvider, useApp } from "@/context/AppStore";
 import { DebtEngineProvider } from "@/engine/DebtEngineContext";
 import { NotificationsPanel } from "@/components/NotificationsPanel";
 import { NextHandler } from "@/components/NextHandler";
@@ -28,6 +27,22 @@ const AppWrapper = () => {
   );
 };
 
+const EngineLayer = () => {
+  const { state } = useApp();
+  const debts = state.debts || [];
+  const settings = state.settings || {};
+  return (
+    <DebtEngineProvider debts={debts} settings={settings}>
+      <ScenarioProvider>
+        <AppWrapper />
+        <NotificationsPanel />
+        <Toaster />
+        <Sonner />
+      </ScenarioProvider>
+    </DebtEngineProvider>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
@@ -35,16 +50,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <AppProvider>
-              <DebtEngineProvider debts={[]} settings={{}}>
-                <ScenarioProvider>
-                  <PlanProvider>
-                    <AppWrapper />
-                    <NotificationsPanel />
-                    <Toaster />
-                    <Sonner />
-                  </PlanProvider>
-                </ScenarioProvider>
-              </DebtEngineProvider>
+              <EngineLayer />
             </AppProvider>
           </AuthProvider>
         </BrowserRouter>
