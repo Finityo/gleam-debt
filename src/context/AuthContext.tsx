@@ -59,22 +59,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (error) throw error;
     
-    // Send welcome email immediately after successful signup
-    if (data.user) {
-      try {
-        await supabase.functions.invoke('send-welcome-email', {
-          body: { 
-            email: email,
-            name: fullName || email.split("@")[0]
-          }
-        });
-        console.log('Welcome email sent to:', email);
-      } catch (emailErr) {
-        console.error('Welcome email failed:', emailErr);
-        // Don't throw - signup was successful even if email fails
-      }
-    }
-    
     // Session is set by onAuthStateChange
   };
 
@@ -85,6 +69,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (error) throw error;
+    
+    // Send welcome email if email is confirmed
+    if (data.session?.user?.email_confirmed_at) {
+      try {
+        await supabase.functions.invoke('send-welcome-email', {
+          body: {
+            event: "client.email_confirmed",
+            user: {
+              email: data.session.user.email,
+              name: data.session.user.user_metadata?.full_name ?? "there",
+            },
+          },
+        });
+        console.log('Welcome email sent to:', data.session.user.email);
+      } catch (emailErr) {
+        console.error('Welcome email failed:', emailErr);
+        // Don't throw - signin was successful even if email fails
+      }
+    }
     
     // Session is set by onAuthStateChange
   };

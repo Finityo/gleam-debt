@@ -21,9 +21,19 @@ serve(async (req) => {
   try {
     const payload = await req.json();
 
-    // Direct call from frontend with { email, name }
-    const email = payload.email;
-    const name = payload.name ?? "there";
+    // Expected payload: { event: "client.email_confirmed", user: { email, name } }
+    if (!payload || payload.event !== "client.email_confirmed") {
+      return new Response(
+        JSON.stringify({ ok: false, error: "Invalid event type" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const email = payload.user?.email;
+    const name = payload.user?.name ?? "there";
 
     if (!email) {
       return new Response(
