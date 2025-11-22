@@ -71,7 +71,6 @@ const DemoImportExport = lazy(() => import("@/pages/demo/plan/import"));
 
 // ===== CORE (PUBLIC) =====
 const Index = lazy(() => import("@/pages/index"));
-const Pricing = lazy(() => import("@/pages/pricing"));
 const PricingNew = lazy(() => import("@/pages/PricingNew"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const AuthPage = lazy(() => import("@/pages/auth"));
@@ -127,7 +126,6 @@ const DownloadPlaidProposal = lazy(() => import("@/pages/DownloadPlaidProposal")
 const DocumentExport = lazy(() => import("@/pages/DocumentExport"));
 const OAuthRedirect = lazy(() => import("@/pages/OAuthRedirect"));
 const PrintableSummary = lazy(() => import("@/pages/PrintableSummary"));
-const MobileView = lazy(() => import("@/pages/Mobile"));
 const DebtsNew = lazy(() => import("@/pages/DebtsNew"));
 const PlaidConnect = lazy(() => import("@/features/PlaidConnect"));
 const SignIn = lazy(() => import("@/pages/auth/SignIn"));
@@ -223,7 +221,6 @@ export function AppRoutes() {
           <Route path="/plaid-connect" element={<RequireAuth><PlaidConnect /></RequireAuth>} />
           <Route path="/oauth-redirect" element={<RequireAuth><OAuthRedirect /></RequireAuth>} />
           <Route path="/printable-summary" element={<RequireAuth><PrintableSummary /></RequireAuth>} />
-          <Route path="/mobile-view" element={<RequireAuth><MobileView /></RequireAuth>} />
           <Route path="/debts-new" element={<RequireAuth><DebtsNew /></RequireAuth>} />
           
           {/* ===== TEAM PORTAL ROUTES ===== */}
