@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
-import { usePlan } from "@/context/PlanContext";
+import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function PayoffCalendarPage() {
-  const { plan, compute, debts } = usePlan();
+  const { plan, debtsUsed } = useDebtEngineFromStore();
   const navigate = useNavigate();
 
   if (!plan) {
@@ -19,7 +19,6 @@ export default function PayoffCalendarPage() {
         <h1 className="text-3xl font-bold mb-4">Payoff Calendar</h1>
         <Card className="p-6">
           <p className="mb-4">No plan computed yet.</p>
-          <Button onClick={compute}>Compute Plan</Button>
         </Card>
       </div>
     );
@@ -28,22 +27,22 @@ export default function PayoffCalendarPage() {
   // Generate calendar data from plan
   const cal = useMemo(() => {
     return plan.months.map(month => {
-      const closedDebts = month.payments.filter(p => p.balanceEnd <= 0.01 && p.paid > 0);
+      const closedDebts = month.payments.filter(p => p.endingBalance <= 0.01 && p.totalPaid > 0);
       const payoffs = closedDebts.map(p => {
-        const debt = debts.find(d => d.id === p.debtId);
+        const debt = debtsUsed.find(d => d.id === p.debtId);
         return { name: debt?.name || "Unknown" };
       });
       
       return {
         monthIndex: month.monthIndex,
         monthLabel: `Month ${month.monthIndex + 1}`,
-        totalOutflow: month.totalPaid,
-        totalInterest: month.totalInterest,
-        totalPrincipal: month.totalPaid - month.totalInterest,
+        totalOutflow: month.totals.outflow,
+        totalInterest: month.totals.interest,
+        totalPrincipal: month.totals.outflow - month.totals.interest,
         payoffs,
       };
     });
-  }, [plan, debts]);
+  }, [plan, debtsUsed]);
 
   return (
     <div className="container mx-auto p-3 sm:p-4 md:p-6">
