@@ -1,67 +1,56 @@
 import { useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { computeDebtPlan } from "@/lib/debtPlan";
-import { useDebtEngine } from "@/engine/DebtEngineContext";
+import { computeDebtPlan } from "@/lib/computeDebtPlan";
+import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
 
-type Props = {
-  debts?: any[];
-  settings?: any;
-};
+type Props = { debts?: any[]; settings?: any };
 
 export default function ScenarioCompareChart({ debts, settings }: Props) {
-  const { plan: enginePlan } = useDebtEngine();
-  
-  const scenarios = useMemo(() => {
-    // Use engine plan as baseline, or compute from props
-    const activeDebts = debts ?? enginePlan?.debts ?? [];
-    const activeSettings = settings ?? {
-      extraMonthly: enginePlan?.totals?.outflowMonthly ?? 0,
-      oneTimeExtra: 0,
-      strategy: enginePlan?.strategy ?? "snowball",
-    };
+  const { plan: enginePlan, debtsUsed, settingsUsed } = useDebtEngineFromStore();
 
+  const scenarios = useMemo(() => {
+    const activeDebts = debts && debts.length ? debts : debtsUsed;
+    const activeSettings = settings || settingsUsed || {};
     if (!activeDebts?.length) return null;
 
-    // Current plan (use engine plan if available)
+    // Baseline: use computed engine plan (no duplicate compute)
     const currentPlan = enginePlan ?? computeDebtPlan({
       debts: activeDebts,
       extraMonthly: activeSettings.extraMonthly || 0,
       oneTimeExtra: activeSettings.oneTimeExtra || 0,
       strategy: activeSettings.strategy || "snowball",
+      startDate: activeSettings.startDate,
+      maxMonths: activeSettings.maxMonths,
     });
 
-    // Minimum-only plan (no extra payments)
+    // Only allowed additional compute: min-only scenario
     const minOnlyPlan = computeDebtPlan({
       debts: activeDebts,
       extraMonthly: 0,
       oneTimeExtra: 0,
       strategy: activeSettings.strategy || "snowball",
+      startDate: activeSettings.startDate,
+      maxMonths: activeSettings.maxMonths,
     });
 
-    // Build chart data from plan months
-    const maxMonths = Math.max(
-      currentPlan.months.length,
-      minOnlyPlan.months.length
-    );
+    const monthsA = currentPlan.months || [];
+    const monthsB = minOnlyPlan.months || [];
+    const maxMonths = Math.max(monthsA.length, monthsB.length);
 
-    const chartData = [];
+    const chartData: any[] = [];
     for (let m = 0; m < maxMonths; m++) {
-      const currentMonth = currentPlan.months[m];
-      const minOnlyMonth = minOnlyPlan.months[m];
-      
-      // Calculate remaining balance for each month
-      const currentRemaining = currentMonth 
-        ? currentMonth.payments.reduce((sum, p) => sum + p.endingBalance, 0)
+      const a = monthsA[m];
+      const b = monthsB[m];
+
+      // Remaining balance per month derived from computed schedules
+      const currentRemaining = a?.payments
+        ? a.payments.reduce((sum: number, p: any) => sum + (p.balanceEnd ?? p.endingBalance ?? 0), 0)
         : 0;
-      const minOnlyRemaining = minOnlyMonth
-        ? minOnlyMonth.payments.reduce((sum, p) => sum + p.endingBalance, 0)
+      const minOnlyRemaining = b?.payments
+        ? b.payments.reduce((sum: number, p: any) => sum + (p.balanceEnd ?? p.endingBalance ?? 0), 0)
         : 0;
 
-      chartData.push({
-        month: m + 1,
-        current: currentRemaining,
-        minOnly: minOnlyRemaining,
-      });
+      chartData.push({ month: m + 1, current: currentRemaining, minOnly: minOnlyRemaining });
     }
 
     return {
@@ -69,76 +58,70 @@ export default function ScenarioCompareChart({ debts, settings }: Props) {
       currentPlan,
       minOnlyPlan,
     };
-  }, [debts, settings, enginePlan]);
+  }, [debts, settings, enginePlan, debtsUsed, settingsUsed]);
 
-  if (!scenarios) return null;
+  if (!scenarios) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+        Add debts to compare scenarios
+      </div>
+    );
+  }
 
   const { chartData, currentPlan, minOnlyPlan } = scenarios;
-  const monthsSaved = minOnlyPlan.totals.monthsToDebtFree - currentPlan.totals.monthsToDebtFree;
-  const interestSaved = minOnlyPlan.totals.interest - currentPlan.totals.interest;
+
+  const monthsSaved =
+    (minOnlyPlan.totals?.monthsToDebtFree ?? minOnlyPlan.months?.length ?? 0) -
+    (currentPlan.totals?.monthsToDebtFree ?? currentPlan.months?.length ?? 0);
+  const interestSaved =
+    (minOnlyPlan.totals?.interest ?? minOnlyPlan.totalInterest ?? 0) -
+    (currentPlan.totals?.interest ?? currentPlan.totalInterest ?? 0);
 
   return (
-    <div className="p-4 border rounded-lg bg-card space-y-4">
-      <h2 className="text-lg font-semibold">Scenario Comparison</h2>
+    <div className="space-y-4">
+      <div className="text-lg font-semibold">Scenario Comparison</div>
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <div className="text-muted-foreground">Current Plan</div>
-          <div className="font-semibold">
-            {currentPlan.totals.monthsToDebtFree} months
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="rounded-xl border border-border bg-card p-3">
+          <div className="text-sm font-medium">Current Plan</div>
+          <div className="text-xs text-muted-foreground">
+            {currentPlan.totals?.monthsToDebtFree ?? currentPlan.months?.length ?? 0} months
           </div>
           <div className="text-xs text-muted-foreground">
-            ${currentPlan.totals.interest.toFixed(2)} interest
+            {Number(currentPlan.totals?.interest ?? currentPlan.totalInterest ?? 0).toLocaleString("en-US", { style: "currency", currency: "USD" })} interest
           </div>
         </div>
-        <div>
-          <div className="text-muted-foreground">Minimum Only</div>
-          <div className="font-semibold">
-            {minOnlyPlan.totals.monthsToDebtFree} months
+
+        <div className="rounded-xl border border-border bg-card p-3">
+          <div className="text-sm font-medium">Minimum Only</div>
+          <div className="text-xs text-muted-foreground">
+            {minOnlyPlan.totals?.monthsToDebtFree ?? minOnlyPlan.months?.length ?? 0} months
           </div>
           <div className="text-xs text-muted-foreground">
-            ${minOnlyPlan.totals.interest.toFixed(2)} interest
+            {Number(minOnlyPlan.totals?.interest ?? minOnlyPlan.totalInterest ?? 0).toLocaleString("en-US", { style: "currency", currency: "USD" })} interest
           </div>
         </div>
       </div>
 
-      {monthsSaved > 0 && (
-        <div className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded text-sm">
-          <div className="font-semibold text-green-900 dark:text-green-100">
-            You're saving {monthsSaved} months and ${interestSaved.toFixed(2)} in interest!
-          </div>
-        </div>
-      )}
+      <div className="text-xs text-muted-foreground">
+        Months saved: <span className="font-medium text-foreground">{monthsSaved}</span> • Interest saved:{" "}
+        <span className="font-medium text-foreground">
+          {Number(interestSaved).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+        </span>
+      </div>
 
-      <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={chartData}>
-          <XAxis 
-            dataKey="month" 
-            label={{ value: "Month", position: "insideBottom", offset: -5 }}
-          />
-          <YAxis />
-          <Tooltip 
-            formatter={(value: any) => `$${value.toFixed(2)}`}
-            labelFormatter={(label) => `Month ${label}`}
-          />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="current"
-            name="Your Plan"
-            stroke="hsl(var(--primary))"
-            strokeWidth={2}
-          />
-          <Line
-            type="monotone"
-            dataKey="minOnly"
-            name="Minimum Only"
-            stroke="hsl(var(--muted-foreground))"
-            strokeWidth={2}
-            strokeDasharray="5 5"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <div className="h-[320px] w-full rounded-xl border border-border bg-card p-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData}>
+            <XAxis dataKey="month" tickLine={false} axisLine={false} />
+            <YAxis tickLine={false} axisLine={false} />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="current" name="Current Plan" stroke="hsl(var(--primary))" dot={false} />
+            <Line type="monotone" dataKey="minOnly" name="Minimum Only" stroke="hsl(var(--muted-foreground))" dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
