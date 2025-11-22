@@ -7,14 +7,53 @@
    ============================================ */
 
 @layer utilities {
+  /* ============================================
+     NATIVE-FEELING TOUCH FEEDBACK
+     ============================================ */
+  
+  /* Touch Press - Immediate scale-down feedback */
+  .touch-press {
+    @apply transition-transform duration-100 active:scale-[0.96];
+  }
+  
+  /* Touch Press Strong - More pronounced feedback */
+  .touch-press-strong {
+    @apply transition-transform duration-100 active:scale-[0.92];
+  }
+  
+  /* Touch Bounce - Spring-back effect */
+  .touch-bounce {
+    @apply transition-all duration-200 active:scale-[0.94];
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  /* Touch Highlight - Brightness flash on press */
+  .touch-highlight {
+    @apply transition-all duration-150 active:brightness-90;
+  }
+  
+  /* Touch Glow - Subtle glow on press */
+  .touch-glow {
+    @apply transition-all duration-200 active:shadow-[0_0_16px_hsl(var(--primary)/0.4)];
+  }
+  
+  /* Combined Native Touch Feel */
+  .touch-native {
+    @apply transition-all duration-150 active:scale-[0.96] active:brightness-90;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
   /* Card Hover Effects */
   .card-hover {
     @apply transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.005] hover:shadow-[0_8px_30px_hsl(var(--primary)/0.25)] active:scale-[0.99];
+    -webkit-tap-highlight-color: transparent;
   }
   
   /* Button Ripple Effect */
   .btn-ripple {
     @apply relative overflow-hidden;
+    -webkit-tap-highlight-color: transparent;
   }
   
   .btn-ripple::after {
@@ -33,12 +72,14 @@
   
   /* Icon Hover Rotate */
   .icon-hover {
-    @apply transition-transform duration-200 hover:rotate-3;
+    @apply transition-transform duration-200 hover:rotate-3 active:scale-95;
+    -webkit-tap-highlight-color: transparent;
   }
   
   /* Row Hover Highlight */
   .row-hover {
-    @apply transition-colors duration-200 hover:bg-primary/5;
+    @apply transition-colors duration-200 hover:bg-primary/5 active:bg-primary/10;
+    -webkit-tap-highlight-color: transparent;
   }
   
   /* Animated Border Gradient */
