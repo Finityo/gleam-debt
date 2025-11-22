@@ -21,20 +21,9 @@ serve(async (req) => {
   try {
     const payload = await req.json();
 
-    // Expected event:
-    // { "event": "user.email_confirmed", "user": { "id": "...", "email": "..." } }
-    if (!payload || payload.event !== "user.email_confirmed") {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Invalid webhook event" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const email = payload.user?.email;
-    const name = payload.user?.name ?? "there";
+    // Direct call from frontend with { email, name }
+    const email = payload.email;
+    const name = payload.name ?? "there";
 
     if (!email) {
       return new Response(
