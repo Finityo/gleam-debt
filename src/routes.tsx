@@ -132,7 +132,9 @@ const SignIn = lazy(() => import("@/pages/auth/SignIn"));
 const SignUp = lazy(() => import("@/pages/auth/SignUp"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
-// Demo layout wrapper
+// Demo layout wrapper (PUBLIC + isolated)
+// - No access to core PlanContext
+// - No auth dependencies
 const DemoLayoutWrapper = () => (
   <DemoPlanProvider>
     <Suspense fallback={<Loader />}>
