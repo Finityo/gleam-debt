@@ -5,7 +5,7 @@
 
 import { useMemo } from "react";
 import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
-import { computeDebtPlan } from "@/lib/debtPlan";
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
 
 export function useCompareStrategies() {
   const { debtsUsed, settingsUsed, plan: baseline } = useUnifiedPlan();
@@ -14,9 +14,9 @@ export function useCompareStrategies() {
     baseline?.strategy === "snowball" ? "avalanche" : "snowball";
 
   const altPlan = useMemo(() => {
-    return computeDebtPlan({
+    return computeDebtPlanUnified({
       debts: debtsUsed as any,
-      strategy: alternativeStrategy,
+      strategy: alternativeStrategy as any,
       extraMonthly: settingsUsed.extraMonthly,
       oneTimeExtra: settingsUsed.oneTimeExtra,
       startDate: settingsUsed.startDate,
