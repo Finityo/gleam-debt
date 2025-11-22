@@ -1,20 +1,19 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@2.0.0";
+// send-welcome-email.ts — Lovable Cloud (Deno Runtime)
 
+import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
+import { Resend } from "https://esm.sh/resend@3.2.0";
+
+// Resend API Key stored in Lovable Cloud Environment Variables
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-/**
- * send-welcome-email.ts
- * Fires AFTER a user verifies their email.
- * Lovable Cloud version (Auth webhook handler)
- */
-
+// Basic CORS config for Lovable Auth webhooks
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
-const handler = async (req: Request): Promise<Response> => {
+serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -22,17 +21,14 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const payload = await req.json();
 
-    // Expected Lovable Auth Event:
-    // {
-    //   "event": "user.email_verified",
-    //   "user": { "id": "...", "email": "..." }
-    // }
-    if (!payload || payload.event !== "user.email_verified") {
+    // Expected event:
+    // { "event": "user.email_confirmed", "user": { "id": "...", "email": "..." } }
+    if (!payload || payload.event !== "user.email_confirmed") {
       return new Response(
-        JSON.stringify({ ok: false, error: "Invalid event" }),
-        { 
+        JSON.stringify({ ok: false, error: "Invalid webhook event" }),
+        {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
@@ -43,50 +39,46 @@ const handler = async (req: Request): Promise<Response> => {
     if (!email) {
       return new Response(
         JSON.stringify({ ok: false, error: "Missing email" }),
-        { 
+        {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
-    // Send welcome email *only to the verified email*
+    // Send welcome email ONLY to the verified email
     await resend.emails.send({
-      from: "Finityo <no-reply@finityo.app>",
+      from: "Finityo <no-reply@finityo.com>",
       to: [email],
-      subject: "Welcome to Finityo — Let's Get You Debt Free",
+      subject: "Welcome to Finityo — You're Verified!",
       html: `
-        <h2>Welcome, ${name}!</h2>
-        <p>Your account is verified and you're all set.</p>
-        <p>Finityo is ready to help you finally take control of your debt.</p>
-        <br/>
-        <p>Let's get started:</p>
-        <a href="https://finityo-debt.lovable.app" 
-           style="padding:10px 15px;background:#6C47FF;color:white;border-radius:6px;text-decoration:none;">
-          Open Finityo
-        </a>
-        <br/><br/>
-        <p>Thanks for joining us,<br/>The Finityo Team</p>
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Welcome to Finityo, ${name}!</h2>
+          <p>Your email is verified and your account is good to go.</p>
+          <p>You're now ready to build your personal debt payoff plan.</p>
+          <br />
+          <a href="https://finityo.app" 
+             style="background:#000;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;">
+             Open Finityo
+          </a>
+          <br /><br />
+          <p>Thanks for joining us,<br />The Finityo Team</p>
+        </div>
       `,
     });
 
-    return new Response(
-      JSON.stringify({ ok: true }),
-      { 
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
-  } catch (err: any) {
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err) {
     console.error("Welcome-email error:", err);
     return new Response(
-      JSON.stringify({ ok: false, error: "Internal error" }),
-      { 
+      JSON.stringify({ ok: false, error: "Internal Error" }),
+      {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }
-};
-
-serve(handler);
+});
