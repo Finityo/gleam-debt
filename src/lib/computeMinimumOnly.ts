@@ -1,20 +1,22 @@
 // ===================================
 // src/lib/computeMinimumOnly.ts
 // ===================================
-import { Debt, DebtPlan, computeDebtPlan } from "@/lib/computeDebtPlan";
+import { computeDebtPlan } from "@/lib/debtPlan";
+import type { DebtInput, PlanResult } from "@/lib/debtPlan";
 
 /**
  * Compute minimum-only payment plan (no extra payments)
  * This is now a simple wrapper around the main engine
  */
 export function computeMinimumOnly(
-  inputDebts: Debt[],
+  inputDebts: DebtInput[],
   opts?: { startDate?: Date; maxMonths?: number }
-): DebtPlan {
+): PlanResult {
   const startDate = opts?.startDate ?? new Date();
   const maxMonths = opts?.maxMonths ?? 600;
   
-  return computeDebtPlan(inputDebts, {
+  return computeDebtPlan({
+    debts: inputDebts,
     strategy: "snowball",
     extraMonthly: 0,
     oneTimeExtra: 0,

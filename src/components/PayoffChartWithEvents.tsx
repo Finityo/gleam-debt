@@ -14,13 +14,13 @@ import {
   ReferenceLine,
 } from "recharts";
 
-import { DebtPlan, Debt } from "@/lib/computeDebtPlan";
+import type { PlanResult, DebtInput } from "@/lib/debtPlan";
 import { remainingByMonth } from "@/lib/remaining";
 import { getPayoffEvents } from "@/lib/payoffEvents";
 
 type Props = {
-  plan: DebtPlan;
-  debts: Debt[];
+  plan: PlanResult;
+  debts: DebtInput[];
   showEvents?: boolean;
 };
 

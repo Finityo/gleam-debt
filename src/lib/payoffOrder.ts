@@ -1,9 +1,9 @@
 // ===================================
 // src/lib/payoffOrder.ts
 // ===================================
-import { DebtPlan } from "@/lib/computeDebtPlan";
+import type { PlanResult } from "@/lib/debtPlan";
 
-export function getPayoffOrder(plan: DebtPlan) {
+export function getPayoffOrder(plan: PlanResult) {
   if (!plan || !plan.months.length) return [];
 
   const payoffMap = new Map<string, number>(); // debtId -> monthIndex
@@ -11,7 +11,7 @@ export function getPayoffOrder(plan: DebtPlan) {
 
   months.forEach((m) => {
     m.payments.forEach((p) => {
-      if (p.balanceEnd <= 0 && !payoffMap.has(p.debtId)) {
+      if (p.endingBalance <= 0 && !payoffMap.has(p.debtId)) {
         payoffMap.set(p.debtId, m.monthIndex);
       }
     });

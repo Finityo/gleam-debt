@@ -5,7 +5,7 @@
 // ============================================================================
 
 import { AppDB } from "@/live/lovableCloudDB";
-import { computeDebtPlan } from "@/lib/computeDebtPlan";
+import { computeDebtPlan } from "@/lib/debtPlan";
 import { supabase } from "@/integrations/supabase/client";
 import { uid, hashState, clone } from "@/lib/utils";
 
@@ -73,7 +73,14 @@ export const PlanAPI = {
       updatedAt: nowISO(),
     };
 
-    const plan = computeDebtPlan(row.debts, row.settings);
+    const plan = computeDebtPlan({ 
+      debts: row.debts, 
+      strategy: row.settings?.strategy ?? 'snowball',
+      extraMonthly: row.settings?.extraMonthly ?? 0,
+      oneTimeExtra: row.settings?.oneTimeExtra ?? 0,
+      startDate: row.settings?.startDate,
+      maxMonths: row.settings?.maxMonths
+    });
     const payload: PlanData = {
       debts: row.debts,
       settings: row.settings,
@@ -113,7 +120,14 @@ export const PlanAPI = {
       notes: next.notes ?? prev.notes,
     };
 
-    const plan = computeDebtPlan(merged.debts ?? [], merged.settings ?? {});
+    const plan = computeDebtPlan({ 
+      debts: merged.debts ?? [], 
+      strategy: merged.settings?.strategy ?? 'snowball',
+      extraMonthly: merged.settings?.extraMonthly ?? 0,
+      oneTimeExtra: merged.settings?.oneTimeExtra ?? 0,
+      startDate: merged.settings?.startDate,
+      maxMonths: merged.settings?.maxMonths
+    });
     const payload: PlanData = {
       debts: merged.debts,
       settings: merged.settings,
@@ -186,7 +200,14 @@ export const PlanAPI = {
 
     const mergedNotes = incoming.notes || current.notes || '';
 
-    const plan = computeDebtPlan(mergedDebts, mergedSettings);
+    const plan = computeDebtPlan({ 
+      debts: mergedDebts, 
+      strategy: mergedSettings?.strategy ?? 'snowball',
+      extraMonthly: mergedSettings?.extraMonthly ?? 0,
+      oneTimeExtra: mergedSettings?.oneTimeExtra ?? 0,
+      startDate: mergedSettings?.startDate,
+      maxMonths: mergedSettings?.maxMonths
+    });
 
     const payload: PlanData = {
       debts: mergedDebts,
@@ -211,7 +232,14 @@ export const PlanAPI = {
     };
     const notes = incoming.notes || '';
 
-    const plan = computeDebtPlan(debts, settings);
+    const plan = computeDebtPlan({ 
+      debts, 
+      strategy: settings?.strategy ?? 'snowball',
+      extraMonthly: settings?.extraMonthly ?? 0,
+      oneTimeExtra: settings?.oneTimeExtra ?? 0,
+      startDate: settings?.startDate,
+      maxMonths: settings?.maxMonths
+    });
 
     const payload: PlanData = {
       debts,

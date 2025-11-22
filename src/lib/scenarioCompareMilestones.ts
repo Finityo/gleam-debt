@@ -1,13 +1,13 @@
 // ===================================
 // src/lib/scenarioCompareMilestones.ts
 // ===================================
-import { Debt, UserSettings } from "@/lib/computeDebtPlan";
-import { scenarioCompare } from "@/lib/scenarioCompare";
+import type { DebtInput } from "@/lib/debtPlan";
+import { scenarioCompare, type ScenarioSettings } from "@/lib/scenarioCompare";
 import { getMilestones } from "@/lib/milestones";
 
 export function scenarioCompareWithMilestones(
-  debts: Debt[],
-  settings: UserSettings
+  debts: DebtInput[],
+  settings: ScenarioSettings
 ) {
   const { snowball, avalanche, minimum } = scenarioCompare(debts, settings);
 

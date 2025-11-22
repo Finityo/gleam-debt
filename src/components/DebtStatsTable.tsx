@@ -2,14 +2,14 @@
 // src/components/DebtStatsTable.tsx
 // ===================================
 import React, { useState } from "react";
-import { Debt, DebtPlan } from "@/lib/computeDebtPlan";
+import type { PlanResult, DebtInput } from "@/lib/debtPlan";
 import { getDebtStats } from "@/lib/debtStats";
 import DebtDrawer from "./DebtDrawer";
 import { Card } from "./ui/card";
 
 type Props = {
-  plan: DebtPlan;
-  debts: Debt[];
+  plan: PlanResult;
+  debts: DebtInput[];
 };
 
 export default function DebtStatsTable({ plan, debts }: Props) {

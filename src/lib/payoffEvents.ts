@@ -1,7 +1,7 @@
 // ===================================
 // src/lib/payoffEvents.ts
 // ===================================
-import { DebtPlan, Debt } from "@/lib/computeDebtPlan";
+import type { PlanResult, DebtInput } from "@/lib/debtPlan";
 import { getPayoffOrder } from "@/lib/payoffOrder";
 import { remainingByMonth } from "@/lib/remaining";
 
@@ -12,7 +12,7 @@ export type PayoffEvent = {
   remaining: number;
 };
 
-export function getPayoffEvents(plan: DebtPlan, debts: Debt[]): PayoffEvent[] {
+export function getPayoffEvents(plan: PlanResult, debts: DebtInput[]): PayoffEvent[] {
   const order = getPayoffOrder(plan);
   const remaining = remainingByMonth(plan);
   const nameMap = Object.fromEntries(debts.map((d) => [d.id, d.name]));
