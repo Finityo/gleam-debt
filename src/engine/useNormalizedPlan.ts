@@ -1,47 +1,87 @@
+import { useCallback, useMemo } from "react";
 import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
 
+// ---------- hardening utils ----------
+const toNum = (v: any, def = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : def;
+};
+const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+const safeAPR = (apr: any) => clamp(toNum(apr, 0), 0, 100); // 0–100% sanity window
+
+/**
+ * useNormalizedPlan (Military mode)
+ * - Guarantees stable, typed plan output regardless of engine/db variance
+ * - Sanitizes numeric fields
+ * - Prevents undefined arrays from breaking UI
+ * - Strips noisy console logs in prod
+ */
 export function useNormalizedPlan() {
   const { plan, debtsUsed, settingsUsed, recompute } = useDebtEngineFromStore();
 
-  // If plan is missing or malformed, safe-return a null bundle
-  if (!plan || !Array.isArray(plan.months)) {
-    console.warn("⚠️ Plan exists but months array missing. Returning null normalized plan.");
-    return {
-      plan: null,
-      months: [],
-      totals: null,
-      debtsUsed,
-      settingsUsed,
-      recompute,
-    };
-  }
+  const months = useMemo(() => {
+    const raw = plan?.months ?? [];
+    return raw.map((m: any, idx: number) => ({
+      monthIndex: toNum(m.monthIndex, idx),
+      dateISO: m.dateISO ?? null,
+      totals: {
+        outflow: toNum(m.totals?.outflow),
+        principal: toNum(m.totals?.principal),
+        interest: toNum(m.totals?.interest),
+      },
+      snowball: toNum(m.snowball ?? m.totals?.outflow),
+      payments: (m.payments ?? []).map((p: any) => {
+        const totalPaid = toNum(p.totalPaid);
+        const interestAccrued = toNum(p.interestAccrued ?? p.interest);
+        const principalPaid = toNum(p.principal ?? (totalPaid - interestAccrued));
+        const endingBalance = toNum(p.endingBalance);
+        return {
+          debtId: p.debtId,
+          totalPaid,
+          principal: principalPaid,
+          interest: interestAccrued,
+          endingBalance,
+          isClosed: endingBalance <= 0.01,
+        };
+      }),
+    }));
+  }, [plan]);
 
-  // Convert plan.months → fully normalized structure
-  const months = plan.months.map((m, idx) => ({
-    monthIndex: m.monthIndex ?? idx,
-    dateISO: m.dateISO ?? null,
-    totals: {
-      outflow: m.totals?.outflow ?? 0,
-      principal: m.totals?.principal ?? 0,
-      interest: m.totals?.interest ?? 0,
-    },
-    payments: (m.payments ?? []).map((p) => ({
-      debtId: p.debtId,
-      totalPaid: Number(p.totalPaid ?? 0),
-      principal: Number(p.totalPaid ?? 0) - Number(p.interestAccrued ?? 0),
-      interest: Number(p.interestAccrued ?? 0),
-      endingBalance: Number(p.endingBalance ?? 0),
-    })),
-  }));
+  const totals = useMemo(() => ({
+    principal: toNum(plan?.totals?.principal),
+    interest: toNum(plan?.totals?.interest),
+    outflowMonthly: toNum(plan?.totals?.outflowMonthly),
+    monthsToDebtFree: toNum(plan?.totals?.monthsToDebtFree, months.length),
+  }), [plan, months.length]);
 
-  const totals = {
-    principal: plan.totals?.principal ?? 0,
-    interest: plan.totals?.interest ?? 0,
-    outflowMonthly: plan.totals?.outflowMonthly ?? 0,
-    monthsToDebtFree: plan.totals?.monthsToDebtFree ?? months.length,
-  };
+  const normalizedDebts = useMemo(() => {
+    const list = plan?.debts || debtsUsed || [];
+    return [...list].map((d: any, idx: number) => ({
+      ...d,
+      order: toNum(d.order, idx),
+      apr: safeAPR(d.apr),
+      balance: toNum(d.balance),
+      minPayment: toNum(d.minPayment ?? d.minimumPayment),
+      id: d.id ?? d.debtId ?? String(idx),
+    }));
+  }, [plan, debtsUsed]);
 
-  console.log("🔥 Normalized Plan → ", { months, totals });
+  const orderedDebts = useMemo(() => {
+    return [...normalizedDebts].sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+  }, [normalizedDebts]);
 
-  return { plan, months, totals, debtsUsed, settingsUsed, recompute };
+  const payoffDateISO = useMemo(() => {
+    if (!months.length) return null;
+    return months[months.length - 1]?.dateISO ?? null;
+  }, [months]);
+
+  const safeRecompute = useCallback(async () => {
+    try {
+      await recompute?.();
+    } catch (e) {
+      console.error("Recompute failed:", e);
+    }
+  }, [recompute]);
+
+  return { plan, months, totals, orderedDebts, payoffDateISO, debtsUsed, settingsUsed, recompute: safeRecompute };
 }

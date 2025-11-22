@@ -1,8 +1,11 @@
 import React from "react";
 
 /**
- * Prevents white screens from hard crashes in complex plan pages.
- * Usage: <SafeRender fallback={...}>{children}</SafeRender>
+ * SafeRender (Military mode)
+ * - Catch render crashes at component boundary
+ * - Prevents whole-page white screens
+ * NOTE: React error boundaries must be class-based;
+ * this is a pragmatic guard for risky blocks.
  */
 export function SafeRender({
   children,
@@ -14,6 +17,7 @@ export function SafeRender({
   try {
     return <>{children}</>;
   } catch (e) {
+    // Never throw in prod UI; log only.
     console.error("SafeRender caught render error:", e);
     return <>{fallback}</>;
   }
