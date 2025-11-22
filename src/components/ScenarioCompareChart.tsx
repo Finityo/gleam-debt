@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { computeDebtPlan } from "@/lib/computeDebtPlan";
+import { computeDebtPlan, type PlanResult } from "@/lib/debtPlan";
 import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
 
 type Props = { debts?: any[]; settings?: any };
@@ -14,7 +14,7 @@ export default function ScenarioCompareChart({ debts, settings }: Props) {
     if (!activeDebts?.length) return null;
 
     // Baseline: use computed engine plan (no duplicate compute)
-    const currentPlan = enginePlan ?? computeDebtPlan({
+    const currentPlan: PlanResult = enginePlan ?? computeDebtPlan({
       debts: activeDebts,
       extraMonthly: activeSettings.extraMonthly || 0,
       oneTimeExtra: activeSettings.oneTimeExtra || 0,
@@ -24,7 +24,7 @@ export default function ScenarioCompareChart({ debts, settings }: Props) {
     });
 
     // Only allowed additional compute: min-only scenario
-    const minOnlyPlan = computeDebtPlan({
+    const minOnlyPlan: PlanResult = computeDebtPlan({
       debts: activeDebts,
       extraMonthly: 0,
       oneTimeExtra: 0,
@@ -71,11 +71,11 @@ export default function ScenarioCompareChart({ debts, settings }: Props) {
   const { chartData, currentPlan, minOnlyPlan } = scenarios;
 
   const monthsSaved =
-    (minOnlyPlan.totals?.monthsToDebtFree ?? minOnlyPlan.months?.length ?? 0) -
-    (currentPlan.totals?.monthsToDebtFree ?? currentPlan.months?.length ?? 0);
+    (minOnlyPlan.totals.monthsToDebtFree ?? minOnlyPlan.months.length ?? 0) -
+    (currentPlan.totals.monthsToDebtFree ?? currentPlan.months.length ?? 0);
   const interestSaved =
-    (minOnlyPlan.totals?.interest ?? minOnlyPlan.totalInterest ?? 0) -
-    (currentPlan.totals?.interest ?? currentPlan.totalInterest ?? 0);
+    (minOnlyPlan.totals.interest ?? 0) -
+    (currentPlan.totals.interest ?? 0);
 
   return (
     <div className="space-y-4">
@@ -85,20 +85,20 @@ export default function ScenarioCompareChart({ debts, settings }: Props) {
         <div className="rounded-xl border border-border bg-card p-3">
           <div className="text-sm font-medium">Current Plan</div>
           <div className="text-xs text-muted-foreground">
-            {currentPlan.totals?.monthsToDebtFree ?? currentPlan.months?.length ?? 0} months
+            {currentPlan.totals.monthsToDebtFree} months
           </div>
           <div className="text-xs text-muted-foreground">
-            {Number(currentPlan.totals?.interest ?? currentPlan.totalInterest ?? 0).toLocaleString("en-US", { style: "currency", currency: "USD" })} interest
+            {Number(currentPlan.totals.interest).toLocaleString("en-US", { style: "currency", currency: "USD" })} interest
           </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-3">
           <div className="text-sm font-medium">Minimum Only</div>
           <div className="text-xs text-muted-foreground">
-            {minOnlyPlan.totals?.monthsToDebtFree ?? minOnlyPlan.months?.length ?? 0} months
+            {minOnlyPlan.totals.monthsToDebtFree} months
           </div>
           <div className="text-xs text-muted-foreground">
-            {Number(minOnlyPlan.totals?.interest ?? minOnlyPlan.totalInterest ?? 0).toLocaleString("en-US", { style: "currency", currency: "USD" })} interest
+            {Number(minOnlyPlan.totals.interest).toLocaleString("en-US", { style: "currency", currency: "USD" })} interest
           </div>
         </div>
       </div>
