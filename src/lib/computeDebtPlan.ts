@@ -1,61 +1,12 @@
-// =============================================
-// COMPATIBILITY WRAPPER – SAFE + DEPRECATED
-// =============================================
-// FILE: src/lib/computeDebtPlan.ts
-// (Keeps old imports working but always calls new engine)
+// ============================================================================
+// FILE: src/lib/computeDebtPlan.ts - Legacy Compatibility Wrapper
+// ============================================================================
+import { computeDebtPlan as compute } from "@/lib/debtPlan";
+import type { DebtInput, PlanResult as NewPlanResult, Strategy } from "@/engine/plan-types";
 
-import {
-  computeDebtPlan as computeNew,
-  type DebtInput,
-  type Strategy,
-  type PlanResult as NewPlanResult,
-  type PlanMonth as NewPlanMonth,
-  type DebtMonthPayment as NewDebtMonthPayment,
-} from "@/lib/debtPlan";
-
-/** 
- * @deprecated  ⚠️
- * Use types from "@/lib/debtPlan" instead.
- * These wrappers provide backward compatibility.
- */
-
-// Re-export base types
+// Legacy type exports for backward compatibility
 export type Debt = DebtInput;
-export type Scenario = "snowball" | "avalanche" | "minimum";
-export { Strategy, type DebtInput };
-
-// Extended types for backward compatibility
-export interface DebtMonthPayment extends NewDebtMonthPayment {
-  // Add old property names as aliases
-  paid?: number;
-  interest?: number;
-  principal?: number;
-  balanceEnd?: number;
-}
-
-export interface PlanMonth extends Omit<NewPlanMonth, 'payments'> {
-  payments: DebtMonthPayment[];
-  // Add old property names
-  totalPaid?: number;
-  totalInterest?: number;
-  snowballPoolApplied?: number;
-}
-
-export interface DebtPlan extends Omit<NewPlanResult, 'months'> {
-  months: PlanMonth[];
-  // Add old property names
-  debtFreeDate?: string;
-  totalInterest?: number;
-  totalPaid?: number;
-  summary?: {
-    firstDebtPaidMonth: number | null;
-    initialOutflow: number;
-    finalMonthIndex: number;
-  };
-}
-
-export type PlanResult = DebtPlan;
-
+export type Scenario = Strategy | "minimum";
 export type UserSettings = {
   strategy?: Strategy;
   extraMonthly?: number;
@@ -64,50 +15,21 @@ export type UserSettings = {
   maxMonths?: number;
 };
 
-export type ComputeDebtPlanSettings = UserSettings;
+export type DebtPlan = NewPlanResult;
+export type PlanResult = NewPlanResult;
+export type { DebtInput, Strategy };
 
-// Transform function to add compatibility properties
-function addCompatibilityProps(result: NewPlanResult): DebtPlan {
-  const lastMonth = result.months[result.months.length - 1];
-  
-  return {
-    ...result,
-    months: result.months.map((m): PlanMonth => ({
-      ...m,
-      payments: m.payments.map((p): DebtMonthPayment => ({
-        ...p,
-        paid: p.totalPaid,
-        interest: p.interestAccrued,
-        principal: p.totalPaid - p.interestAccrued,
-        balanceEnd: p.endingBalance,
-      })),
-      totalPaid: m.totals.outflow,
-      totalInterest: m.totals.interest,
-      snowballPoolApplied: m.totals.outflow,
-    })),
-    debtFreeDate: lastMonth ? lastMonth.dateISO : result.startDateISO,
-    totalInterest: result.totals.interest,
-    totalPaid: result.totals.totalPaid,
-    summary: {
-      firstDebtPaidMonth: null,
-      initialOutflow: result.totals.outflowMonthly,
-      finalMonthIndex: result.months.length - 1,
-    },
-  };
-}
-
+// Legacy function signature (2 params)
 export function computeDebtPlan(
   debts: DebtInput[],
-  settings: ComputeDebtPlanSettings = {}
-): DebtPlan {
-  const result = computeNew({
+  settings?: UserSettings
+): PlanResult {
+  return compute({
     debts,
-    strategy: settings.strategy || "snowball",
-    extraMonthly: settings.extraMonthly || 0,
-    oneTimeExtra: settings.oneTimeExtra || 0,
-    startDate: settings.startDate,
-    maxMonths: settings.maxMonths,
+    strategy: settings?.strategy ?? "snowball",
+    extraMonthly: settings?.extraMonthly ?? 0,
+    oneTimeExtra: settings?.oneTimeExtra ?? 0,
+    startDate: settings?.startDate ?? new Date().toISOString().slice(0, 10),
+    maxMonths: settings?.maxMonths,
   });
-  
-  return addCompatibilityProps(result);
 }
