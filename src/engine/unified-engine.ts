@@ -1,40 +1,25 @@
-// ============================================================
-// src/engine/unified-engine.ts
-// Single-point interface for computeDebtPlan()
-// Prevents direct calls to older engine version
-// ============================================================
-
-import { DebtInput, PlanResult } from "./plan-types";
+// ============================================================================
+// FILE: src/engine/unified-engine.ts
+// ============================================================================
+import type { DebtInput, PlanResult, Strategy } from "@/engine/plan-types";
 import { computeDebtPlan } from "@/lib/debtPlan";
-import type { Scenario } from "@/types/scenario";
 
-export type ComputeArgs = {
+export type ComputeUnifiedArgs = {
   debts: DebtInput[];
-  strategy: Scenario;
+  strategy: Strategy;
   extraMonthly: number;
   oneTimeExtra: number;
   startDate: string;
   maxMonths?: number;
 };
 
-export function computeDebtPlanUnified(args: ComputeArgs): PlanResult {
-  const plan = computeDebtPlan(args as any);
-
-  // Normalize months to include snowball
-  const months = (plan.months ?? []).map((m: any, idx: number) => ({
-    ...m,
-    snowball: m.snowball ?? m.totals?.outflow ?? 0,
-  }));
-
-  return {
-    months,
-    totals: plan.totals ?? {
-      principal: 0,
-      interest: 0,
-      outflowMonthly: 0,
-      monthsToDebtFree: 0,
-    },
+export function computeDebtPlanUnified(args: ComputeUnifiedArgs): PlanResult {
+  return computeDebtPlan({
     debts: args.debts,
-    settings: {},
-  };
+    strategy: args.strategy,
+    extraMonthly: args.extraMonthly,
+    oneTimeExtra: args.oneTimeExtra,
+    startDate: args.startDate,
+    maxMonths: args.maxMonths,
+  });
 }

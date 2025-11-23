@@ -1,36 +1,40 @@
-// ============================================================
-// src/engine/plan-types.ts
-// Core shared plan types for engine + unified plan
-// ============================================================
+// ============================================================================
+// FILE: src/engine/plan-types.ts
+// ============================================================================
+export type Strategy = "snowball" | "avalanche";
 
 export type DebtInput = {
   id: string;
   name: string;
-  balance: number;
-  apr: number;
-  minPayment: number;
-  order?: number;
-  include?: boolean;
-  included?: boolean;
+  balance: number;            // current balance
+  originalBalance?: number;   // optional for UI
+  apr: number;                // APR percent, e.g. 24.99
+  minPayment: number;         // minimum monthly payment
+  include?: boolean;          // default true
+  order?: number;             // optional fixed order
+  creditor?: string;          // optional UI
+  dueDate?: string | null;
+};
+
+export type PlanPayment = {
+  debtId: string;
+  totalPaid: number;
+  principal: number;
+  interest: number;
+  endingBalance: number;
+  isClosed: boolean;
 };
 
 export type PlanMonth = {
-  monthIndex: number;
+  monthIndex: number; // 1-based
   dateISO: string | null;
   totals: {
+    outflow: number;
     principal: number;
     interest: number;
-    outflow: number;
   };
   snowball: number;
-  payments: Array<{
-    debtId: string;
-    totalPaid: number;
-    principal: number;
-    interest: number;
-    endingBalance: number;
-    isClosed: boolean;
-  }>;
+  payments: PlanPayment[];
 };
 
 export type PlanTotals = {
@@ -44,5 +48,11 @@ export type PlanResult = {
   months: PlanMonth[];
   totals: PlanTotals;
   debts: DebtInput[];
-  settings: any;
+  settings: {
+    strategy: Strategy;
+    extraMonthly: number;
+    oneTimeExtra: number;
+    startDate: string;
+    maxMonths: number;
+  };
 };
