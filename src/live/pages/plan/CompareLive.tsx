@@ -10,8 +10,9 @@ export default function CompareLive() {
   const navigate = useNavigate();
 
   // Compute both approaches fresh
-  const snow = PlanService.compute({ ...inputs, strategy: "snowball" });
-  const aval = PlanService.compute({ ...inputs, strategy: "avalanche" });
+  const startDate = inputs.startDate || new Date().toISOString().slice(0, 10);
+  const snow = PlanService.compute({ ...inputs, strategy: "snowball", startDate });
+  const aval = PlanService.compute({ ...inputs, strategy: "avalanche", startDate });
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">

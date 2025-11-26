@@ -2,17 +2,19 @@ import { useState } from "react";
 import { Drawer } from "@/components/ui/drawer";
 import { Btn } from "@/components/Btn";
 import { Lightbulb } from "lucide-react";
-import { DebtPlan } from "@/lib/computeDebtPlan";
+import type { PlanResult } from "@/engine/plan-types";
 import { useUpgrade } from "@/hooks/useUpgrade";
 
-export default function CoachDrawer({ plan }: { plan: DebtPlan | null }) {
+export default function CoachDrawer({ plan }: { plan: PlanResult | null }) {
   const [open, setOpen] = useState(false);
   const { upgrade, loading } = useUpgrade();
 
   if (!plan) return null;
 
   const insights = [];
-  const monthsToFree = plan.summary.finalMonthIndex + 1;
+  const monthsToFree = plan.totals.monthsToDebtFree;
+  const totalInterest = plan.totals.interest || plan.totalInterest || 0;
+  const totalPaid = (plan.totals.principal + plan.totals.interest) || plan.totalPaid || 0;
 
   if (monthsToFree < 24) {
     insights.push("Good work — you're on track to be debt-free in under 2 years.");
@@ -20,7 +22,7 @@ export default function CoachDrawer({ plan }: { plan: DebtPlan | null }) {
     insights.push("Consider adding an extra $25–$50/month to shorten your timeline.");
   }
 
-  if (plan.totalInterest > plan.totalPaid * 0.4) {
+  if (totalInterest > totalPaid * 0.4) {
     insights.push("High interest load — Avalanche may help reduce total cost.");
   }
 

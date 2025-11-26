@@ -88,6 +88,7 @@ export function getMockPlan() {
     strategy: "snowball",
     extraMonthly: 200,
     oneTimeExtra: 1000,
+    startDate: new Date().toISOString().slice(0, 10),
   });
   
   // Log Month 1 details for verification

@@ -1,0 +1,30 @@
+name: Update Repo Tree
+
+on:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install
+        run: npm install
+
+      - name: Generate Tree
+        run: npm run generate-tree
+
+      - name: Commit Tree
+        run: |
+          git config user.name "tree-me bot"
+          git config user.email "bot@finityo"
+          git add TREE.md
+          git commit -m "Update TREE.md snapshot" || echo "No changes"
+          git push

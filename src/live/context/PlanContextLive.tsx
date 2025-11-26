@@ -60,7 +60,10 @@ export function PlanProviderLive({ children }: { children: React.ReactNode }) {
       console.warn("⚠️ No debts found in live context.");
       return;
     }
-    const result = PlanService.compute(inputs);
+    const result = PlanService.compute({
+      ...inputs,
+      startDate: inputs.startDate || new Date().toISOString().slice(0, 10),
+    });
     console.log("📊 Live plan computed:", result.totals);
     setPlan(result);
   }

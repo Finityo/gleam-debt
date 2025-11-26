@@ -14,6 +14,8 @@ export type DebtInput = {
   order?: number;             // optional fixed order
   creditor?: string;          // optional UI
   dueDate?: string | null;
+  dueDay?: number;            // legacy compat
+  category?: string;          // legacy compat
 };
 
 export type PlanPayment = {
@@ -23,6 +25,14 @@ export type PlanPayment = {
   interest: number;
   endingBalance: number;
   isClosed: boolean;
+  // legacy compat
+  balanceEnd?: number;
+  interestAccrued?: number;
+  startingBalance?: number;
+  minApplied?: number;
+  extraApplied?: number;
+  closedThisMonth?: boolean;
+  paid?: number;
 };
 
 export type PlanMonth = {
@@ -35,6 +45,11 @@ export type PlanMonth = {
   };
   snowball: number;
   payments: PlanPayment[];
+  // legacy compat
+  totalPaid?: number;
+  totalInterest?: number;
+  snowballPoolApplied?: number;
+  monthLabel?: string;
 };
 
 export type PlanTotals = {
@@ -42,6 +57,9 @@ export type PlanTotals = {
   interest: number;
   outflowMonthly: number;
   monthsToDebtFree: number;
+  // legacy compat
+  totalPaid?: number;
+  oneTimeApplied?: number;
 };
 
 export type PlanResult = {
@@ -55,4 +73,11 @@ export type PlanResult = {
     startDate: string;
     maxMonths: number;
   };
+  // legacy compat - duplicate strategy at root level
+  strategy?: Strategy;
+  summary?: string;
+  totalInterest?: number;
+  totalPaid?: number;
+  debtFreeDate?: string;
+  startDateISO?: string;
 };

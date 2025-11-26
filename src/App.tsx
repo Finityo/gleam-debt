@@ -32,7 +32,7 @@ const EngineLayer = () => {
   const debts = state.debts || [];
   const settings = state.settings || {};
   return (
-    <DebtEngineProvider debts={debts} settings={settings}>
+    <DebtEngineProvider initialDebts={debts} initialSettings={settings}>
       <ScenarioProvider>
         <AppWrapper />
         <NotificationsPanel />

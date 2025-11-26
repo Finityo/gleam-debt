@@ -15,8 +15,8 @@ export default function DemoComparePage() {
   const settings = { strategy: inputs.strategy, extraMonthly: inputs.extraMonthly, oneTimeExtra: inputs.oneTimeExtra };
 
   // Compute both approaches fresh
-  const snow = computeDebtPlan({ debts, ...settings, strategy: "snowball" });
-  const aval = computeDebtPlan({ debts, ...settings, strategy: "avalanche" });
+  const snow = computeDebtPlan({ debts, ...settings, strategy: "snowball", startDate: new Date().toISOString().slice(0, 10) });
+  const aval = computeDebtPlan({ debts, ...settings, strategy: "avalanche", startDate: new Date().toISOString().slice(0, 10) });
 
   return (
     <PageShell>
