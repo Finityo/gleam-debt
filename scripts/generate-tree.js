@@ -1,47 +1,44 @@
-/* Tree generator for Lovable (Node-based replacement for tree-me)
- * Creates TREE.md at repo root with a clean directory listing.
- */
+// scripts/generate-tree.js
+// Generates TREE.md showing project structure – safe for Lovable
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
+const ROOT = process.cwd();
 const IGNORE = [
   "node_modules",
   ".git",
-  ".next",
+  ".npm",
   "dist",
   "build",
-  "coverage",
-  ".DS_Store",
+  ".next",
+  ".vercel",
+  ".turbo"
 ];
 
 function walk(dir, prefix = "") {
-  let items = fs.readdirSync(dir);
-  items = items.filter(i => !IGNORE.includes(i));
-
   let output = "";
+  const entries = fs
+    .readdirSync(dir, { withFileTypes: true })
+    .filter(e => !IGNORE.includes(e.name))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-  items.forEach((item, index) => {
-    const full = path.join(dir, item);
-    const isDir = fs.statSync(full).isDirectory();
-    const connector = index === items.length - 1 ? "└── " : "├── ";
+  entries.forEach((entry, index) => {
+    const isLast = index === entries.length - 1;
+    const pointer = isLast ? "└── " : "├── ";
+    const nextPrefix = prefix + (isLast ? "    " : "│   ");
 
-    output += `${prefix}${connector}${item}\n`;
+    output += `${prefix}${pointer}${entry.name}\n`;
 
-    if (isDir) {
-      const nextPrefix =
-        index === items.length - 1 ? `${prefix}    ` : `${prefix}│   `;
-      output += walk(full, nextPrefix);
+    if (entry.isDirectory()) {
+      output += walk(path.join(dir, entry.name), nextPrefix);
     }
   });
 
   return output;
 }
 
-function generate() {
-  const tree = "# 📁 Finityo Repo Tree\n\n```\n" + walk(process.cwd()) + "```\n";
-  fs.writeFileSync("TREE.md", tree, "utf8");
-  console.log("TREE.md updated successfully.");
-}
+const tree = `# Finityo Project Tree\n\n\`\`\`\n${walk(ROOT)}\`\`\`\n`;
 
-generate();
+fs.writeFileSync("TREE.md", tree);
+console.log("TREE.md successfully generated!");
