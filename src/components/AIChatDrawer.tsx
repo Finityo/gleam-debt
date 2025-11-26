@@ -8,16 +8,19 @@ function advise(plan: PlanResult, q: string): string {
   const months = plan.totals.monthsToDebtFree;
   const interest = plan.totals.interest;
   const order = [...plan.debts]
-    .filter(d => d.included)
-    .sort((a,b) =>
-      plan.strategy === "snowball"
-        ? a.originalBalance - b.originalBalance || b.apr - a.apr
-        : b.apr - a.apr || a.originalBalance - b.originalBalance
-    )
+    .filter(d => d.include !== false)
+    .sort((a,b) => {
+      const strat = plan.settings?.strategy || plan.strategy || "snowball";
+      return strat === "snowball"
+        ? a.balance - b.balance || b.apr - a.apr
+        : b.apr - a.apr || a.balance - b.balance;
+    })
     .map(d => d.name);
 
+  const strat = plan.settings?.strategy || plan.strategy || "snowball";
+  
   if (t.includes("which") && (t.includes("first") || t.includes("order") || t.includes("priority"))) {
-    return `Based on ${plan.strategy.toUpperCase()}, pay in this order: ${order.join(" → ")}.`;
+    return `Based on ${strat.toUpperCase()}, pay in this order: ${order.join(" → ")}.`;
   }
   if (t.includes("months") || t.includes("long")) {
     return `You'll be debt-free in about ${months} month(s).`;
@@ -26,7 +29,7 @@ function advise(plan: PlanResult, q: string): string {
     return `Total lifetime interest with this plan is ~$${interest.toFixed(2)}. Increase your extra to reduce it.`;
   }
   if (t.includes("snowball") || t.includes("avalanche")) {
-    return `Snowball = fastest wins (motivation). Avalanche = lowest interest cost. You're using ${plan.strategy.toUpperCase()} now.`;
+    return `Snowball = fastest wins (motivation). Avalanche = lowest interest cost. You're using ${strat.toUpperCase()} now.`;
   }
   return `I can explain payoff order, months to debt-free, and interest savings. Try: "Which debt first?" or "How much interest will I pay?"`;
 }

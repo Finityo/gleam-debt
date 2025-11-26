@@ -85,8 +85,8 @@ export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <DebtEngineProvider
-      debts={inputs.debts}
-      settings={{
+      initialDebts={inputs.debts}
+      initialSettings={{
         strategy: inputs.strategy,
         extraMonthly: inputs.extraMonthly,
         oneTimeExtra: inputs.oneTimeExtra,

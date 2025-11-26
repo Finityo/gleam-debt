@@ -10,15 +10,24 @@ export type { DebtInput, PlanMonth, PlanResult, Strategy, PlanPayment };
 export type ComputeParams = {
   debts: DebtInput[];
   strategy: Strategy;
-  debts: DebtInput[];
-  strategy: Strategy;
   extraMonthly: number;
   oneTimeExtra: number;
   startDate: string;   // yyyy-mm-dd
   maxMonths?: number;
 };
 
+export type ComputeArgs = ComputeParams;
+
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
+export function formatAPR(apr: number): string {
+  return `${apr.toFixed(2)}%`;
+}
+
+// Placeholder for legacy compatibility
+export const PlanService = {
+  compute: (args: ComputeParams) => computeDebtPlan(args),
+};
 
 export function computeDebtPlan(args: ComputeParams): PlanResult {
   const maxMonths = args.maxMonths ?? 600;
@@ -99,6 +108,11 @@ export function computeDebtPlan(args: ComputeParams): PlanResult {
         interest: round2(interestPart),
         endingBalance: round2(balances[d.id]),
         isClosed: balances[d.id] <= 0.01,
+        // legacy compat
+        balanceEnd: round2(balances[d.id]),
+        interestAccrued: round2(interestAccrued[d.id] ?? 0),
+        paid: round2(pay),
+        closedThisMonth: balances[d.id] <= 0.01,
       });
     });
 
@@ -127,6 +141,9 @@ export function computeDebtPlan(args: ComputeParams): PlanResult {
         row.principal = round2(row.principal + extraPay);
         row.endingBalance = round2(balances[d.id]);
         row.isClosed = balances[d.id] <= 0.01;
+        row.balanceEnd = round2(balances[d.id]);
+        row.paid = round2(row.totalPaid);
+        row.closedThisMonth = balances[d.id] <= 0.01;
       } else {
         payments.push({
           debtId: d.id,
@@ -135,6 +152,9 @@ export function computeDebtPlan(args: ComputeParams): PlanResult {
           interest: 0,
           endingBalance: round2(balances[d.id]),
           isClosed: balances[d.id] <= 0.01,
+          balanceEnd: round2(balances[d.id]),
+          paid: round2(extraPay),
+          closedThisMonth: balances[d.id] <= 0.01,
         });
       }
     }
@@ -166,13 +186,21 @@ export function computeDebtPlan(args: ComputeParams): PlanResult {
     { principal: 0, interest: 0 }
   );
 
+  const totalPaid = round2(totals.principal + totals.interest);
+  
   return {
-    months,
+    months: months.map(m => ({
+      ...m,
+      totalPaid: round2(m.totals.principal + m.totals.interest),
+      totalInterest: round2(m.totals.interest),
+    })),
     totals: {
       principal: round2(totals.principal),
       interest: round2(totals.interest),
       outflowMonthly: round2(monthlyBudget),
       monthsToDebtFree: months.length,
+      totalPaid,
+      oneTimeApplied: toNum(args.oneTimeExtra),
     },
     debts: ordered,
     settings: {
@@ -182,5 +210,11 @@ export function computeDebtPlan(args: ComputeParams): PlanResult {
       startDate: args.startDate,
       maxMonths,
     },
+    // legacy compat duplicates
+    strategy: args.strategy,
+    totalInterest: round2(totals.interest),
+    totalPaid,
+    debtFreeDate: months.length > 0 ? months[months.length - 1].dateISO : null,
+    startDateISO: args.startDate,
   };
 }

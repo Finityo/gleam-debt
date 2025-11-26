@@ -29,20 +29,21 @@ export function testDemoComputation() {
     strategy: "snowball",
     extraMonthly: 200,
     oneTimeExtra: 1000,
+    startDate: new Date().toISOString().slice(0, 10),
   });
 
   console.log("\n💰 Plan Summary:");
-  console.log(`  Strategy: ${result.strategy}`);
+  console.log(`  Strategy: ${result.settings?.strategy || result.strategy}`);
   console.log(`  Months to Debt-Free: ${result.totals.monthsToDebtFree}`);
   console.log(`  Total Interest: $${result.totals.interest.toFixed(2)}`);
-  console.log(`  One-Time Applied (Month 1): $${result.totals.oneTimeApplied.toFixed(2)}`);
+  console.log(`  One-Time Applied (Month 1): $${(result.totals.oneTimeApplied || 0).toFixed(2)}`);
   console.log(`  Monthly Outflow: $${result.totals.outflowMonthly.toFixed(2)}`);
 
   // Detailed Month 1 Analysis
   if (result.months.length > 0) {
     const month1 = result.months[0];
     console.log("\n🎯 MONTH 1 DETAILED BREAKDOWN:");
-    console.log(`  Date: ${month1.monthLabel}`);
+    console.log(`  Date: ${month1.dateISO || 'N/A'}`);
     console.log(`  Total Principal Paid: $${month1.totals.principal.toFixed(2)}`);
     console.log(`  Total Interest Accrued: $${month1.totals.interest.toFixed(2)}`);
     console.log(`  Total Outflow: $${month1.totals.outflow.toFixed(2)}`);
