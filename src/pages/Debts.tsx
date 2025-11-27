@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -379,11 +380,9 @@ export default function DebtsPage() {
             {/* Header row with Select All + legend */}
             <div className="grid grid-cols-[auto,1.6fr,1fr,1fr,1fr,1.4fr,auto] items-center gap-2 rounded-md bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
               <div>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={isAllSelected}
-                  onChange={toggleSelectAll}
-                  className="h-4 w-4 cursor-pointer"
+                  onCheckedChange={toggleSelectAll}
                 />
               </div>
               <div>Debt</div>
@@ -406,11 +405,9 @@ export default function DebtsPage() {
                 >
                   {/* Row checkbox */}
                   <div>
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={isSelected}
-                      onChange={() => toggleSelect(debt.id)}
-                      className="h-4 w-4 cursor-pointer"
+                      onCheckedChange={() => toggleSelect(debt.id)}
                     />
                   </div>
 
