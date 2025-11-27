@@ -1,117 +1,119 @@
-import { useState } from "react";
-import { Modal } from "./Modal";
-import { Btn } from "./Btn";
-import { Input } from "./ui/input";
-
-type Debt = {
-  id: string;
-  name: string;
-  balance: number;
-  apr: number;
-  minPayment: number;
-  dueDay?: number;
-  category?: string;
-};
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import type { DebtInput } from "@/lib/debtPlan";
 
 type Props = {
-  debt: Debt | null;
+  open: boolean;
+  debt: DebtInput | null;
   onClose: () => void;
-  onSave: (debt: Debt) => void;
+  onSave: (updated: DebtInput) => void;
 };
 
-export function DebtQuickEdit({ debt, onClose, onSave }: Props) {
-  const [formData, setFormData] = useState<Debt>(
-    debt || {
-      id: "",
-      name: "",
-      balance: 0,
-      apr: 0,
-      minPayment: 0,
-      dueDay: undefined,
-      category: undefined
+export function DebtQuickEdit({ open, debt, onClose, onSave }: Props) {
+  const [local, setLocal] = useState<DebtInput | null>(null);
+
+  // Sync local state when modal opens
+  useEffect(() => {
+    if (open && debt) {
+      setLocal({ ...debt });
     }
-  );
+  }, [open, debt]);
 
-  if (!debt) return null;
+  if (!local) return null;
 
-  function handleSave() {
-    onSave(formData);
+  const updateField = (field: keyof DebtInput, value: any) => {
+    setLocal((prev) => (prev ? { ...prev, [field]: value } : prev));
+  };
+
+  const handleSubmit = () => {
+    if (!local) return;
+    onSave(local);
     onClose();
-  }
+  };
 
   return (
-    <Modal open={!!debt} onClose={onClose} title="Quick Edit Debt">
-      <div className="space-y-3">
-        <div>
-          <label className="text-xs font-medium">Name</label>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Debt</DialogTitle>
+        </DialogHeader>
+
+        {/* Name */}
+        <div className="space-y-1">
+          <Label>Debt Name</Label>
           <Input
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Debt name"
+            value={local.name}
+            onChange={(e) => updateField("name", e.target.value)}
+            placeholder="Credit Card"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-medium">Balance</label>
-            <Input
-              type="number"
-              value={formData.balance}
-              onChange={(e) => setFormData({ ...formData, balance: Number(e.target.value || 0) })}
-              placeholder="0.00"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-medium">APR (%)</label>
-            <Input
-              type="number"
-              step="0.01"
-              value={formData.apr}
-              onChange={(e) => setFormData({ ...formData, apr: Number(e.target.value || 0) })}
-              placeholder="0.00"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-medium">Min Payment</label>
-            <Input
-              type="number"
-              value={formData.minPayment}
-              onChange={(e) => setFormData({ ...formData, minPayment: Number(e.target.value || 0) })}
-              placeholder="0.00"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-medium">Due Day</label>
-            <Input
-              type="number"
-              min="1"
-              max="28"
-              value={formData.dueDay || ""}
-              onChange={(e) => setFormData({ ...formData, dueDay: e.target.value ? Number(e.target.value) : undefined })}
-              placeholder="1-28"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="text-xs font-medium">Category</label>
+        {/* Balance */}
+        <div className="space-y-1">
+          <Label>Balance ($)</Label>
           <Input
-            value={formData.category || ""}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value || undefined })}
-            placeholder="e.g., Credit Card, Medical, Auto"
+            type="number"
+            value={local.balance}
+            onChange={(e) => updateField("balance", Number(e.target.value) || 0)}
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-2">
-          <Btn variant="outline" onClick={onClose}>Cancel</Btn>
-          <Btn onClick={handleSave}>Save Changes</Btn>
+        {/* APR */}
+        <div className="space-y-1">
+          <Label>APR (%)</Label>
+          <Input
+            type="number"
+            value={local.apr}
+            onChange={(e) => updateField("apr", Number(e.target.value) || 0)}
+          />
         </div>
-      </div>
-    </Modal>
+
+        {/* Minimum Payment */}
+        <div className="space-y-1">
+          <Label>Minimum Payment ($)</Label>
+          <Input
+            type="number"
+            value={local.minPayment}
+            onChange={(e) => updateField("minPayment", Number(e.target.value) || 0)}
+          />
+        </div>
+
+        {/* Due Day – optional */}
+        <div className="space-y-1">
+          <Label>Due Day (1–28, optional)</Label>
+          <Input
+            type="number"
+            value={local.dueDay ?? ""}
+            onChange={(e) =>
+              updateField("dueDay", e.target.value ? Number(e.target.value) : undefined)
+            }
+            placeholder="15"
+          />
+        </div>
+
+        {/* Include */}
+        <div className="space-y-1">
+          <Label>Include in Plan</Label>
+          <select
+            className="border rounded-md h-10 px-3"
+            value={local.include !== false ? "yes" : "no"}
+            onChange={(e) => updateField("include", e.target.value === "yes")}
+          >
+            <option value="yes">Yes (include)</option>
+            <option value="no">No (exclude)</option>
+          </select>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit}>Save Changes</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
