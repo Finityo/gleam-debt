@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { useApp } from "@/context/AppStore";
 import { useNavigate } from "react-router-dom";
+
 import AppLayout from "@/layouts/AppLayout";
+import { usePlan } from "@/context/PlanContext";
+import { BulkDebtEditor } from "@/components/BulkDebtEditor";
+
 import { Card } from "@/components/Card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import {
   Dialog,
   DialogContent,
@@ -13,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,94 +29,96 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Edit2, CreditCard, Download, Upload, ArrowLeft, FileSpreadsheet } from "lucide-react";
+
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  CreditCard,
+  Download,
+  Upload,
+  ArrowLeft,
+  FileSpreadsheet,
+} from "lucide-react";
+
 import type { Debt } from "@/lib/computeDebtPlan";
 import { toast } from "sonner";
-import { debtToCSV, downloadCSV, parseExcelFile, downloadTemplate, exportDebtsToXLSX } from "@/lib/csvExport";
+import {
+  debtToCSV,
+  downloadCSV,
+  parseExcelFile,
+  downloadTemplate,
+  exportDebtsToXLSX,
+} from "@/lib/csvExport";
 import { DebtQuickEdit } from "@/components/DebtQuickEdit";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
 
 export default function DebtsPage() {
-  const { state, addDebt, updateDebt, deleteDebt, clearDebts } = useApp();
+  // ✅ Use unified engine store instead of AppStore
+  const { debts, updateDebts, settings, reset } = usePlan();
   const navigate = useNavigate();
+
   const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [quickEditDebt, setQuickEditDebt] = useState<Debt | null>(null);
   const [showImport, setShowImport] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showBulk, setShowBulk] = useState(false);
 
-  function handleAdd() {
-    addDebt({
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const clearSelection = () => setSelectedIds([]);
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  const handleAdd = () => {
+    const newDebt: Debt = {
+      id: crypto.randomUUID(),
       name: "New Debt",
       balance: 1000,
       apr: 15,
       minPayment: 50,
-    });
+      include: true,
+    };
+
+    updateDebts([...debts, newDebt]);
     toast.success("Debt added");
     setIsOpen(false);
-  }
+  };
 
-  function handleUpdate() {
+  const handleUpdate = () => {
     if (!editingDebt) return;
-    updateDebt(editingDebt.id, editingDebt);
+
+    const next = debts.map((d) => (d.id === editingDebt.id ? editingDebt : d));
+    updateDebts(next);
     toast.success("Debt updated");
     setEditingDebt(null);
-  }
+  };
 
-  function handleDelete(id: string) {
-    if (confirm("Delete this debt?")) {
-      deleteDebt(id);
-      toast.success("Debt deleted");
-    }
-  }
+  const handleDelete = (id: string) => {
+    if (!confirm("Delete this debt?")) return;
 
-  function handleQuickEditSave(debt: Debt) {
-    updateDebt(debt.id, debt);
+    const next = debts.filter((d) => d.id !== id);
+    updateDebts(next);
+    toast.success("Debt deleted");
+  };
+
+  const handleQuickEditSave = (debt: Debt) => {
+    const next = debts.map((d) => (d.id === debt.id ? debt : d));
+    updateDebts(next);
     toast.success("Debt updated");
     setQuickEditDebt(null);
-  }
+  };
 
-  async function handleImport(file: File) {
-    try {
-      const parsed = await parseExcelFile(file);
-      if (parsed.length === 0) {
-        toast.error("No valid debts found in Excel file");
-        return;
-      }
-
-      // Sort based on strategy
-      const sortedDebts = parsed.sort((a, b) => {
-        if (state.settings.strategy === "snowball") {
-          // Snowball: smallest balance first
-          return a.balance - b.balance;
-        } else {
-          // Avalanche: highest APR first
-          return b.apr - a.apr;
-        }
-      });
-
-      // Add imported debts to both storage systems
-      for (const debt of sortedDebts) {
-        await addDebt({
-          name: debt.name,
-          balance: debt.balance,
-          apr: debt.apr,
-          minPayment: debt.minPayment,
-        });
-      }
-
-      setShowImport(false);
-      toast.success(
-        `Imported ${parsed.length} debt(s) sorted by ${state.settings.strategy} method`
-      );
-    } catch (error) {
-      console.error("Import error:", error);
-      toast.error("Failed to import Excel file");
-    }
-  }
-
-  function handleExportCSV() {
+  const handleExportCSV = () => {
     const csvData = debtToCSV(
-      state.debts.map((d) => ({
+      debts.map((d) => ({
         name: d.name,
         balance: d.balance,
         apr: d.apr,
@@ -120,11 +127,11 @@ export default function DebtsPage() {
     );
     downloadCSV("debts.csv", csvData);
     toast.success("CSV exported");
-  }
+  };
 
-  function handleExportXLSX() {
+  const handleExportXLSX = () => {
     exportDebtsToXLSX(
-      state.debts.map((d) => ({
+      debts.map((d) => ({
         name: d.name,
         balance: d.balance,
         apr: d.apr,
@@ -132,157 +139,272 @@ export default function DebtsPage() {
       }))
     );
     toast.success("Excel file exported");
-  }
+  };
 
-  function handleDownloadTemplate() {
+  const handleDownloadTemplate = () => {
     downloadTemplate();
     toast.success("Template downloaded");
-  }
+  };
 
-  async function handleClearAll() {
-    await clearDebts();
+  const handleClearAll = async () => {
+    await reset(); // ✅ Uses PlanContext reset (clears debts + plan + cloud)
     toast.success("All debts cleared");
-  }
+  };
+
+  const handleImport = async (file: File) => {
+    try {
+      const parsed = await parseExcelFile(file);
+      if (parsed.length === 0) {
+        toast.error("No valid debts found in Excel file");
+        return;
+      }
+
+      // Use current strategy from unified settings
+      const sortedDebts = parsed.sort((a, b) => {
+        if (settings.strategy === "snowball") {
+          // Snowball: smallest balance first
+          return a.balance - b.balance;
+        } else {
+          // Avalanche: highest APR first
+          return b.apr - a.apr;
+        }
+      });
+
+      // Map imported rows to Debt shape and append to existing debts
+      const importedDebts: Debt[] = sortedDebts.map((d) => ({
+        id: crypto.randomUUID(),
+        name: d.name,
+        balance: d.balance,
+        apr: d.apr,
+        minPayment: d.minPayment,
+        include: true,
+      }));
+
+      const next = [...debts, ...importedDebts];
+
+      // ✅ Single unified update → unified engine recomputes once
+      updateDebts(next);
+
+      setShowImport(false);
+      toast.success(
+        `Imported ${parsed.length} debt(s) sorted by ${settings.strategy} method`
+      );
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error("Failed to import Excel file");
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
 
   return (
     <AppLayout>
-      <div className="space-y-6 animate-fade-in">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="max-w-4xl mx-auto px-4 py-4 space-y-4">
+        {/* Back button */}
+        <div className="flex items-center gap-2 mb-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        </div>
+
+        {/* Header + Delete All */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-              <CreditCard className="h-6 w-6 md:h-8 md:w-8" />
+            <h1 className="text-xl font-semibold flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
               My Debts
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground">
               Manage your debt accounts
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {state.debts.length > 0 && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" className="flex-1 sm:flex-none">
-                    <Trash2 className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Delete All</span>
-                    <span className="sm:hidden">Clear</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete all debts?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete all {state.debts.length} debt(s). This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleClearAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete All
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-            <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="flex-1 sm:flex-none">
-              <FileSpreadsheet className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Download Template</span>
-              <span className="sm:hidden">Template</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowImport(true)} className="flex-1 sm:flex-none">
-              <Upload className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Import Excel/CSV</span>
-              <span className="sm:hidden">Import</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleExportXLSX} className="flex-1 sm:flex-none">
-              <Download className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Export Excel</span>
-              <span className="sm:hidden">Export</span>
-            </Button>
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogTrigger asChild>
-                <Button className="flex-1 sm:flex-none">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Debt
+          {debts.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-destructive border-destructive/40 hover:bg-destructive/5"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete All
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-[95vw] sm:max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Add New Debt</DialogTitle>
-                </DialogHeader>
-                <DebtForm onSubmit={handleAdd} />
-              </DialogContent>
-            </Dialog>
-          </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete all debts?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete all {debts.length} debt(s). This
+                    action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleClearAll}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete All
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
 
-        {state.debts.length === 0 && (
-          <Card className="glass-intense border-border/40">
-            <div className="text-center py-12">
-              <CreditCard className="h-12 w-12 mx-auto text-primary mb-4" />
-              <p className="text-lg font-medium text-foreground">No debts added yet</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Add your first debt to get started
-              </p>
-            </div>
+        {/* Actions row */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleDownloadTemplate}
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Template
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => setShowImport(true)}
+          >
+            <Upload className="w-4 h-4" />
+            Import Excel/CSV
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleExportXLSX}
+          >
+            <Download className="w-4 h-4" />
+            Export Excel
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => setShowBulk(true)}
+            disabled={selectedIds.length === 0}
+          >
+            Bulk Edit ({selectedIds.length})
+          </Button>
+
+          <Button
+            size="sm"
+            className="gap-2 ml-auto"
+            onClick={() => setIsOpen(true)}
+          >
+            <Plus className="w-4 h-4" />
+            Add Debt
+          </Button>
+        </div>
+
+        {/* Empty state */}
+        {debts.length === 0 && (
+          <Card className="p-6 text-center text-sm text-muted-foreground">
+            <p className="font-medium mb-1">No debts added yet</p>
+            <p>Add your first debt to get started.</p>
           </Card>
         )}
 
-        <div className="grid gap-2">
-          {state.debts.map((debt) => (
-            <div key={debt.id} className="glass p-4 rounded-2xl animate-fade-in hover:shadow-liquid transition-all">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-base sm:text-sm text-foreground/90 mb-2 truncate">{debt.name}</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                    <div>
-                      <div className="text-foreground/50 mb-0.5">Balance</div>
-                      <div className="font-semibold text-sm text-foreground/90">
-                        ${debt.balance.toFixed(2)}
+        {/* Debts list */}
+        {debts.length > 0 && (
+          <div className="space-y-3">
+            {debts.map((debt) => (
+              <Card
+                key={debt.id}
+                className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+              >
+                <div className="flex items-start gap-3 flex-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(debt.id)}
+                    onChange={() => toggleSelect(debt.id)}
+                    className="mt-1 h-4 w-4 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">{debt.name}</div>
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                      <div>
+                        <div className="text-xs text-muted-foreground">
+                          Balance
+                        </div>
+                        <div>${debt.balance.toFixed(2)}</div>
                       </div>
-                    </div>
-                    <div>
-                      <div className="text-foreground/50 mb-0.5">APR</div>
-                      <div className="font-semibold text-sm text-foreground/90">{debt.apr.toFixed(1)}%</div>
-                    </div>
-                    <div>
-                      <div className="text-foreground/50 mb-0.5">Min Payment</div>
-                      <div className="font-semibold text-sm text-foreground/90">
-                        ${debt.minPayment.toFixed(2)}
+                      <div>
+                        <div className="text-xs text-muted-foreground">APR</div>
+                        <div>{debt.apr.toFixed(1)}%</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">
+                          Min Payment
+                        </div>
+                        <div>${debt.minPayment.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">
+                          Included
+                        </div>
+                        <div>{debt.include === false ? "No" : "Yes"}</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-1.5 flex-shrink-0 mt-3 sm:mt-0">
+                <div className="flex gap-2">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
+                    className="gap-2"
                     onClick={() => setQuickEditDebt(debt)}
-                    className="h-8 text-xs flex-1 sm:flex-none"
                   >
-                    <Edit2 className="h-3.5 w-3.5 sm:mr-1" />
-                    <span className="hidden sm:inline">Edit</span>
+                    <Edit2 className="w-4 h-4" />
+                    Edit
                   </Button>
-
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="text-destructive/80 hover:text-destructive hover:bg-destructive/10"
                     onClick={() => handleDelete(debt.id)}
-                    className="h-8 w-8 text-destructive/80 hover:text-destructive hover:bg-destructive/10"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Add Debt Dialog (optional, kept from original behavior) */}
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <span className="hidden" /> {/* trigger handled by button above */}
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Debt</DialogTitle>
+            </DialogHeader>
+            <DebtForm
+              onSubmit={handleAdd}
+              onChange={(d) => setEditingDebt(d)}
+              debt={editingDebt ?? undefined}
+            />
+          </DialogContent>
+        </Dialog>
 
         {/* Quick Edit Modal */}
         <DebtQuickEdit
@@ -298,78 +420,107 @@ export default function DebtsPage() {
           onClose={() => setShowImport(false)}
           onImport={handleImport}
         />
+
+        {/* Bulk Edit Modal */}
+        <BulkDebtEditor
+          open={showBulk}
+          debts={debts}
+          selected={selectedIds}
+          onClose={() => setShowBulk(false)}
+          onClearSelection={clearSelection}
+          onApply={(updated) => {
+            updateDebts(updated);
+            clearSelection();
+          }}
+        />
       </div>
     </AppLayout>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Debt Form (used in dialog)
+// ---------------------------------------------------------------------------
 
 function DebtForm({
   debt,
   onChange,
   onSubmit,
 }: {
-  debt?: Debt | null;
+  debt?: Debt;
   onChange?: (d: Debt) => void;
   onSubmit: () => void;
 }) {
-  const [local, setLocal] = useState<Partial<Debt>>(
-    debt || { name: "", balance: 0, apr: 0, minPayment: 0 }
+  const [local, setLocal] = useState<Debt>(
+    debt || {
+      id: crypto.randomUUID(),
+      name: "",
+      balance: 0,
+      apr: 0,
+      minPayment: 0,
+      include: true,
+    }
   );
 
-  function handleChange(field: keyof Debt, value: any) {
+  const handleChange = (field: keyof Debt, value: any) => {
     const updated = { ...local, [field]: value };
     setLocal(updated);
-    if (onChange && debt) {
-      onChange({ ...debt, ...updated });
+    if (onChange) {
+      onChange(updated);
     }
-  }
+  };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="name">Debt Name</Label>
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit();
+      }}
+    >
+      <div className="space-y-2">
+        <Label>Debt Name</Label>
         <Input
-          id="name"
-          value={local.name || ""}
+          value={local.name}
           onChange={(e) => handleChange("name", e.target.value)}
           placeholder="Credit Card"
         />
       </div>
 
-      <div>
-        <Label htmlFor="balance">Balance</Label>
+      <div className="space-y-2">
+        <Label>Balance</Label>
         <Input
-          id="balance"
           type="number"
-          value={local.balance || 0}
-          onChange={(e) => handleChange("balance", Number(e.target.value || 0))}
+          value={local.balance}
+          onChange={(e) =>
+            handleChange("balance", Number(e.target.value || 0))
+          }
         />
       </div>
 
-      <div>
-        <Label htmlFor="apr">APR (%)</Label>
+      <div className="space-y-2">
+        <Label>APR (%)</Label>
         <Input
-          id="apr"
           type="number"
-          step={0.1}
-          value={local.apr || 0}
+          value={local.apr}
           onChange={(e) => handleChange("apr", Number(e.target.value || 0))}
         />
       </div>
 
-      <div>
-        <Label htmlFor="minPayment">Minimum Payment</Label>
+      <div className="space-y-2">
+        <Label>Minimum Payment</Label>
         <Input
-          id="minPayment"
           type="number"
-          value={local.minPayment || 0}
-          onChange={(e) => handleChange("minPayment", Number(e.target.value || 0))}
+          value={local.minPayment}
+          onChange={(e) =>
+            handleChange("minPayment", Number(e.target.value || 0))
+          }
         />
       </div>
 
-      <Button onClick={onSubmit} className="w-full">
-        {debt ? "Update" : "Add"} Debt
+      <Button type="submit" className="w-full">
+        {debt ? "Update Debt" : "Add Debt"}
       </Button>
-    </div>
+    </form>
   );
 }
