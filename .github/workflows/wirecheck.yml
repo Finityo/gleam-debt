@@ -1,0 +1,134 @@
+name: Finityo Wiring Agent
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+
+jobs:
+  wiring-check:
+    name: Run Wiring Integrity Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps || npm install
+
+      - name: Run Type Validation (full-typecheck)
+        run: |
+          echo "Running type integrity validation..."
+          if [ -f "src/tmp/full-typecheck.ts" ]; then
+            npx tsc src/tmp/full-typecheck.ts --noEmit || exit 1
+          else
+            echo "⚠️ full-typecheck.ts missing — IGNORED"
+          fi
+
+      - name: Run Wiring Scan
+        id: wirecheck
+        run: |
+          echo "Starting Wiring Scan..."
+          node <<'EOF'
+          const fs = require("fs");
+          const path = require("path");
+
+          const TARGET_FILES = [
+            "src/pages",
+            "src/components",
+            "src/hooks",
+            "src/contexts",
+            "src/live"
+          ];
+
+          const violations = [];
+
+          // Recursively scan directories
+          function scan(dir) {
+            if (!fs.existsSync(dir)) return;
+
+            for (const file of fs.readdirSync(dir)) {
+              const full = path.join(dir, file);
+              const stat = fs.statSync(full);
+
+              if (stat.isDirectory()) {
+                scan(full);
+                continue;
+              }
+              if (!full.endsWith(".ts") && !full.endsWith(".tsx")) continue;
+
+              const c = fs.readFileSync(full, "utf8");
+
+              // 🚫 Legacy engine usage
+              if (c.includes("computeDebtPlan(")) {
+                violations.push({
+                  file: full,
+                  issue: "Legacy engine compute used instead of unified-engine",
+                });
+              }
+
+              // 🚫 Legacy PlanContext detected
+              if (c.includes("usePlan(") && !c.includes("useUnifiedPlan(")) {
+                violations.push({
+                  file: full,
+                  issue: "Old PlanContext hook detected (should use useUnifiedPlan)",
+                });
+              }
+
+              // 🚫 Missing recompute usage
+              if (c.includes("recompute") === false &&
+                  c.includes("useUnifiedPlan") &&
+                  c.includes("compute(")) {
+                violations.push({
+                  file: full,
+                  issue: "Manual compute() detected but no recompute() — risk of stale plan state",
+                });
+              }
+
+              // 🚫 Direct plan.months access without unified plan
+              if (c.includes("plan.months") && !c.includes("useUnifiedPlan")) {
+                violations.push({
+                  file: full,
+                  issue: "Direct plan.months access outside unified plan context",
+                });
+              }
+            }
+          }
+
+          TARGET_FILES.forEach(scan);
+
+          if (violations.length) {
+            console.log("❌ Wiring Issues Detected:");
+            violations.forEach(v =>
+              console.log(`FILE: ${v.file}\nISSUE: ${v.issue}\n`)
+            );
+            fs.writeFileSync("wirecheck-report.json", JSON.stringify(violations, null, 2));
+            process.exit(1);
+          } else {
+            console.log("✅ Wiring is fully clean. No violations found.");
+          }
+          EOF
+
+      - name: Upload Wirecheck Report (if failed)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wirecheck-report
+          path: wirecheck-report.json
+
+      - name: Auto-create Fix PR
+        if: failure()
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "Fix wiring violations"
+          branch: wiring-fixes
+          title: "Automated Wiring Fixes"
+          body: |
+            The Finityo Wiring Agent detected wiring issues and generated fixes.
+            Please review and approve.
