@@ -1,17 +1,35 @@
+// =======================================================
+// FILE: src/components/BulkDebtEditor.tsx
+// Bulk edit modal: APR, Min Payment, Include/Exclude, Category, Due Day.
+// =======================================================
+
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { DebtInput } from "@/lib/debtPlan";
 
-type Props = {
+type BulkDebtEditorProps = {
   open: boolean;
   debts: DebtInput[];
   selected: string[];
   onClose: () => void;
   onApply: (updated: DebtInput[]) => void;
   onClearSelection: () => void;
+};
+
+type BulkState = {
+  apr?: number;
+  minPayment?: number;
+  include?: boolean;
+  category?: string;
+  dueDay?: number;
 };
 
 export function BulkDebtEditor({
@@ -21,8 +39,8 @@ export function BulkDebtEditor({
   onClose,
   onApply,
   onClearSelection,
-}: Props) {
-  const [local, setLocal] = useState<Partial<DebtInput>>({});
+}: BulkDebtEditorProps) {
+  const [local, setLocal] = useState<BulkState>({});
 
   useEffect(() => {
     if (open) {
@@ -33,48 +51,54 @@ export function BulkDebtEditor({
   const hasSelection = selected.length > 0;
 
   const applyBulkUpdate = () => {
+    if (!hasSelection) return;
     const updated = debts.map((d) =>
-      selected.includes(d.id)
-        ? { ...d, ...local }
-        : d
+      selected.includes(d.id) ? { ...d, ...local } : d
     );
     onApply(updated);
     onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md">
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
+    >
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Bulk Edit Debts</DialogTitle>
         </DialogHeader>
 
-        <div className="mt-2 space-y-6">
-          <div className="text-sm text-muted-foreground">
-            Selected: <strong>{selected.length}</strong> debts
-          </div>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Selected: <span className="font-medium">{selected.length}</span>{" "}
+            debt(s)
+          </p>
 
           {/* APR */}
-          <div>
+          <div className="space-y-1">
             <Label>APR (%)</Label>
             <Input
               type="number"
-              placeholder="Optional"
+              value={local.apr ?? ""}
               onChange={(e) =>
                 setLocal((prev) => ({
                   ...prev,
                   apr: e.target.value ? Number(e.target.value) : undefined,
                 }))
               }
+              placeholder="No change"
             />
           </div>
 
           {/* Min Payment */}
-          <div>
+          <div className="space-y-1">
             <Label>Minimum Payment ($)</Label>
             <Input
               type="number"
-              placeholder="Optional"
+              value={local.minPayment ?? ""}
               onChange={(e) =>
                 setLocal((prev) => ({
                   ...prev,
@@ -83,52 +107,62 @@ export function BulkDebtEditor({
                     : undefined,
                 }))
               }
+              placeholder="No change"
             />
           </div>
 
           {/* Include */}
-          <div>
+          <div className="space-y-1">
             <Label>Include in Plan</Label>
             <select
-              className="w-full border rounded px-2 py-1 h-10 bg-background"
-              onChange={(e) =>
+              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+              value={
+                local.include === undefined
+                  ? "no-change"
+                  : local.include
+                  ? "include"
+                  : "exclude"
+              }
+              onChange={(e) => {
+                const val = e.target.value;
                 setLocal((prev) => ({
                   ...prev,
                   include:
-                    e.target.value === "yes"
+                    val === "no-change"
+                      ? undefined
+                      : val === "include"
                       ? true
-                      : e.target.value === "no"
-                      ? false
-                      : undefined,
-                }))
-              }
+                      : false,
+                }));
+              }}
             >
-              <option value="">No Change</option>
-              <option value="yes">Include</option>
-              <option value="no">Exclude</option>
+              <option value="no-change">No Change</option>
+              <option value="include">Include</option>
+              <option value="exclude">Exclude</option>
             </select>
           </div>
 
           {/* Category */}
-          <div>
+          <div className="space-y-1">
             <Label>Category</Label>
             <Input
-              placeholder="Optional"
+              value={local.category ?? ""}
               onChange={(e) =>
                 setLocal((prev) => ({
                   ...prev,
                   category: e.target.value || undefined,
                 }))
               }
+              placeholder="No change"
             />
           </div>
 
           {/* Due Day */}
-          <div>
+          <div className="space-y-1">
             <Label>Due Day (1–28)</Label>
             <Input
               type="number"
-              placeholder="Optional"
+              value={local.dueDay ?? ""}
               onChange={(e) =>
                 setLocal((prev) => ({
                   ...prev,
@@ -137,20 +171,33 @@ export function BulkDebtEditor({
                     : undefined,
                 }))
               }
+              placeholder="No change"
             />
           </div>
 
-          {/* ACTIONS */}
-          <div className="flex justify-between mt-4">
-            <Button variant="secondary" onClick={onClearSelection}>
+          {/* Actions */}
+          <div className="flex flex-wrap justify-between gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClearSelection}
+              disabled={!hasSelection}
+            >
               Clear Selection
             </Button>
-
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onClose}>
+            <div className="ml-auto flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+              >
                 Cancel
               </Button>
-              <Button disabled={!hasSelection} onClick={applyBulkUpdate}>
+              <Button
+                type="button"
+                onClick={applyBulkUpdate}
+                disabled={!hasSelection}
+              >
                 Apply
               </Button>
             </div>
