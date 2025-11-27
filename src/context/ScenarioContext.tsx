@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
-import { computeDebtPlan } from "@/lib/computeDebtPlan";
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
+import type { DebtInput } from "@/engine/plan-types";
 import { computeMinimumOnly } from "@/lib/computeMinimumOnly";
 import { DebtEngineProvider, useDebtEngine } from "@/engine/DebtEngineContext";
 
@@ -29,8 +30,22 @@ const LS_KEY = "finityo:scenarios";
 const genId = () => Math.random().toString(36).slice(2, 10);
 
 function comparePlans(debts: Debt[], base: UserSettings): { snowball: DebtPlan; avalanche: DebtPlan; minimum: DebtPlan } {
-  const snowball = computeDebtPlan(debts, { ...base, strategy: "snowball" });
-  const avalanche = computeDebtPlan(debts, { ...base, strategy: "avalanche" });
+  const snowball = computeDebtPlanUnified({
+    debts: debts as DebtInput[],
+    strategy: "snowball",
+    extraMonthly: base.extraMonthly || 0,
+    oneTimeExtra: base.oneTimeExtra || 0,
+    startDate: base.startDate || new Date().toISOString().slice(0, 10),
+    maxMonths: base.maxMonths,
+  });
+  const avalanche = computeDebtPlanUnified({
+    debts: debts as DebtInput[],
+    strategy: "avalanche",
+    extraMonthly: base.extraMonthly || 0,
+    oneTimeExtra: base.oneTimeExtra || 0,
+    startDate: base.startDate || new Date().toISOString().slice(0, 10),
+    maxMonths: base.maxMonths,
+  });
   const minimum = computeMinimumOnly(debts);
   return { snowball, avalanche, minimum };
 }
@@ -56,7 +71,14 @@ export function ScenarioProvider({ children }: { children: React.ReactNode }) {
 
   function createScenario(name: string, debts: Debt[], settings: UserSettings) {
     const id = genId();
-    const plan = computeDebtPlan(debts, settings);
+    const plan = computeDebtPlanUnified({
+      debts: debts as DebtInput[],
+      strategy: settings.strategy || "snowball",
+      extraMonthly: settings.extraMonthly || 0,
+      oneTimeExtra: settings.oneTimeExtra || 0,
+      startDate: settings.startDate || new Date().toISOString().slice(0, 10),
+      maxMonths: settings.maxMonths,
+    });
     const s: Scenario = {
       id,
       name: name.trim().slice(0, 100), // Limit length
@@ -86,7 +108,14 @@ export function ScenarioProvider({ children }: { children: React.ReactNode }) {
   function computeCurrent() {
     const cur = scenarios.find((s) => s.id === currentId);
     if (!cur) return;
-    const plan = computeDebtPlan(cur.debts, cur.settings);
+    const plan = computeDebtPlanUnified({
+      debts: cur.debts as DebtInput[],
+      strategy: cur.settings.strategy || "snowball",
+      extraMonthly: cur.settings.extraMonthly || 0,
+      oneTimeExtra: cur.settings.oneTimeExtra || 0,
+      startDate: cur.settings.startDate || new Date().toISOString().slice(0, 10),
+      maxMonths: cur.settings.maxMonths,
+    });
     updateScenario(cur.id, { plan });
   }
 

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { computeDebtPlan, type PlanResult } from "@/lib/debtPlan";
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
+import type { DebtInput, PlanResult } from "@/engine/plan-types";
 import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 
 type Props = { debts?: any[]; settings?: any };
@@ -14,22 +15,22 @@ export default function ScenarioCompareChart({ debts, settings }: Props) {
     if (!activeDebts?.length) return null;
 
     // Baseline: use computed engine plan (no duplicate compute)
-    const currentPlan: PlanResult = enginePlan ?? computeDebtPlan({
-      debts: activeDebts,
+    const currentPlan: PlanResult = enginePlan ?? computeDebtPlanUnified({
+      debts: activeDebts as DebtInput[],
       extraMonthly: activeSettings.extraMonthly || 0,
       oneTimeExtra: activeSettings.oneTimeExtra || 0,
       strategy: activeSettings.strategy || "snowball",
-      startDate: activeSettings.startDate,
+      startDate: activeSettings.startDate || new Date().toISOString().slice(0, 10),
       maxMonths: activeSettings.maxMonths,
     });
 
     // Only allowed additional compute: min-only scenario
-    const minOnlyPlan: PlanResult = computeDebtPlan({
-      debts: activeDebts,
+    const minOnlyPlan: PlanResult = computeDebtPlanUnified({
+      debts: activeDebts as DebtInput[],
       extraMonthly: 0,
       oneTimeExtra: 0,
       strategy: activeSettings.strategy || "snowball",
-      startDate: activeSettings.startDate,
+      startDate: activeSettings.startDate || new Date().toISOString().slice(0, 10),
       maxMonths: activeSettings.maxMonths,
     });
 

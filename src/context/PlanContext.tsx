@@ -25,8 +25,10 @@ import {
   Debt,
   UserSettings,
   DebtPlan,
-  computeDebtPlan,
 } from "@/lib/computeDebtPlan";
+
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
+import type { DebtInput } from "@/engine/plan-types";
 
 import { useAuth } from "@/context/AuthContext";
 import { PlanAPI, type VersionRecord } from "@/lib/planAPI";
@@ -120,7 +122,14 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         if (saved) {
           setDebts(saved.debts ?? []);
           setSettings(saved.settings ?? settings);
-          const p = computeDebtPlan(saved.debts ?? [], saved.settings ?? settings);
+          const p = computeDebtPlanUnified({
+            debts: (saved.debts ?? []) as DebtInput[],
+            strategy: (saved.settings ?? settings).strategy || "snowball",
+            extraMonthly: (saved.settings ?? settings).extraMonthly || 0,
+            oneTimeExtra: (saved.settings ?? settings).oneTimeExtra || 0,
+            startDate: (saved.settings ?? settings).startDate || new Date().toISOString().slice(0, 10),
+            maxMonths: (saved.settings ?? settings).maxMonths,
+          });
           setPlan(p);
         }
         return;
@@ -235,7 +244,14 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const compute = useCallback(async () => {
     try {
       console.log('🔄 Computing plan with', debts.length, 'debts');
-      const p = computeDebtPlan(debts, settings);
+      const p = computeDebtPlanUnified({
+        debts: debts as DebtInput[],
+        strategy: settings.strategy || "snowball",
+        extraMonthly: settings.extraMonthly || 0,
+        oneTimeExtra: settings.oneTimeExtra || 0,
+        startDate: settings.startDate || new Date().toISOString().slice(0, 10),
+        maxMonths: settings.maxMonths,
+      });
       setPlan(p);
       await persist(debts, settings, p);
       console.log('✅ Plan computed successfully');
@@ -252,7 +268,14 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     async (next: Debt[]) => {
       setDebts(next);
       try {
-        const p = computeDebtPlan(next, settings);
+        const p = computeDebtPlanUnified({
+          debts: next as DebtInput[],
+          strategy: settings.strategy || "snowball",
+          extraMonthly: settings.extraMonthly || 0,
+          oneTimeExtra: settings.oneTimeExtra || 0,
+          startDate: settings.startDate || new Date().toISOString().slice(0, 10),
+          maxMonths: settings.maxMonths,
+        });
         setPlan(p);
         await persist(next, settings, p, 'Updated debts');
       } catch (err) {
@@ -271,7 +294,14 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       const next = { ...settings, ...patch };
       setSettings(next);
       try {
-        const p = computeDebtPlan(debts, next);
+        const p = computeDebtPlanUnified({
+          debts: debts as DebtInput[],
+          strategy: next.strategy || "snowball",
+          extraMonthly: next.extraMonthly || 0,
+          oneTimeExtra: next.oneTimeExtra || 0,
+          startDate: next.startDate || new Date().toISOString().slice(0, 10),
+          maxMonths: next.maxMonths,
+        });
         setPlan(p);
         await persist(debts, next, p, 'Updated settings');
       } catch (err) {
