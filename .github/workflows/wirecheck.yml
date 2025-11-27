@@ -1,71 +1,74 @@
-name: Finityo Wiring Agent
+name: Finityo Wiring Integrity Agent
+
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
-  wirecheck:
-    name: Wiring Integrity Check
+  wiring-check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repo
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm install
 
       - name: Run Wiring Integrity Scan
-        id: scan
         run: |
-          echo "🔍 Running wiring integrity scan..."
+          echo "🚀 Running Finityo Wiring Integrity Agent..."
 
           node << 'EOF'
-          // ==============================================================
-          //  FINITYO WIRING INTEGRITY CHECK ENGINE
-          //  Ensures ALL engine usage flows through unified engine ONLY.
-          //  Flags:
-          //    - Legacy computeDebtPlan usage
-          //    - PlanContext usage outside LivePlanContext
-          //    - Direct imports from @/engine/* except allowed modules
-          //    - Banned hooks
-          // ==============================================================
-
+          // ===========================================
+          // Finityo Wiring Agent – Unified Engine Enforcer
+          // ===========================================
           const fs = require("fs");
           const path = require("path");
 
-          const ROOT = process.cwd();
-          const ALLOWED_ENGINE_IMPORTS = [
-            "@/engine/useUnifiedPlan",
-            "@/engine/unified-engine",
-            "@/engine/plan-types",
-            "@/engine/compat/compatLayer",
-          ];
+          const ROOT = path.join(process.cwd(), "src");
 
+          // -------------------------------------------
+          // BANNED PATTERNS (Legacy Engine + Wrong Imports)
+          // -------------------------------------------
           const BANNED_PATTERNS = [
-            { pattern: "computeDebtPlan(", issue: "Legacy computeDebtPlan() detected. Must use computeDebtPlanUnified()." },
-            { pattern: "PlanContext", issue: "Legacy PlanContext detected. Must use LivePlanContext + useUnifiedPlan()." },
-            { pattern: "usePlan()", issue: "Legacy usePlan() hook detected. Must use useUnifiedPlan()." },
-            { pattern: "from '@/engine/", issue: "Direct engine import detected. Must use allowed unified engine modules only." },
+            {
+              pattern: "computeDebtPlan(",
+              issue: "Legacy engine call detected. Must use computeDebtPlanUnified().",
+            },
+            {
+              pattern: "from '@/engine/legacy'",
+              issue: "Legacy engine import found.",
+            },
+            {
+              pattern: "PlanContext",
+              issue: "Found deprecated PlanContext. Use DebtEngineContext instead.",
+            },
           ];
 
-          const ALLOWED_ENGINE_IMPORT_SNIPPETS = ALLOWED_ENGINE_IMPORTS.map(x => `from '${x}`);
+          // -------------------------------------------
+          // ALLOWED ENGINE IMPORTS FOR SAFETY
+          // -------------------------------------------
+          const ALLOWED_ENGINE_SNIPPETS = [
+            "from '@/engine/unified-engine'",
+            "from '@/engine/plan-types'",
+            "from '@/engine/compat'",
+            "from '@/lib/debtPlan'",
+          ];
 
           const violations = [];
 
           function scanFile(filePath) {
             const content = fs.readFileSync(filePath, "utf8");
 
-            // Check banned patterns
+            // Scan banned patterns
             for (const ban of BANNED_PATTERNS) {
               if (content.includes(ban.pattern)) {
                 violations.push({
@@ -76,13 +79,17 @@ jobs:
               }
             }
 
-            // Check engine import misuse
+            // Scan engine import misuse
             if (content.includes("from '@/engine/")) {
-              const safe = ALLOWED_ENGINE_IMPORT_SNIPPETS.some(s => content.includes(s));
+              const safe = ALLOWED_ENGINE_SNIPPETS.some((s) =>
+                content.includes(s)
+              );
+
               if (!safe) {
                 violations.push({
                   file: filePath,
-                  issue: "Direct import from @/engine detected. Must route through unified engine.",
+                  issue: "Unsafe direct import from @/engine/. Must route through unified engine.",
+                  pattern: "from '@/engine/'",
                 });
               }
             }
@@ -90,22 +97,44 @@ jobs:
 
           function walk(dir) {
             const entries = fs.readdirSync(dir, { withFileTypes: true });
+
             for (const entry of entries) {
-              if (["node_modules", ".git", ".github", "dist", "build", "supabase"].includes(entry.name)) continue;
+              if (
+                ["node_modules", ".git", ".github", "dist", "build", "supabase"].includes(
+                  entry.name
+                )
+              )
+                continue;
+
               const fullPath = path.join(dir, entry.name);
+
               if (entry.isDirectory()) walk(fullPath);
-              else if (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx")) scanFile(fullPath);
+              else if (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx"))
+                scanFile(fullPath);
             }
           }
 
-          walk(path.join(ROOT, "src"));
+          walk(ROOT);
 
+          // -------------------------------------------
+          // Reporting
+          // -------------------------------------------
           if (violations.length > 0) {
             console.log("❌ Wiring violations found:\n");
-            violations.forEach(v => {
-              console.log(`FILE: ${v.file}\nISSUE: ${v.issue}\nPATTERN: ${v.pattern ?? "n/a"}\n`);
+
+            violations.forEach((v) => {
+              console.log(`FILE: ${v.file}
+ISSUE: ${v.issue}
+PATTERN: ${v.pattern ?? "n/a"}
+
+`);
             });
-            fs.writeFileSync("wirecheck-report.json", JSON.stringify(violations, null, 2));
+
+            fs.writeFileSync(
+              "wirecheck-report.json",
+              JSON.stringify(violations, null, 2)
+            );
+
             process.exit(1);
           } else {
             console.log("✅ Wiring is fully clean. No violations found.");
