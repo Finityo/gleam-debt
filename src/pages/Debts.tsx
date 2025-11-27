@@ -3,9 +3,12 @@ import { useNavigate } from "react-router-dom";
 
 import AppLayout from "@/layouts/AppLayout";
 import { usePlan } from "@/context/PlanContext";
-import { BulkDebtEditor } from "@/components/BulkDebtEditor";
 
 import { Card } from "@/components/Card";
+import { DebtQuickEdit } from "@/components/DebtQuickEdit";
+import { ExcelImportModal } from "@/components/ExcelImportModal";
+import { BulkDebtEditor } from "@/components/BulkDebtEditor";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,18 +34,18 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import {
-  Plus,
-  Trash2,
+  ArrowLeft,
+  ArrowUp,
+  ArrowDown,
   Edit2,
-  CreditCard,
+  Trash2,
+  FileSpreadsheet,
   Download,
   Upload,
-  ArrowLeft,
-  FileSpreadsheet,
 } from "lucide-react";
 
-import type { Debt } from "@/lib/computeDebtPlan";
 import { toast } from "sonner";
+import type { DebtInput as Debt } from "@/lib/debtPlan";
 import {
   debtToCSV,
   downloadCSV,
@@ -50,20 +53,23 @@ import {
   downloadTemplate,
   exportDebtsToXLSX,
 } from "@/lib/csvExport";
-import { DebtQuickEdit } from "@/components/DebtQuickEdit";
-import { ExcelImportModal } from "@/components/ExcelImportModal";
 
 export default function DebtsPage() {
-  // ✅ Use unified engine store instead of AppStore
+  // ✅ Unified engine plan context
   const { debts, updateDebts, settings, reset } = usePlan();
   const navigate = useNavigate();
 
   const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [quickEditDebt, setQuickEditDebt] = useState<Debt | null>(null);
   const [showImport, setShowImport] = useState(false);
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showBulk, setShowBulk] = useState(false);
+
+  // ---------------------------------------------------------------------------
+  // Selection helpers (including Select All)
+  // ---------------------------------------------------------------------------
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
@@ -71,10 +77,42 @@ export default function DebtsPage() {
     );
   };
 
+  const isAllSelected =
+    debts.length > 0 && selectedIds.length === debts.length;
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(debts.map((d) => d.id));
+    }
+  };
+
   const clearSelection = () => setSelectedIds([]);
 
   // ---------------------------------------------------------------------------
-  // Helpers
+  // Manual ordering helpers (array-order based)
+  // ---------------------------------------------------------------------------
+
+  const moveDebt = (id: string, direction: "up" | "down") => {
+    if (debts.length < 2) return;
+
+    const index = debts.findIndex((d) => d.id === id);
+    if (index === -1) return;
+
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= debts.length) return;
+
+    const next = [...debts];
+    const temp = next[targetIndex];
+    next[targetIndex] = next[index];
+    next[index] = temp;
+
+    updateDebts(next);
+  };
+
+  // ---------------------------------------------------------------------------
+  // CRUD helpers
   // ---------------------------------------------------------------------------
 
   const handleAdd = () => {
@@ -85,11 +123,12 @@ export default function DebtsPage() {
       apr: 15,
       minPayment: 50,
       include: true,
+      category: "",
     };
 
     updateDebts([...debts, newDebt]);
     toast.success("Debt added");
-    setIsOpen(false);
+    setIsAddOpen(false);
   };
 
   const handleUpdate = () => {
@@ -106,15 +145,23 @@ export default function DebtsPage() {
 
     const next = debts.filter((d) => d.id !== id);
     updateDebts(next);
+
+    // Also remove from selection if selected
+    setSelectedIds((prev) => prev.filter((x) => x !== id));
+
     toast.success("Debt deleted");
   };
 
-  const handleQuickEditSave = (debt: Debt) => {
-    const next = debts.map((d) => (d.id === debt.id ? debt : d));
+  const handleQuickEditSave = (updated: Debt) => {
+    const next = debts.map((d) => (d.id === updated.id ? updated : d));
     updateDebts(next);
     toast.success("Debt updated");
     setQuickEditDebt(null);
   };
+
+  // ---------------------------------------------------------------------------
+  // Import / Export
+  // ---------------------------------------------------------------------------
 
   const handleExportCSV = () => {
     const csvData = debtToCSV(
@@ -147,7 +194,8 @@ export default function DebtsPage() {
   };
 
   const handleClearAll = async () => {
-    await reset(); // ✅ Uses PlanContext reset (clears debts + plan + cloud)
+    await reset(); // Clears debts + plan + cloud sync in PlanContext
+    setSelectedIds([]);
     toast.success("All debts cleared");
   };
 
@@ -159,30 +207,24 @@ export default function DebtsPage() {
         return;
       }
 
-      // Use current strategy from unified settings
-      const sortedDebts = parsed.sort((a, b) => {
+      const sorted = parsed.sort((a, b) => {
         if (settings.strategy === "snowball") {
-          // Snowball: smallest balance first
           return a.balance - b.balance;
-        } else {
-          // Avalanche: highest APR first
-          return b.apr - a.apr;
         }
+        return b.apr - a.apr;
       });
 
-      // Map imported rows to Debt shape and append to existing debts
-      const importedDebts: Debt[] = sortedDebts.map((d) => ({
+      const importedDebts: Debt[] = sorted.map((d) => ({
         id: crypto.randomUUID(),
         name: d.name,
         balance: d.balance,
         apr: d.apr,
         minPayment: d.minPayment,
         include: true,
+        category: d.category ?? "",
       }));
 
       const next = [...debts, ...importedDebts];
-
-      // ✅ Single unified update → unified engine recomputes once
       updateDebts(next);
 
       setShowImport(false);
@@ -191,7 +233,7 @@ export default function DebtsPage() {
       );
     } catch (error) {
       console.error("Import error:", error);
-      toast.error("Failed to import Excel file");
+      toast.error("Failed to import Excel/CSV file");
     }
   };
 
@@ -201,29 +243,23 @@ export default function DebtsPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto px-4 py-4 space-y-4">
-        {/* Back button */}
-        <div className="flex items-center gap-2 mb-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-        </div>
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 pb-10 pt-4">
+        {/* Back */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-1 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back</span>
+        </button>
 
         {/* Header + Delete All */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-xl font-semibold flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              My Debts
-            </h1>
+            <h1 className="text-xl font-semibold tracking-tight">My Debts</h1>
             <p className="text-sm text-muted-foreground">
-              Manage your debt accounts
+              Manage your debt accounts and keep everything in sync with your
+              plan.
             </p>
           </div>
 
@@ -233,9 +269,9 @@ export default function DebtsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-2 text-destructive border-destructive/40 hover:bg-destructive/5"
+                  className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="mr-1 h-4 w-4" />
                   Delete All
                 </Button>
               </AlertDialogTrigger>
@@ -243,15 +279,15 @@ export default function DebtsPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete all debts?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete all {debts.length} debt(s). This
-                    action cannot be undone.
+                    This will permanently delete all {debts.length} debt(s) and
+                    clear your current plan. This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={handleClearAll}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={handleClearAll}
                   >
                     Delete All
                   </AlertDialogAction>
@@ -261,155 +297,249 @@ export default function DebtsPage() {
           )}
         </div>
 
-        {/* Actions row */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={handleDownloadTemplate}
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            Template
-          </Button>
+        {/* Action Row */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadTemplate}
+            >
+              <FileSpreadsheet className="mr-1 h-4 w-4" />
+              Template
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => setShowImport(true)}
-          >
-            <Upload className="w-4 h-4" />
-            Import Excel/CSV
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowImport(true)}
+            >
+              <Upload className="mr-1 h-4 w-4" />
+              Import Excel/CSV
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={handleExportXLSX}
-          >
-            <Download className="w-4 h-4" />
-            Export Excel
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExportXLSX}
+              disabled={debts.length === 0}
+            >
+              <Download className="mr-1 h-4 w-4" />
+              Export Excel
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => setShowBulk(true)}
-            disabled={selectedIds.length === 0}
-          >
-            Bulk Edit ({selectedIds.length})
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              disabled={debts.length === 0}
+            >
+              <Download className="mr-1 h-4 w-4" />
+              Export CSV
+            </Button>
+          </div>
 
-          <Button
-            size="sm"
-            className="gap-2 ml-auto"
-            onClick={() => setIsOpen(true)}
-          >
-            <Plus className="w-4 h-4" />
-            Add Debt
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={debts.length === 0}
+              onClick={() => setShowBulk(true)}
+            >
+              Bulk Edit ({selectedIds.length})
+            </Button>
+
+            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+              <DialogTrigger asChild>
+                <Button type="button" size="sm">
+                  <Edit2 className="mr-1 h-4 w-4" />
+                  Add Debt
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Debt</DialogTitle>
+                </DialogHeader>
+                <DebtForm
+                  debt={editingDebt ?? undefined}
+                  onChange={setEditingDebt}
+                  onSubmit={handleAdd}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Empty state */}
         {debts.length === 0 && (
-          <Card className="p-6 text-center text-sm text-muted-foreground">
-            <p className="font-medium mb-1">No debts added yet</p>
-            <p>Add your first debt to get started.</p>
+          <Card className="mt-3 flex flex-col items-center justify-center gap-2 px-6 py-8 text-center">
+            <p className="text-sm font-medium">No debts added yet</p>
+            <p className="text-xs text-muted-foreground">
+              Add your first debt to get started with your payoff plan.
+            </p>
           </Card>
         )}
 
         {/* Debts list */}
         {debts.length > 0 && (
-          <div className="space-y-3">
-            {debts.map((debt) => (
-              <Card
-                key={debt.id}
-                className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-              >
-                <div className="flex items-start gap-3 flex-1">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(debt.id)}
-                    onChange={() => toggleSelect(debt.id)}
-                    className="mt-1 h-4 w-4 cursor-pointer"
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium">{debt.name}</div>
-                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
-                      <div>
-                        <div className="text-xs text-muted-foreground">
-                          Balance
+          <div className="mt-2 space-y-2">
+            {/* Header row with Select All + legend */}
+            <div className="flex items-center justify-between px-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 cursor-pointer"
+                  checked={isAllSelected}
+                  onChange={toggleSelectAll}
+                />
+                <span>Select All</span>
+              </div>
+              <span className="hidden gap-4 sm:flex">
+                <span className="w-24 text-right">Balance</span>
+                <span className="w-16 text-right">APR</span>
+                <span className="w-28 text-right">Min Payment</span>
+                <span className="w-24 text-right">Category</span>
+              </span>
+            </div>
+
+            {debts.map((debt, index) => {
+              const isSelected = selectedIds.includes(debt.id);
+              return (
+                <Card
+                  key={debt.id}
+                  className={`flex flex-col gap-3 border px-3 py-3 sm:flex-row sm:items-center sm:justify-between ${
+                    isSelected ? "border-primary/60 bg-primary/5" : ""
+                  }`}
+                >
+                  <div className="flex flex-1 items-start gap-3">
+                    {/* Row checkbox */}
+                    <div className="mt-1">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 cursor-pointer"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(debt.id)}
+                      />
+                    </div>
+
+                    <div className="flex flex-1 flex-col gap-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-medium">{debt.name}</div>
+
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <button
+                            type="button"
+                            onClick={() => moveDebt(debt.id, "up")}
+                            disabled={index === 0}
+                            className="inline-flex h-6 w-6 items-center justify-center rounded border bg-background text-muted-foreground hover:bg-accent disabled:opacity-40"
+                          >
+                            <ArrowUp className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveDebt(debt.id, "down")}
+                            disabled={index === debts.length - 1}
+                            className="inline-flex h-6 w-6 items-center justify-center rounded border bg-background text-muted-foreground hover:bg-accent disabled:opacity-40"
+                          >
+                            <ArrowDown className="h-3 w-3" />
+                          </button>
                         </div>
-                        <div>${debt.balance.toFixed(2)}</div>
                       </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">APR</div>
-                        <div>{debt.apr.toFixed(1)}%</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">
-                          Min Payment
+
+                      <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                        <div>
+                          <div className="text-muted-foreground">Balance</div>
+                          <div className="font-mono">
+                            ${debt.balance.toFixed(2)}
+                          </div>
                         </div>
-                        <div>${debt.minPayment.toFixed(2)}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">
-                          Included
+                        <div>
+                          <div className="text-muted-foreground">APR</div>
+                          <div className="font-mono">
+                            {debt.apr.toFixed(1)}%
+                          </div>
                         </div>
-                        <div>{debt.include === false ? "No" : "Yes"}</div>
+                        <div>
+                          <div className="text-muted-foreground">
+                            Min Payment
+                          </div>
+                          <div className="font-mono">
+                            ${debt.minPayment.toFixed(2)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">
+                            Category
+                          </div>
+                          <Input
+                            className="mt-0.5 h-8"
+                            placeholder="e.g. Credit Card"
+                            value={debt.category ?? ""}
+                            onChange={(e) => {
+                              const next = debts.map((d) =>
+                                d.id === debt.id
+                                  ? { ...d, category: e.target.value }
+                                  : d
+                              );
+                              updateDebts(next);
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => setQuickEditDebt(debt)}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive/80 hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => handleDelete(debt.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuickEditDebt(debt)}
+                    >
+                      <Edit2 className="mr-1 h-3 w-3" />
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => handleDelete(debt.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
 
-        {/* Add Debt Dialog (optional, kept from original behavior) */}
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-            <span className="hidden" /> {/* trigger handled by button above */}
-          </DialogTrigger>
+        {/* Add Debt Dialog */}
+        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+          {/* Trigger lives in the action row */}
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Debt</DialogTitle>
             </DialogHeader>
             <DebtForm
-              onSubmit={handleAdd}
-              onChange={(d) => setEditingDebt(d)}
               debt={editingDebt ?? undefined}
+              onChange={setEditingDebt}
+              onSubmit={handleAdd}
             />
           </DialogContent>
         </Dialog>
 
         {/* Quick Edit Modal */}
         <DebtQuickEdit
-          debt={quickEditDebt}
           open={!!quickEditDebt}
+          debt={quickEditDebt}
           onClose={() => setQuickEditDebt(null)}
           onSave={handleQuickEditSave}
         />
@@ -439,7 +569,7 @@ export default function DebtsPage() {
 }
 
 // ---------------------------------------------------------------------------
-// Debt Form (used in dialog)
+// Debt Form (used in Add dialog)
 // ---------------------------------------------------------------------------
 
 function DebtForm({
@@ -459,26 +589,25 @@ function DebtForm({
       apr: 0,
       minPayment: 0,
       include: true,
+      category: "",
     }
   );
 
   const handleChange = (field: keyof Debt, value: any) => {
     const updated = { ...local, [field]: value };
     setLocal(updated);
-    if (onChange) {
-      onChange(updated);
-    }
+    onChange?.(updated);
   };
 
   return (
     <form
-      className="space-y-4"
+      className="space-y-4 pt-2"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit();
       }}
     >
-      <div className="space-y-2">
+      <div className="space-y-1">
         <Label>Debt Name</Label>
         <Input
           value={local.name}
@@ -487,40 +616,56 @@ function DebtForm({
         />
       </div>
 
-      <div className="space-y-2">
-        <Label>Balance</Label>
-        <Input
-          type="number"
-          value={local.balance}
-          onChange={(e) =>
-            handleChange("balance", Number(e.target.value || 0))
-          }
-        />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="space-y-1">
+          <Label>Balance ($)</Label>
+          <Input
+            type="number"
+            inputMode="decimal"
+            value={local.balance}
+            onChange={(e) =>
+              handleChange("balance", Number(e.target.value || 0))
+            }
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>APR (%)</Label>
+          <Input
+            type="number"
+            inputMode="decimal"
+            value={local.apr}
+            onChange={(e) => handleChange("apr", Number(e.target.value || 0))}
+          />
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>APR (%)</Label>
-        <Input
-          type="number"
-          value={local.apr}
-          onChange={(e) => handleChange("apr", Number(e.target.value || 0))}
-        />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="space-y-1">
+          <Label>Minimum Payment ($)</Label>
+          <Input
+            type="number"
+            inputMode="decimal"
+            value={local.minPayment}
+            onChange={(e) =>
+              handleChange("minPayment", Number(e.target.value || 0))
+            }
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>Category</Label>
+          <Input
+            value={local.category ?? ""}
+            onChange={(e) => handleChange("category", e.target.value)}
+            placeholder="e.g. Credit Card, Auto, Personal"
+          />
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>Minimum Payment</Label>
-        <Input
-          type="number"
-          value={local.minPayment}
-          onChange={(e) =>
-            handleChange("minPayment", Number(e.target.value || 0))
-          }
-        />
+      <div className="pt-2">
+        <Button type="submit" className="w-full">
+          {debt ? "Update Debt" : "Add Debt"}
+        </Button>
       </div>
-
-      <Button type="submit" className="w-full">
-        {debt ? "Update Debt" : "Add Debt"}
-      </Button>
     </form>
   );
 }
