@@ -1,11 +1,92 @@
 // ============================================================================
 // FILE: src/lib/debtPlan.ts  
 // ============================================================================
-import type { DebtInput, PlanMonth, PlanResult, Strategy, PlanPayment } from "@/engine/plan-types";
 import { toNum, clamp, safeAPR } from "@/lib/number";
 
-// Re-export core types
-export type { DebtInput, PlanMonth, PlanResult, Strategy, PlanPayment };
+// ============================================================================
+// Core Type Definitions (Canonical Source)
+// ============================================================================
+
+export type Strategy = "snowball" | "avalanche";
+
+export type DebtInput = {
+  id: string;
+  name: string;
+  balance: number;
+  originalBalance?: number;
+  apr: number;
+  minPayment: number;
+  include?: boolean;
+  order?: number;
+  creditor?: string;
+  dueDate?: string | null;
+  dueDay?: number;
+  category?: string;
+};
+
+export type PlanPayment = {
+  debtId: string;
+  totalPaid: number;
+  principal: number;
+  interest: number;
+  endingBalance: number;
+  isClosed: boolean;
+  // legacy compat
+  balanceEnd?: number;
+  interestAccrued?: number;
+  startingBalance?: number;
+  minApplied?: number;
+  extraApplied?: number;
+  closedThisMonth?: boolean;
+  paid?: number;
+};
+
+export type PlanMonth = {
+  monthIndex: number;
+  dateISO: string | null;
+  totals: {
+    outflow: number;
+    principal: number;
+    interest: number;
+  };
+  snowball: number;
+  payments: PlanPayment[];
+  // legacy compat
+  totalPaid?: number;
+  totalInterest?: number;
+  snowballPoolApplied?: number;
+  monthLabel?: string;
+};
+
+export type PlanTotals = {
+  principal: number;
+  interest: number;
+  outflowMonthly: number;
+  monthsToDebtFree: number;
+  // legacy compat
+  totalPaid?: number;
+  oneTimeApplied?: number;
+};
+
+export type PlanResult = {
+  months: PlanMonth[];
+  totals: PlanTotals;
+  debts: DebtInput[];
+  settings: {
+    strategy: Strategy;
+    extraMonthly: number;
+    oneTimeExtra: number;
+    startDate: string;
+    maxMonths: number;
+  };
+  // legacy compat
+  strategy?: Strategy;
+  summary?: string;
+  totalInterest?: number;
+  totalPaid?: number;
+  debtFreeDate?: string | null;
+  startDateISO?: string;
+};
 
 export type ComputeParams = {
   debts: DebtInput[];
