@@ -1,0 +1,29 @@
+name: Fetch File Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      search:
+        description: 'File name or partial match to search for'
+        required: true
+        type: string
+
+jobs:
+  fetch-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run Fetch File Agent
+        env:
+          SEARCH: ${{ github.event.inputs.search }}
+        run: |
+          echo "🚀 Running Fetch File Agent..."
+          node scripts/fetch-file.js
