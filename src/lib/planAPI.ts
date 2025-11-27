@@ -5,7 +5,7 @@
 // ============================================================================
 
 import { AppDB } from "@/live/lovableCloudDB";
-import { computeDebtPlan } from "@/lib/debtPlan";
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
 import { supabase } from "@/integrations/supabase/client";
 import { uid, hashState, clone } from "@/lib/utils";
 
@@ -73,12 +73,12 @@ export const PlanAPI = {
       updatedAt: nowISO(),
     };
 
-    const plan = computeDebtPlan({ 
+    const plan = computeDebtPlanUnified({ 
       debts: row.debts, 
       strategy: row.settings?.strategy ?? 'snowball',
       extraMonthly: row.settings?.extraMonthly ?? 0,
       oneTimeExtra: row.settings?.oneTimeExtra ?? 0,
-      startDate: row.settings?.startDate,
+      startDate: row.settings?.startDate ?? new Date().toISOString().slice(0, 10),
       maxMonths: row.settings?.maxMonths
     });
     const payload: PlanData = {
@@ -120,12 +120,12 @@ export const PlanAPI = {
       notes: next.notes ?? prev.notes,
     };
 
-    const plan = computeDebtPlan({ 
+    const plan = computeDebtPlanUnified({ 
       debts: merged.debts ?? [], 
       strategy: merged.settings?.strategy ?? 'snowball',
       extraMonthly: merged.settings?.extraMonthly ?? 0,
       oneTimeExtra: merged.settings?.oneTimeExtra ?? 0,
-      startDate: merged.settings?.startDate,
+      startDate: merged.settings?.startDate ?? new Date().toISOString().slice(0, 10),
       maxMonths: merged.settings?.maxMonths
     });
     const payload: PlanData = {
@@ -200,12 +200,12 @@ export const PlanAPI = {
 
     const mergedNotes = incoming.notes || current.notes || '';
 
-    const plan = computeDebtPlan({ 
+    const plan = computeDebtPlanUnified({ 
       debts: mergedDebts, 
       strategy: mergedSettings?.strategy ?? 'snowball',
       extraMonthly: mergedSettings?.extraMonthly ?? 0,
       oneTimeExtra: mergedSettings?.oneTimeExtra ?? 0,
-      startDate: mergedSettings?.startDate,
+      startDate: mergedSettings?.startDate ?? new Date().toISOString().slice(0, 10),
       maxMonths: mergedSettings?.maxMonths
     });
 
@@ -232,12 +232,12 @@ export const PlanAPI = {
     };
     const notes = incoming.notes || '';
 
-    const plan = computeDebtPlan({ 
+    const plan = computeDebtPlanUnified({ 
       debts, 
       strategy: settings?.strategy ?? 'snowball',
       extraMonthly: settings?.extraMonthly ?? 0,
       oneTimeExtra: settings?.oneTimeExtra ?? 0,
-      startDate: settings?.startDate,
+      startDate: settings?.startDate ?? new Date().toISOString().slice(0, 10),
       maxMonths: settings?.maxMonths
     });
 

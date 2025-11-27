@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Debt, UserSettings, DebtPlan } from "@/lib/computeDebtPlan";
-import { computeDebtPlan } from "@/lib/computeDebtPlan";
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
+import type { DebtInput } from "@/engine/plan-types";
 import type { Scenario } from "./ScenarioContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,7 +108,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setState((s) => ({ ...s, plan: null }));
       return;
     }
-    const plan = computeDebtPlan(state.debts, state.settings);
+    const plan = computeDebtPlanUnified({
+      debts: state.debts as DebtInput[],
+      strategy: state.settings.strategy || "snowball",
+      extraMonthly: state.settings.extraMonthly || 0,
+      oneTimeExtra: state.settings.oneTimeExtra || 0,
+      startDate: state.settings.startDate || new Date().toISOString().slice(0, 10),
+      maxMonths: state.settings.maxMonths,
+    });
     setState((s) => ({ ...s, plan }));
   };
 
@@ -142,7 +150,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setState((s) => {
       const newState = { ...s, debts: [...s.debts, newDebt] };
-      const plan = computeDebtPlan(newState.debts, newState.settings);
+      const plan = computeDebtPlanUnified({
+        debts: newState.debts as DebtInput[],
+        strategy: newState.settings.strategy || "snowball",
+        extraMonthly: newState.settings.extraMonthly || 0,
+        oneTimeExtra: newState.settings.oneTimeExtra || 0,
+        startDate: newState.settings.startDate || new Date().toISOString().slice(0, 10),
+        maxMonths: newState.settings.maxMonths,
+      });
       
       // Sync with PlanAPI for Plan page
       PlanAPI.writeAndCompute(user.id, {
@@ -183,7 +198,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setState((s) => {
       const newDebts = s.debts.map((d) => (d.id === id ? { ...d, ...patch } : d));
-      const plan = computeDebtPlan(newDebts, s.settings);
+      const plan = computeDebtPlanUnified({
+        debts: newDebts as DebtInput[],
+        strategy: s.settings.strategy || "snowball",
+        extraMonthly: s.settings.extraMonthly || 0,
+        oneTimeExtra: s.settings.oneTimeExtra || 0,
+        startDate: s.settings.startDate || new Date().toISOString().slice(0, 10),
+        maxMonths: s.settings.maxMonths,
+      });
       
       // Sync with PlanAPI for Plan page
       PlanAPI.writeAndCompute(user.id, {
@@ -213,7 +235,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setState((s) => {
       const newDebts = s.debts.filter((d) => d.id !== id);
-      const plan = newDebts.length ? computeDebtPlan(newDebts, s.settings) : null;
+      const plan = newDebts.length ? computeDebtPlanUnified({
+        debts: newDebts as DebtInput[],
+        strategy: s.settings.strategy || "snowball",
+        extraMonthly: s.settings.extraMonthly || 0,
+        oneTimeExtra: s.settings.oneTimeExtra || 0,
+        startDate: s.settings.startDate || new Date().toISOString().slice(0, 10),
+        maxMonths: s.settings.maxMonths,
+      }) : null;
       
       // Sync with PlanAPI for Plan page
       PlanAPI.writeAndCompute(user.id, {
@@ -256,7 +285,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const updateDebts = (debts: Debt[]) => {
     setState((s) => {
-      const plan = debts.length ? computeDebtPlan(debts, s.settings) : null;
+      const plan = debts.length ? computeDebtPlanUnified({
+        debts: debts as DebtInput[],
+        strategy: s.settings.strategy || "snowball",
+        extraMonthly: s.settings.extraMonthly || 0,
+        oneTimeExtra: s.settings.oneTimeExtra || 0,
+        startDate: s.settings.startDate || new Date().toISOString().slice(0, 10),
+        maxMonths: s.settings.maxMonths,
+      }) : null;
       return { ...s, debts, plan };
     });
   };
@@ -284,7 +320,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     setState((s) => {
-      const plan = s.debts.length ? computeDebtPlan(s.debts, newSettings) : null;
+      const plan = s.debts.length ? computeDebtPlanUnified({
+        debts: s.debts as DebtInput[],
+        strategy: newSettings.strategy || "snowball",
+        extraMonthly: newSettings.extraMonthly || 0,
+        oneTimeExtra: newSettings.oneTimeExtra || 0,
+        startDate: newSettings.startDate || new Date().toISOString().slice(0, 10),
+        maxMonths: newSettings.maxMonths,
+      }) : null;
       return { ...s, settings: newSettings, plan };
     });
   };

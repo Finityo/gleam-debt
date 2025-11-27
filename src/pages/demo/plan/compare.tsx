@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Btn } from "@/components/Btn";
-import { computeDebtPlan } from "@/lib/debtPlan";
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
+import type { DebtInput } from "@/engine/plan-types";
 
 export default function DemoComparePage() {
   const { inputs } = useDemoPlan();
@@ -15,8 +16,20 @@ export default function DemoComparePage() {
   const settings = { strategy: inputs.strategy, extraMonthly: inputs.extraMonthly, oneTimeExtra: inputs.oneTimeExtra };
 
   // Compute both approaches fresh
-  const snow = computeDebtPlan({ debts, ...settings, strategy: "snowball", startDate: new Date().toISOString().slice(0, 10) });
-  const aval = computeDebtPlan({ debts, ...settings, strategy: "avalanche", startDate: new Date().toISOString().slice(0, 10) });
+  const snow = computeDebtPlanUnified({ 
+    debts: debts as DebtInput[], 
+    strategy: "snowball", 
+    extraMonthly: settings.extraMonthly || 0,
+    oneTimeExtra: settings.oneTimeExtra || 0,
+    startDate: new Date().toISOString().slice(0, 10),
+  });
+  const aval = computeDebtPlanUnified({ 
+    debts: debts as DebtInput[], 
+    strategy: "avalanche",
+    extraMonthly: settings.extraMonthly || 0,
+    oneTimeExtra: settings.oneTimeExtra || 0,
+    startDate: new Date().toISOString().slice(0, 10),
+  });
 
   return (
     <PageShell>
