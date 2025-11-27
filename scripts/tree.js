@@ -1,5 +1,6 @@
-// Fancy Finityo Project Tree Generator
-// Generates TREE.md with emojis, links, and clean formatting
+// ==========================================================
+//  Finityo Fancy TREE.md Generator with Metadata
+// ==========================================================
 
 const fs = require("fs");
 const path = require("path");
@@ -9,21 +10,24 @@ const ROOT = process.cwd();
 const REPO_URL = "https://github.com/Finityo/gleam-debt/tree/main";
 
 const IGNORE = [
-  "node_modules",
-  ".next",
-  "dist",
-  "build",
-  ".cache",
-  ".git",
-  ".github",
-  ".vercel",
-  "public",
-  "coverage",
-  "pnpm-lock.yaml",
-  "package-lock.json",
+  "node_modules", ".next", "dist", "build", ".cache",
+  ".git", ".github", ".vercel", "coverage", "public",
+  "pnpm-lock.yaml", "package-lock.json"
 ];
 
-// Emojis for folders/files
+// ------------ ARCHITECTURAL METADATA ----------------
+const META = {
+  "src/engine": "⚙️ Core Debt Engine Logic — do not modify unless updating math or plan structure.",
+  "src/hooks": "🪝 React hooks for retrieving plan, comparing strategies, and what-if simulations.",
+  "src/context": "🌐 Global state providers. All live data flows through here.",
+  "src/live/context": "📡 Live plan persistence and Supabase sync logic.",
+  "src/lib": "📚 Utility libraries, plan compute logic, comparison modules.",
+  "src/components": "🧩 UI components for charts, cards, tables.",
+  "src/pages": "📄 App routes & UI screens.",
+  "src/engine/compat": "♻️ Compatibility layer mapping old engine output → new engine shape.",
+};
+
+// ------------ ICONS ----------------
 const ICONS = {
   folder: "📁",
   file: "📄",
@@ -33,14 +37,12 @@ const ICONS = {
   contexts: "🌐",
   engine: "⚙️",
   lib: "📚",
-  types: "🔠",
   scripts: "🔧",
   styles: "🎨",
   api: "🛰️",
   default: "📦",
 };
 
-// File-type icons
 const FILE_ICONS = {
   ".tsx": "🟦",
   ".ts": "🟩",
@@ -54,14 +56,13 @@ const FILE_ICONS = {
 };
 
 function getIcon(name, isDir) {
-  if (isDir) {
-    return ICONS[name] || ICONS.folder;
-  }
+  if (isDir) return ICONS[name] || ICONS.folder;
   const ext = path.extname(name);
   return FILE_ICONS[ext] || ICONS.file;
 }
 
-// ------------ TREE GENERATOR -------------
+
+// ------------ TREE GENERATOR ----------------
 function walk(dir, prefix = "") {
   let output = "";
 
@@ -76,15 +77,16 @@ function walk(dir, prefix = "") {
     const nextPrefix = prefix + (isLast ? "    " : "│   ");
 
     const fullPath = path.join(dir, entry.name);
-    const relPath = path.relative(ROOT, fullPath);
-
-    // Emoji icon
+    const rel = path.relative(ROOT, fullPath).replace(/\\/g, "/");
     const icon = getIcon(entry.name, entry.isDirectory());
-
-    // Make files clickable in GitHub
-    const link = `${REPO_URL}/${relPath.replace(/\\/g, "/")}`;
+    const link = `${REPO_URL}/${rel}`;
 
     output += `${prefix}${pointer}${icon} [${entry.name}](${link})\n`;
+
+    // Add metadata if folder has notes
+    if (entry.isDirectory() && META[rel]) {
+      output += `${nextPrefix}💡 ${META[rel]}\n`;
+    }
 
     if (entry.isDirectory()) {
       output += walk(fullPath, nextPrefix);
@@ -94,10 +96,11 @@ function walk(dir, prefix = "") {
   return output;
 }
 
-// ------------ OUTPUT --------------------
+
+// ------------ BUILD OUTPUT ----------------
 const header = `
-# 🌳 Finityo Project Tree
-A clean, organized, emoji-indexed map of your entire Finityo codebase.
+# 🌳 Finityo Project Tree with Architecture Notes
+_Auto-generated overview of the entire codebase structure._
 
 _Last generated: ${new Date().toLocaleString()}_
 
@@ -126,8 +129,8 @@ const footer = `\`\`\`
 
 ---
 
-Generated automatically by **Finityo Tree Engine™**  
+Generated automatically by **Finityo Tree Engine™**
 `;
 
 fs.writeFileSync("TREE.md", header + walk(ROOT) + footer);
-console.log("🌳 Fancy TREE.md generated!");
+console.log("🌳 Fancy TREE.md with metadata generated!");
