@@ -287,6 +287,7 @@ export default function DebtsPage() {
         {/* Quick Edit Modal */}
         <DebtQuickEdit
           debt={quickEditDebt}
+          open={!!quickEditDebt}
           onClose={() => setQuickEditDebt(null)}
           onSave={handleQuickEditSave}
         />
