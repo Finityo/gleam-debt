@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { usePlan } from "@/context/PlanContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,10 +7,22 @@ import { Card } from "@/components/ui/card";
 import { Trash2, Plus, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
+import { BulkDebtEditor } from "@/components/BulkDebtEditor";
 
 export default function DebtsPage() {
   const { debts, updateDebts, settings, updateSettings } = usePlan();
   const navigate = useNavigate();
+  
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showBulk, setShowBulk] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const clearSelection = () => setSelectedIds([]);
 
   const addDebt = () => {
     const next = [
@@ -110,10 +123,19 @@ export default function DebtsPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">Your Debts</h2>
-            <Button onClick={addDebt}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Debt
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowBulk(true)}
+                disabled={selectedIds.length === 0}
+              >
+                Bulk Edit ({selectedIds.length})
+              </Button>
+              <Button onClick={addDebt}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Debt
+              </Button>
+            </div>
           </div>
 
           {debts.length === 0 ? (
@@ -127,7 +149,15 @@ export default function DebtsPage() {
           ) : (
             debts.map((debt) => (
               <Card key={debt.id} className="p-6">
-                <div className="grid gap-4 md:grid-cols-5">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(debt.id)}
+                    onChange={() => toggleSelect(debt.id)}
+                    className="mt-8 h-4 w-4 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <div className="grid gap-4 md:grid-cols-5">
                   <div className="space-y-2">
                     <Label htmlFor={`name-${debt.id}`}>Debt Name</Label>
                     <Input
@@ -209,6 +239,8 @@ export default function DebtsPage() {
                     </div>
                   </div>
                 )}
+                  </div>
+                </div>
               </Card>
             ))
           )}
@@ -269,6 +301,19 @@ export default function DebtsPage() {
             </div>
           </Card>
         )}
+
+        {/* Bulk Edit Modal */}
+        <BulkDebtEditor
+          open={showBulk}
+          debts={debts}
+          selected={selectedIds}
+          onClose={() => setShowBulk(false)}
+          onClearSelection={clearSelection}
+          onApply={(updated) => {
+            updateDebts(updated);
+            clearSelection();
+          }}
+        />
       </div>
     </div>
   );
