@@ -1,83 +1,15 @@
-// ============================================================================
-// FILE: src/engine/plan-types.ts
-// ============================================================================
-export type Strategy = "snowball" | "avalanche";
+// Shared plan types for the unified engine
+// These are thin re-exports of the canonical types defined in `@/lib/debtPlan`.
+// Keeping this file small and focused avoids drift between the engine and the
+// core planner implementation.
 
-export type DebtInput = {
-  id: string;
-  name: string;
-  balance: number;            // current balance
-  originalBalance?: number;   // optional for UI
-  apr: number;                // APR percent, e.g. 24.99
-  minPayment: number;         // minimum monthly payment
-  include?: boolean;          // default true
-  order?: number;             // optional fixed order
-  creditor?: string;          // optional UI
-  dueDate?: string | null;
-  dueDay?: number;            // legacy compat
-  category?: string;          // legacy compat
-};
+import type { DebtInput, PlanMonth, PlanResult, Strategy, PlanPayment, PlanTotals } from "@/lib/debtPlan";
 
-export type PlanPayment = {
-  debtId: string;
-  totalPaid: number;
-  principal: number;
-  interest: number;
-  endingBalance: number;
-  isClosed: boolean;
-  // legacy compat
-  balanceEnd?: number;
-  interestAccrued?: number;
-  startingBalance?: number;
-  minApplied?: number;
-  extraApplied?: number;
-  closedThisMonth?: boolean;
-  paid?: number;
-};
+// Re-export the core types so everything can import from `@/engine/plan-types`.
+export type { DebtInput, PlanMonth, PlanResult, Strategy };
 
-export type PlanMonth = {
-  monthIndex: number; // 1-based
-  dateISO: string | null;
-  totals: {
-    outflow: number;
-    principal: number;
-    interest: number;
-  };
-  snowball: number;
-  payments: PlanPayment[];
-  // legacy compat
-  totalPaid?: number;
-  totalInterest?: number;
-  snowballPoolApplied?: number;
-  monthLabel?: string;
-};
+// Convenience alias: a single payment row inside a month.
+export type { PlanPayment };
 
-export type PlanTotals = {
-  principal: number;
-  interest: number;
-  outflowMonthly: number;
-  monthsToDebtFree: number;
-  // legacy compat
-  totalPaid?: number;
-  oneTimeApplied?: number;
-};
-
-export type PlanResult = {
-  months: PlanMonth[];
-  totals: PlanTotals;
-  debts: DebtInput[];
-  settings: {
-    strategy: Strategy;
-    extraMonthly: number;
-    oneTimeExtra: number;
-    startDate: string;
-    maxMonths: number;
-  };
-  // legacy compat - duplicate strategy at root level
-  strategy?: Strategy;
-  summary?: string;
-  totalInterest?: number;
-  totalPaid?: number;
-  debtFreeDate?: string;
-  startDateISO?: string;
-};
+// Convenience alias: aggregate totals for the entire plan.
+export type { PlanTotals };
