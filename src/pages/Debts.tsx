@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
 import { usePlan } from "@/context/PlanContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,11 @@ import { ExcelImportModal } from "@/components/ExcelImportModal";
 import { BulkDebtEditor } from "@/components/BulkDebtEditor";
 
 export default function DebtsPage() {
-  const { debts, updateDebts, settings, reset } = usePlan();
+  const { debtsUsed, settingsUsed } = useUnifiedPlan();
+  const { updateDebts, reset } = usePlan();
+  
+  const debts = debtsUsed;
+  const settings = settingsUsed;
   const navigate = useNavigate();
 
   const [quickEditDebt, setQuickEditDebt] = useState<DebtInput | null>(null);
