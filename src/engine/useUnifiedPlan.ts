@@ -1,6 +1,6 @@
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import { DemoPlanContext } from "@/context/DemoPlanContext";
+import { useDemoPlan } from "@/context/DemoPlanContext";
 import { usePlanCharts } from "@/engine/usePlanCharts";
 import { toNum } from "@/engine/plan-helpers";
 
@@ -14,11 +14,11 @@ import { toNum } from "@/engine/plan-helpers";
  */
 export function useUnifiedPlan() {
   const location = useLocation();
-  const demoCtx = useContext(DemoPlanContext);
+  const demoCtx = useDemoPlan();
   const live = usePlanCharts();
 
   const isSetupRoute = location.pathname.startsWith("/setup") || location.pathname.startsWith("/demo");
-  const hasDemoPlan = !!demoCtx?.plan;
+  const hasDemoPlan = !!demoCtx?.demoPlan;
 
   // Normalize live engine data
   const liveNormalized = useMemo(() => {
@@ -127,11 +127,11 @@ export function useUnifiedPlan() {
 
   // Normalize demo into the same shape as live
   const demoNormalized = useMemo(() => {
-    if (!demoCtx?.plan) return null;
+    if (!demoCtx?.demoPlan) return null;
 
     // DemoPlanContext already produces plan-like shape.
     // We only map to the fields we need, mirroring useNormalizedPlan/usePlanCharts output.
-    const plan = demoCtx.plan;
+    const plan = demoCtx.demoPlan;
     const months = (plan.months ?? []).map((m: any, idx: number) => ({
       monthIndex: Number(m.monthIndex ?? idx + 1),
       dateISO: m.dateISO ?? null,
@@ -233,9 +233,9 @@ export function useUnifiedPlan() {
       pieSeries,
       debtPaymentMatrix,
       calendarRows,
-      debtsUsed: demoCtx.debtsUsed ?? demoCtx.inputs?.debts ?? [],
-      settingsUsed: demoCtx.settingsUsed ?? {},
-      recompute: demoCtx.recompute ?? (() => {}),
+      debtsUsed: demoCtx.demoDebts ?? [],
+      settingsUsed: { strategy: "snowball", extraMonthly: 200, oneTimeExtra: 1000 },
+      recompute: () => {},
     };
   }, [demoCtx]);
 

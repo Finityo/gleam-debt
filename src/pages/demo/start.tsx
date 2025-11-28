@@ -7,13 +7,11 @@ import { useDemoPlan } from "@/context/DemoPlanContext";
 
 export default function DemoStart() {
   const nav = useNavigate();
-  const { inputs, reset } = useDemoPlan();
-  const debts = inputs.debts;
+  const { demoDebts, reset } = useDemoPlan();
 
   const handleStart = () => {
-    // For setup, wipe whatever's in memory/local.
     reset();
-    nav("/setup/debts");
+    nav("/demo/debts");
   };
 
   return (
@@ -41,9 +39,9 @@ export default function DemoStart() {
           🚀 Start Demo
         </Btn>
 
-        {debts?.length > 0 && (
+        {demoDebts?.length > 0 && (
           <button
-            onClick={() => nav("/setup/debts")}
+            onClick={() => nav("/demo/debts")}
             className="text-xs text-finityo-textBody mt-4 underline"
           >
             Continue where you left off →

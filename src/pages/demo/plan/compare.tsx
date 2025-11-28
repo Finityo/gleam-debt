@@ -10,24 +10,22 @@ import { computeDebtPlanUnified } from "@/engine/unified-engine";
 import type { DebtInput } from "@/engine/plan-types";
 
 export default function DemoComparePage() {
-  const { inputs } = useDemoPlan();
+  const { demoDebts } = useDemoPlan();
   const navigate = useNavigate();
-  const debts = inputs.debts;
-  const settings = { strategy: inputs.strategy, extraMonthly: inputs.extraMonthly, oneTimeExtra: inputs.oneTimeExtra };
 
   // Compute both approaches fresh
   const snow = computeDebtPlanUnified({ 
-    debts: debts as DebtInput[], 
+    debts: demoDebts, 
     strategy: "snowball", 
-    extraMonthly: settings.extraMonthly || 0,
-    oneTimeExtra: settings.oneTimeExtra || 0,
+    extraMonthly: 200,
+    oneTimeExtra: 1000,
     startDate: new Date().toISOString().slice(0, 10),
   });
   const aval = computeDebtPlanUnified({ 
-    debts: debts as DebtInput[], 
+    debts: demoDebts, 
     strategy: "avalanche",
-    extraMonthly: settings.extraMonthly || 0,
-    oneTimeExtra: settings.oneTimeExtra || 0,
+    extraMonthly: 200,
+    oneTimeExtra: 1000,
     startDate: new Date().toISOString().slice(0, 10),
   });
 

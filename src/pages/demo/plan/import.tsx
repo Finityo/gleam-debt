@@ -9,9 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function DemoImportExportPage() {
-  const { inputs, setInputs } = useDemoPlan();
+  const { demoDebts, setDemoDebts } = useDemoPlan();
   const navigate = useNavigate();
-  const debts = inputs.debts;
 
   function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -22,7 +21,7 @@ export default function DemoImportExportPage() {
   }
 
   function handleExport() {
-    const blob = new Blob([JSON.stringify(debts, null, 2)], {
+    const blob = new Blob([JSON.stringify(demoDebts, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
