@@ -166,7 +166,7 @@ export const InteractiveCalculator = () => {
                     </div>
                   )}
 
-                  <a href="/demo/start">
+                  <a href="/setup/start">
                     <Button variant="outline" className="w-full">
                       Try Full Calculator
                     </Button>

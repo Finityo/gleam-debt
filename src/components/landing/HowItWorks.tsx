@@ -61,7 +61,7 @@ export const HowItWorks = () => {
 
         <div className="mt-12 text-center">
           <a
-            href="/demo/start"
+            href="/setup/start"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold hover:scale-105 transition-all duration-300 shadow-[0_0_40px_hsl(var(--primary)/0.4)]"
           >
             Start Your Free Plan

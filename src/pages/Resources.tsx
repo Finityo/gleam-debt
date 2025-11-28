@@ -119,8 +119,8 @@ const Resources = () => {
               <p className="text-muted-foreground mb-4">
                 New to debt payoff planning? Start here to learn the basics and create your first plan.
               </p>
-              <Button onClick={() => navigate('/demo/start')} className="w-full">
-                Try Interactive Demo
+              <Button onClick={() => navigate('/setup/start')} className="w-full">
+                Try Interactive Setup
               </Button>
             </div>
 

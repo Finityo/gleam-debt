@@ -29,9 +29,6 @@ export default function FooterSitemap() {
               <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Pricing
               </Link>
-              <Link to="/demo/start" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Demo
-              </Link>
             </nav>
           </div>
 
