@@ -13,6 +13,7 @@ import { DebtEngineProvider } from "@/engine/DebtEngineContext";
 import { NotificationsPanel } from "@/components/NotificationsPanel";
 import { NextHandler } from "@/components/NextHandler";
 import { AppRoutes } from "@/routes";
+import DemoMigrationNotice from "@/components/DemoMigrationNotice";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const AppWrapper = () => {
   
   return (
     <>
+      <DemoMigrationNotice />
       <NextHandler />
       <AppRoutes />
     </>
