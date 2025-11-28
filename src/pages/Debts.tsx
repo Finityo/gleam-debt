@@ -17,6 +17,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -69,6 +71,7 @@ export default function DebtsPage() {
   const [showImport, setShowImport] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showBulk, setShowBulk] = useState(false);
+  const [showDeleteAll, setShowDeleteAll] = useState(false);
 
   // ---------------------------------------------------------------------------
   // Selection helpers (including Select All)
@@ -233,298 +236,269 @@ export default function DebtsPage() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4 p-4">
-      {/* Back */}
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="mb-1 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </button>
+    <div className="relative min-h-screen w-full bg-finityo-bg p-4 md:p-8">
+      {/* Liquid Glass Container */}
+      <div className="
+        max-w-5xl mx-auto
+        bg-white/10
+        backdrop-blur-xl
+        border border-white/20
+        shadow-2xl 
+        rounded-2xl
+        p-6 md:p-8
+        space-y-6
+      ">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="text-sm text-finityo-textBody hover:text-white transition"
+        >
+          ← Back
+        </button>
 
-      {/* Header + Delete All */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">My Debts</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage your debt accounts and keep everything in sync with your payoff
-            plan.
-          </p>
-        </div>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold text-white drop-shadow-md">
+              My Debts
+            </h1>
+            <p className="text-white/70 mt-1">
+              Manage and organize your debts in real time.
+            </p>
+          </div>
 
-        {debts.length > 0 && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete All
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete all debts?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete all {debts.length} debt(s) and clear
-                  your current payoff plan. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleClearAll}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          {debts.length > 0 && (
+            <Dialog open={showDeleteAll} onOpenChange={setShowDeleteAll}>
+              <DialogTrigger asChild>
+                <button
+                  className="
+                    px-3 py-2 rounded-lg text-sm 
+                    bg-red-400/40 
+                    hover:bg-red-400/60 
+                    text-white 
+                    shadow-sm
+                  "
                 >
                   Delete All
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
-      </div>
-
-      {/* Action Row */}
-      <Card className="flex flex-col gap-3 p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleDownloadTemplate}
-          >
-            <FileSpreadsheet className="mr-2 h-4 w-4" />
-            Template
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowImport(true)}
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            Import Excel/CSV
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleExportXLSX}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export Excel
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-
-          <div className="ml-auto flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowBulk(true)}
-              disabled={selectedIds.length === 0}
-            >
-              <ListChecks className="mr-2 h-4 w-4" />
-              Bulk Edit ({selectedIds.length})
-            </Button>
-
-            <Button type="button" size="sm" onClick={() => setIsAddOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Debt
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      {/* Empty state */}
-      {debts.length === 0 && (
-        <Card className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-          <p className="text-sm font-medium">No debts added yet</p>
-          <p className="text-sm text-muted-foreground">
-            Add your first debt to get started with your payoff plan.
-          </p>
-        </Card>
-      )}
-
-      {/* Debts list */}
-      {debts.length > 0 && (
-        <Card className="p-4">
-          {/* Header row with Select All + legend */}
-          <div className="mb-2 grid grid-cols-[auto,2fr,1fr,1fr,1fr,1.5fr,auto] items-center gap-3 text-xs font-medium text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                checked={isAllSelected}
-                onCheckedChange={toggleSelectAll}
-                aria-label="Select all debts"
-              />
-            </div>
-            <div>Debt</div>
-            <div className="text-right">Balance</div>
-            <div className="text-right">APR</div>
-            <div className="text-right">Min Payment</div>
-            <div>Category</div>
-            <div className="text-right">Actions</div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-
-            {debts.map((debt, index) => {
-              const isSelected = selectedIds.includes(debt.id);
-
-              return (
-                <div
-                  key={debt.id}
-                  className="grid grid-cols-[auto,2fr,1fr,1fr,1fr,1.5fr,auto] items-center gap-3 rounded-md border bg-card p-3"
-                >
-                  {/* Row checkbox */}
-                  <div className="flex items-center justify-center">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleSelect(debt.id)}
-                      aria-label={`Select ${debt.name}`}
-                    />
-                  </div>
-
-                  {/* Name + ordering controls */}
-                  <div className="space-y-1">
-                    <div className="text-sm font-medium leading-tight">
-                      {debt.name}
-                    </div>
-                    {debt.include === false && (
-                      <div className="text-xs text-amber-600">
-                        Excluded from plan
-                      </div>
-                    )}
-                    <div className="flex gap-1">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-6 w-6"
-                        disabled={index === 0}
-                        onClick={() => moveDebt(debt.id, "up")}
-                      >
-                        <ArrowUp className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-6 w-6"
-                        disabled={index === debts.length - 1}
-                        onClick={() => moveDebt(debt.id, "down")}
-                      >
-                        <ArrowDown className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Balance */}
-                  <div className="text-right text-sm font-mono">
-                    ${debt.balance.toFixed(2)}
-                  </div>
-
-                  {/* APR */}
-                  <div className="text-right text-sm font-mono">
-                    {debt.apr.toFixed(1)}%
-                  </div>
-
-                  {/* Min Payment */}
-                  <div className="text-right text-sm font-mono">
-                    ${debt.minPayment.toFixed(2)}
-                  </div>
-
-                  {/* Category (inline editable) */}
-                  <div>
-                    <Input
-                      value={debt.category ?? ""}
-                      onChange={(e) => {
-                        const next = debts.map((d) =>
-                          d.id === debt.id
-                            ? { ...d, category: e.target.value }
-                            : d
-                        );
-                        updateDebts(next);
-                      }}
-                      placeholder="e.g. Credit Card, Auto"
-                      className="h-8 text-xs"
-                    />
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setQuickEditDebt(debt)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(debt.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="bg-white/20 backdrop-blur-xl border border-white/30">
+                <DialogTitle className="text-white">Delete All Debts?</DialogTitle>
+                <DialogDescription className="text-white/70">
+                  This will permanently remove every debt and reset your plan.
+                </DialogDescription>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    onClick={() => setShowDeleteAll(false)}
+                    className="px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleClearAll();
+                      setShowDeleteAll(false);
+                    }}
+                    className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  >
+                    Delete All
+                  </button>
                 </div>
-              );
-            })}
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+
+        {/* Action Row */}
+        <div className="grid grid-cols-2 md:flex gap-3">
+          <button
+            onClick={handleDownloadTemplate}
+            className="glass-btn"
+          >
+            Template
+          </button>
+
+          <button
+            onClick={() => setShowImport(true)}
+            className="glass-btn"
+          >
+            Import Excel/CSV
+          </button>
+
+          <button onClick={handleExportXLSX} className="glass-btn">
+            Export Excel
+          </button>
+
+          <button onClick={handleExportCSV} className="glass-btn">
+            Export CSV
+          </button>
+
+          <button
+            onClick={() => setShowBulk(true)}
+            disabled={selectedIds.length === 0}
+            className={`glass-btn ${selectedIds.length === 0 ? "opacity-40" : ""}`}
+          >
+            Bulk Edit ({selectedIds.length})
+          </button>
+
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="
+              px-4 py-2 rounded-lg text-sm 
+              bg-emerald-400/40 
+              hover:bg-emerald-400/60 
+              text-white 
+              shadow-md glass-highlight
+            "
+          >
+            + Add Debt
+          </button>
+        </div>
+
+        {/* Empty State */}
+        {debts.length === 0 && (
+          <div className="
+            bg-white/10 backdrop-blur-xl 
+            border border-white/20 
+            rounded-xl text-center py-12 
+            text-white
+          ">
+            <p className="text-xl font-medium">No debts yet</p>
+            <p className="text-white/60 mt-1">Add your first debt to begin.</p>
           </div>
-        </Card>
-      )}
+        )}
 
-      {/* Quick Edit Modal */}
-      <DebtQuickEdit
-        open={!!quickEditDebt}
-        debt={quickEditDebt}
-        onClose={() => setQuickEditDebt(null)}
-        onSave={handleQuickEditSave}
-      />
+        {/* Debts Table */}
+        {debts.length > 0 && (
+          <div className="overflow-x-auto mt-6">
+            <table className="min-w-full glass-table">
+              <thead>
+                <tr className="text-white/70 border-b border-white/20">
+                  <th></th>
+                  <th className="py-3 text-left">Debt</th>
+                  <th className="py-3 text-right">Balance</th>
+                  <th className="py-3 text-right">APR</th>
+                  <th className="py-3 text-right">Min Pay</th>
+                  <th className="py-3 text-left">Category</th>
+                  <th className="py-3 text-center">Actions</th>
+                </tr>
+              </thead>
 
-      {/* Excel Import Modal */}
-      <ExcelImportModal
-        open={showImport}
-        onClose={() => setShowImport(false)}
-        onImport={handleImport}
-      />
+              <tbody>
+                {debts.map((debt, index) => {
+                  const selected = selectedIds.includes(debt.id);
 
-      {/* Bulk Edit Modal */}
-      <BulkDebtEditor
-        open={showBulk}
-        debts={debts}
-        selected={selectedIds}
-        onClose={() => setShowBulk(false)}
-        onClearSelection={clearSelection}
-        onApply={(updated) => {
-          updateDebts(updated);
-          clearSelection();
-        }}
-      />
+                  return (
+                    <tr
+                      key={debt.id}
+                      className={`
+                        text-white border-b border-white/10
+                        hover:bg-white/5 transition
+                        ${selected ? "bg-white/10" : ""}
+                      `}
+                    >
+                      {/* Checkbox */}
+                      <td className="py-3 px-2">
+                        <input
+                          type="checkbox"
+                          checked={selected}
+                          onChange={() => toggleSelect(debt.id)}
+                          className="accent-emerald-300 cursor-pointer"
+                        />
+                      </td>
 
-      {/* Add Debt Modal */}
-      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Debt</DialogTitle>
-          </DialogHeader>
-          <DebtForm onSubmit={handleAdd} />
-        </DialogContent>
-      </Dialog>
+                      {/* Name */}
+                      <td className="py-3 font-medium">{debt.name}</td>
+
+                      {/* Balance */}
+                      <td className="py-3 text-right">
+                        ${debt.balance.toFixed(2)}
+                      </td>
+
+                      {/* APR */}
+                      <td className="py-3 text-right">{debt.apr.toFixed(1)}%</td>
+
+                      {/* Min */}
+                      <td className="py-3 text-right">
+                        ${debt.minPayment.toFixed(2)}
+                      </td>
+
+                      {/* Category */}
+                      <td className="py-3">
+                        <input
+                          value={debt.category || ""}
+                          onChange={(e) => {
+                            const next = debts.map((d) =>
+                              d.id === debt.id
+                                ? { ...d, category: e.target.value }
+                                : d
+                            );
+                            updateDebts(next);
+                          }}
+                          className="bg-transparent border border-white/20 text-white p-1 rounded-md text-xs w-full placeholder-white/30"
+                          placeholder="e.g., Auto, Credit"
+                        />
+                      </td>
+
+                      {/* Actions */}
+                      <td className="text-center py-3 flex gap-2 justify-center">
+                        <button
+                          onClick={() => setQuickEditDebt(debt)}
+                          className="glass-mini-btn"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDelete(debt.id)}
+                          className="glass-mini-btn text-red-300 hover:text-red-400"
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Quick Edit Modal */}
+        <DebtQuickEdit
+          open={!!quickEditDebt}
+          debt={quickEditDebt}
+          onClose={() => setQuickEditDebt(null)}
+          onSave={handleQuickEditSave}
+        />
+
+        {/* Import Modal */}
+        <ExcelImportModal
+          open={showImport}
+          onClose={() => setShowImport(false)}
+          onImport={handleImport}
+        />
+
+        {/* Bulk Modal */}
+        <BulkDebtEditor
+          open={showBulk}
+          debts={debts}
+          selected={selectedIds}
+          onClose={() => setShowBulk(false)}
+          onClearSelection={clearSelection}
+          onApply={(updated) => {
+            updateDebts(updated);
+            clearSelection();
+          }}
+        />
+
+        {/* Add Modal */}
+        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+          <DialogContent className="bg-white/20 backdrop-blur-xl border border-white/30">
+            <DialogTitle className="text-white">Add Debt</DialogTitle>
+            <DebtForm onSubmit={handleAdd} />
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }

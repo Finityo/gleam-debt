@@ -8,6 +8,29 @@
 
 @layer utilities {
   /* ============================================
+     LIQUID GLASS UI COMPONENTS
+     ============================================ */
+  
+  .glass-btn {
+    @apply px-4 py-2 rounded-lg text-sm text-white bg-white/10 
+           border border-white/20 backdrop-blur-lg 
+           hover:bg-white/20 transition shadow-md;
+  }
+
+  .glass-mini-btn {
+    @apply px-2 py-1 bg-white/10 border border-white/20 rounded-md
+           text-white hover:bg-white/20 backdrop-blur-lg transition;
+  }
+
+  .glass-table {
+    @apply w-full bg-white/5 backdrop-blur-xl rounded-xl 
+           border border-white/10 shadow-xl;
+  }
+
+  .glass-highlight {
+    box-shadow: 0 0 25px rgba(255,255,255,0.25);
+  }
+  /* ============================================
      NATIVE-FEELING TOUCH FEEDBACK
      ============================================ */
   
