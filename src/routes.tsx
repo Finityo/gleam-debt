@@ -106,6 +106,7 @@ const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const SupportDashboard = lazy(() => import("@/pages/SupportDashboard"));
 const SecurityAudit = lazy(() => import("@/pages/SecurityAudit"));
 const UserRoleManagement = lazy(() => import("@/pages/UserRoleManagement"));
+const MyLogs = lazy(() => import("@/pages/MyLogs"));
 
 // ===== OTHER =====
 const TeamAccess = lazy(() => import("@/pages/TeamAccess"));
@@ -187,6 +188,7 @@ export function AppRoutes() {
           <Route path="/oauth-redirect" element={<RequireAuth><OAuthRedirect /></RequireAuth>} />
           <Route path="/printable-summary" element={<RequireAuth><PrintableSummary /></RequireAuth>} />
           <Route path="/debts-new" element={<RequireAuth><DebtsNew /></RequireAuth>} />
+          <Route path="/my-logs" element={<RequireAuth><MyLogs /></RequireAuth>} />
           
           {/* ===== TEAM PORTAL ROUTES ===== */}
           <Route path="/team/login" element={<TeamLogin />} />
