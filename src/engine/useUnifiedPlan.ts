@@ -1,13 +1,14 @@
 import { useMemo } from "react";
-import { usePlanCharts } from "@/engine/usePlanCharts";
+import { useDebtEngine } from "@/engine/DebtEngineContext";
 import { toNum } from "@/engine/plan-helpers";
 
 /**
  * useUnifiedPlan
- * Provides normalized plan data from the live store.
+ * Provides normalized plan data from the engine context.
+ * This is the base hook - all other plan hooks should call this.
  */
 export function useUnifiedPlan() {
-  const live = usePlanCharts();
+  const live = useDebtEngine();
 
   // Normalize live engine data
   return useMemo(() => {
@@ -108,9 +109,9 @@ export function useUnifiedPlan() {
       pieSeries,
       debtPaymentMatrix,
       calendarRows,
-      debtsUsed: live.debtsUsed ?? [],
-      settingsUsed: live.settingsUsed ?? {},
-      recompute: live.recompute ?? (() => {}),
+      debtsUsed: live.debtsUsed,
+      settingsUsed: live.settingsUsed,
+      recompute: live.recompute,
     };
   }, [live]);
 }
