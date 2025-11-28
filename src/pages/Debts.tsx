@@ -609,7 +609,12 @@ function DebtForm({ debt, onChange, onSubmit }: DebtFormProps) {
           <Input
             type="number"
             value={local.apr}
-            onChange={(e) => handleChange("apr", Number(e.target.value))}
+            onChange={(e) => {
+              const val = e.target.value;
+              const num = Number(val);
+              // Store raw percent, not normalized
+              handleChange("apr", isNaN(num) ? 0 : num);
+            }}
           />
         </div>
         <div className="space-y-1">

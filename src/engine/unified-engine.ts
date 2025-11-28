@@ -13,11 +13,17 @@ export type ComputeUnifiedArgs = {
   maxMonths?: number;
 };
 
-// APR NORMALIZATION (bulletproof)
+// APR NORMALIZATION (single source of truth)
 // Ensures APR stays a real percent (14.99) even if user imported 0.1499
 function normalizeAPR(rawApr: number): number {
-  if (!rawApr || isNaN(rawApr)) return 0;
-  return rawApr > 1 ? rawApr : rawApr * 100;
+  const n = Number(rawApr);
+  if (!n || isNaN(n)) return 0;
+
+  // If user typed 0.2499 treat it as 24.99
+  if (n < 1) return n * 100;
+
+  // If user typed 24.99 keep it
+  return n;
 }
 
 export function computeDebtPlanUnified(args: ComputeUnifiedArgs): PlanResult {

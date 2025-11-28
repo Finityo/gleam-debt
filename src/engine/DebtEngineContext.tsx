@@ -73,7 +73,7 @@ export function DebtEngineProvider({
       ...d,
       id: d.id ?? String(i),
       balance: toNum(d.balance),
-      apr: toNum(d.apr),
+      apr: Number(d.apr),   // store raw percent only, no renormalization
       minPayment: toNum(d.minPayment),
       include: d.include !== false,
       order: toNum(d.order, i + 1),
