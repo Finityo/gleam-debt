@@ -45,6 +45,30 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+// APR display formatter – handles basis points, decimals, and normal percents
+function formatAprDisplay(raw: number | null | undefined): string {
+  const value = Number(raw ?? 0);
+  if (!Number.isFinite(value) || value === 0) return "0.0";
+
+  const abs = Math.abs(value);
+  let percent: number;
+
+  // If it's clearly in basis points (e.g. 1492.7 → 14.9%)
+  if (abs > 100) {
+    percent = abs / 100;
+  }
+  // If it's a decimal (0.149 → 14.9%)
+  else if (abs <= 1) {
+    percent = abs * 100;
+  }
+  // Already a normal percent (e.g. 14.9)
+  else {
+    percent = abs;
+  }
+
+  return percent.toFixed(1);
+}
+
 import {
   debtToCSV,
   downloadCSV,
@@ -435,7 +459,7 @@ export default function DebtsPage() {
                       </td>
 
                       {/* APR */}
-                      <td className="py-3 text-right">{Number(debt.apr).toFixed(2)}%</td>
+                      <td className="py-3 text-right">{formatAprDisplay(debt.apr)}%</td>
 
                       {/* Min */}
                       <td className="py-3 text-right">
