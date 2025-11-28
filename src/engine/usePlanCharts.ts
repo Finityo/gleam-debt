@@ -1,19 +1,33 @@
+// ---------------------------------------------------------------
+// src/engine/usePlanCharts.ts
+// Chart / visualization helper hook that reads from useUnifiedPlan.
+// NO calls to useNormalizedPlan (to avoid circular dependencies).
+// ---------------------------------------------------------------
+
 import { useUnifiedPlan } from "./useUnifiedPlan";
 
-/**
- * Chart-facing hook.
- *
- * For now, this simply exposes the unified plan output.
- * If we want custom line/pie series later, we can derive them
- * here from `months`, `totals`, or `orderedDebts` WITHOUT
- * calling any other engine hooks.
- *
- * This guarantees:
- * - No recursion with useNormalizedPlan
- * - A single source of truth in useUnifiedPlan
- */
 export function usePlanCharts() {
-  return useUnifiedPlan();
-}
+  const unified = useUnifiedPlan();
 
-export default usePlanCharts;
+  return {
+    // Pass-through of normalized data for components that already
+    // rely on these names.
+    plan: unified.plan,
+    months: unified.months,
+    totals: unified.totals,
+    payoffDateISO: unified.payoffDateISO,
+
+    // Chart-specific structures
+    lineSeries: unified.lineSeries,
+    pieSeries: unified.pieSeries,
+    debtPaymentMatrix: unified.debtPaymentMatrix,
+    calendarRows: unified.calendarRows,
+
+    // Context / metadata
+    debtsUsed: unified.debtsUsed,
+    settingsUsed: unified.settingsUsed,
+
+    // Recompute hook
+    recompute: unified.recompute,
+  };
+}

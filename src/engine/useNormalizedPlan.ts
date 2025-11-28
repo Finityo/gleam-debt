@@ -1,15 +1,13 @@
+// ---------------------------------------------------------------
+// src/engine/useNormalizedPlan.ts
+// Legacy alias – everything reads the same unified shape.
+// ---------------------------------------------------------------
+
 import { useUnifiedPlan } from "./useUnifiedPlan";
 
 /**
- * Legacy compatibility hook.
- *
- * Historically, useNormalizedPlan did some extra shaping and
- * sometimes called other hooks. That created a circular dependency
- * with usePlanCharts.
- *
- * Now it is a thin alias over useUnifiedPlan so:
- * - All math comes from the unified engine
- * - No circular hook calls
+ * Legacy hook kept for compatibility.
+ * Internally it just returns the unified plan shape.
  */
 export function useNormalizedPlan() {
   return useUnifiedPlan();

@@ -9,7 +9,7 @@ import { toNum } from "@/lib/number";
 // Re-export toNum for convenience
 export { toNum };
 
-type EngineSettings = {
+export type EngineSettings = {
   strategy: Strategy;
   extraMonthly: number;
   oneTimeExtra: number;
