@@ -2,9 +2,6 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Safe, no-op verification (prevents startup crash)
-import "./utils/verifyDemoEngine";
-
 // Force dark theme globally (ignore system preferences)
 document.documentElement.classList.add("dark");
 document.documentElement.style.colorScheme = "dark";
