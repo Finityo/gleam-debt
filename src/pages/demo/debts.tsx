@@ -1,180 +1,189 @@
-import { useDemoPlan } from "@/context/DemoPlanContext";
-import { PageShell } from "@/components/PageShell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft, Plus, Trash2, DollarSign } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import NextBack from "@/components/NextBack";
-import { PopIn } from "@/components/Animate";
-import { z } from "zod";
+// ============================================================================
+// FILE: src/pages/demo/DemoDebts.tsx
+// Edit demo debts (purely client-side, backed by DemoPlanContext)
+// ============================================================================
 
-const debtNameSchema = z.string().trim().max(100, "Name must be less than 100 characters");
-const balanceSchema = z.number().min(0, "Balance must be positive").max(1000000000, "Balance too large");
-const aprSchema = z.number().min(0, "APR must be positive").max(100, "APR must be 100% or less");
-const minPaymentSchema = z.number().min(0, "Minimum payment must be positive").max(1000000000, "Payment too large");
+import { useNavigate } from "react-router-dom";
+import { useDemoPlan } from "@/context/DemoPlanContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { X, Plus, ArrowLeft } from "lucide-react";
 
 export default function DemoDebts() {
-  const nav = useNavigate();
-  const { demoDebts, setDemoDebts } = useDemoPlan();
+  const navigate = useNavigate();
+  const { demoDebts, setDemoDebts, reset } = useDemoPlan();
 
-  const updateField = (id: string, field: string, value: any) => {
+  const updateField = (id: string, field: keyof (typeof demoDebts)[number], value: any) => {
     setDemoDebts(prev =>
-      prev.map(d => (d.id === id ? { ...d, [field]: value } : d))
+      prev.map(d => (d.id === id ? { ...d, [field]: value } : d)),
     );
   };
 
   const addDebt = () => {
-    if (demoDebts.length >= 5) return;
-    setDemoDebts(prev => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        name: "New Debt",
-        balance: 500,
-        apr: 12,
-        minPayment: 25,
-        include: true,
-      },
-    ]);
+    setDemoDebts(prev => {
+      if (prev.length >= 5) return prev;
+      return [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          name: "New Debt",
+          balance: 500,
+          apr: 12,
+          minPayment: 25,
+          include: true,
+        } as any,
+      ];
+    });
   };
 
   const removeDebt = (id: string) => {
-    if (demoDebts.length <= 1) return;
-    setDemoDebts(prev => prev.filter(d => d.id !== id));
+    setDemoDebts(prev => {
+      if (prev.length <= 1) return prev;
+      return prev.filter(d => d.id !== id);
+    });
   };
 
-  const displayValue = (val: number) => val === 0 ? "" : val.toString();
+  const displayNumber = (val: number | undefined | null) =>
+    !val || val === 0 ? "" : String(val);
 
   return (
-    <PageShell>
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <Button variant="ghost" onClick={() => nav(-1)} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        
-        <h1 className="text-3xl font-bold text-finityo-textMain mb-2">
-          Your Debts
-        </h1>
-        <p className="text-finityo-textBody mb-8">
-          Review and adjust the sample debt data
-        </p>
+    <div className="mx-auto flex max-w-3xl flex-col gap-4">
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        className="mb-1 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </button>
 
-        <PopIn>
-          <div className="space-y-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-semibold text-finityo-textMain">
-                Current Debts
-              </h2>
-
-              <Button onClick={addDebt} size="sm" variant="outline" disabled={demoDebts.length >= 5}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Debt {demoDebts.length >= 5 && "(Max 5)"}
-              </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Demo Debts</CardTitle>
+          <CardDescription>
+            Adjust these sample debts to see how the payoff plan responds.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs text-muted-foreground">
+              You can add up to 5 demo debts.
             </div>
+            <Button size="sm" variant="outline" onClick={addDebt} disabled={demoDebts.length >= 5}>
+              <Plus className="mr-1 h-4 w-4" />
+              Add Debt {demoDebts.length >= 5 && "(Max 5)"}
+            </Button>
+          </div>
 
-            <div className="space-y-4">
-              {demoDebts.map((d) => (
-                <div key={d.id} className="rounded-xl bg-card border p-4 space-y-3">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                      <Label>Name</Label>
-                      <Input
-                        value={d.name}
-                        placeholder="e.g. Credit Card"
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const validated = debtNameSchema.safeParse(val);
-                          if (validated.success || val === "") {
-                            updateField(d.id, "name", val);
-                          }
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Balance</Label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-2 top-2.5 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          type="number"
-                          className="pl-7"
-                          placeholder="5000"
-                          value={displayValue(d.balance)}
-                          onChange={(e) => {
-                            const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                            if (!isNaN(val)) {
-                              const validated = balanceSchema.safeParse(val);
-                              if (validated.success) {
-                                updateField(d.id, "balance", val);
-                              }
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>APR %</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="18.99"
-                        value={displayValue(d.apr)}
-                        onChange={(e) => {
-                          const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                          if (!isNaN(val)) {
-                            const validated = aprSchema.safeParse(val);
-                            if (validated.success) {
-                              updateField(d.id, "apr", val);
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Min Payment</Label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-2 top-2.5 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          type="number"
-                          className="pl-7"
-                          placeholder="150"
-                          value={displayValue(d.minPayment)}
-                          onChange={(e) => {
-                            const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                            if (!isNaN(val)) {
-                              const validated = minPaymentSchema.safeParse(val);
-                              if (validated.success) {
-                                updateField(d.id, "minPayment", val);
-                              }
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
+          <div className="space-y-3">
+            {demoDebts.map(d => (
+              <div
+                key={d.id}
+                className="grid gap-3 rounded-md border p-3 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))_auto]"
+              >
+                {/* Name */}
+                <div className="space-y-1">
+                  <div className="text-xs font-medium uppercase text-muted-foreground">
+                    Name
                   </div>
+                  <Input
+                    value={d.name ?? ""}
+                    onChange={e => updateField(d.id, "name", e.target.value)}
+                    placeholder="e.g., Credit Card"
+                  />
+                </div>
 
+                {/* Balance */}
+                <div className="space-y-1">
+                  <div className="text-xs font-medium uppercase text-muted-foreground">
+                    Balance
+                  </div>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={displayNumber(d.balance as any)}
+                    onChange={e =>
+                      updateField(d.id, "balance", e.target.value === "" ? 0 : Number(e.target.value))
+                    }
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* APR */}
+                <div className="space-y-1">
+                  <div className="text-xs font-medium uppercase text-muted-foreground">
+                    APR %
+                  </div>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={displayNumber(d.apr as any)}
+                    onChange={e =>
+                      updateField(d.id, "apr", e.target.value === "" ? 0 : Number(e.target.value))
+                    }
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Min Payment */}
+                <div className="space-y-1">
+                  <div className="text-xs font-medium uppercase text-muted-foreground">
+                    Min Payment
+                  </div>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={displayNumber(d.minPayment as any)}
+                    onChange={e =>
+                      updateField(
+                        d.id,
+                        "minPayment",
+                        e.target.value === "" ? 0 : Number(e.target.value),
+                      )
+                    }
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Remove */}
+                <div className="flex items-center justify-end">
                   {demoDebts.length > 1 && (
                     <Button
+                      size="icon"
                       variant="ghost"
-                      size="sm"
+                      className="h-8 w-8 text-destructive"
                       onClick={() => removeDebt(d.id)}
                     >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Remove Debt
+                      <X className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
-              ))}
-            </div>
-
-            <NextBack back="/setup/start" next="/setup/plan" />
+              </div>
+            ))}
           </div>
-        </PopIn>
-      </div>
-    </PageShell>
+
+          <div className="flex flex-col gap-2 pt-2 md:flex-row md:items-center md:justify-between">
+            <Button variant="outline" size="sm" onClick={reset}>
+              Reset to defaults
+            </Button>
+
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                type="button"
+                size="sm"
+                onClick={() => navigate("/demo/plan")}
+              >
+                View plan
+              </Button>
+              <Button type="button" size="sm" onClick={() => navigate("/demo/chart")}>
+                View chart preview
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
