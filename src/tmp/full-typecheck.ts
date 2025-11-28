@@ -93,7 +93,6 @@ import { useDebtEngine, DebtEngineProvider } from "@/engine/DebtEngineContext";
 import { useNormalizedPlan } from "@/engine/useNormalizedPlan";
 import { usePlanCharts } from "@/engine/usePlanCharts";
 import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
 
 // =============================================================================
 // LIVE CONTEXT
@@ -309,10 +308,14 @@ const testUserSettings: UserSettings = {
   maxMonths: 480,
 };
 
-const computedPlanLegacy: LegacyPlanResult = computeLegacy(
-  [testDebtInput],
-  testUserSettings
-);
+const computedPlanLegacy: LegacyPlanResult = computeLegacy({
+  debts: [testDebtInput],
+  strategy: testUserSettings.strategy || "snowball",
+  extraMonthly: testUserSettings.extraMonthly || 0,
+  oneTimeExtra: testUserSettings.oneTimeExtra || 0,
+  startDate: testUserSettings.startDate || new Date().toISOString().slice(0, 10),
+  maxMonths: testUserSettings.maxMonths,
+});
 
 // Test minimum-only computation
 const computedMinOnly: PlanResultLib = computeMinimumOnly([testDebtInputLib], {
@@ -394,13 +397,6 @@ function testHookSignatures() {
   const unifiedDebts: DebtInput[] = unifiedResult.debtsUsed;
   const unifiedSettings = unifiedResult.settingsUsed;
 
-  // Test useDebtEngineFromStore
-  const storeResult = useDebtEngineFromStore();
-  const storePlan: PlanResult | null = storeResult.plan;
-  const storeDebts: DebtInput[] = storeResult.debtsUsed;
-  const storeSettings = storeResult.settingsUsed;
-  const storeRecompute = storeResult.recompute;
-
   // Test usePlanLive
   const liveResult = usePlanLive();
   const liveInputs = liveResult.inputs;
@@ -416,7 +412,6 @@ function testHookSignatures() {
     normalizedResult,
     chartsResult,
     unifiedResult,
-    storeResult,
     liveResult,
   };
 }

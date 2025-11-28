@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { type Strategy, type PlanResult, type DebtInput } from "@/lib/debtPlan";
-import { DebtEngineProvider, useDebtEngine } from "@/engine/DebtEngineContext";
+import { computeDebtPlan } from "@/lib/debtPlan";
 
 // Demo debts (clean set; tweak freely)
 const seedDebts: DebtInput[] = [
@@ -83,43 +83,25 @@ export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  return (
-    <DebtEngineProvider
-      initialDebts={inputs.debts}
-      initialSettings={{
-        strategy: inputs.strategy,
-        extraMonthly: inputs.extraMonthly,
-        oneTimeExtra: inputs.oneTimeExtra,
-        startDate: inputs.startDate,
-      }}
-    >
-      <DemoPlanInner
-        inputs={inputs}
-        setInputs={setInputs}
-        updateDebt={updateDebt}
-        addDebt={addDebt}
-        removeDebt={removeDebt}
-        reset={reset}
-      >
-        {children}
-      </DemoPlanInner>
-    </DebtEngineProvider>
-  );
-}
+  const [plan, setPlan] = useState<PlanResult | null>(null);
 
-function DemoPlanInner({
-  inputs,
-  setInputs,
-  updateDebt,
-  addDebt,
-  removeDebt,
-  reset,
-  children,
-}: any) {
-  const { plan } = useDebtEngine();
+  useEffect(() => {
+    if (inputs.debts.length === 0) {
+      setPlan(null);
+      return;
+    }
+
+    const computed = computeDebtPlan({
+      debts: inputs.debts,
+      strategy: inputs.strategy,
+      extraMonthly: inputs.extraMonthly,
+      oneTimeExtra: inputs.oneTimeExtra,
+      startDate: inputs.startDate || new Date().toISOString().slice(0, 10),
+    });
+    setPlan(computed);
+  }, [inputs]);
 
   const compute = () => {
-    // Plan is auto-computed by engine, just log
     console.log("✅ DEMO PLAN", plan?.totals);
   };
 
