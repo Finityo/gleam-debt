@@ -59,12 +59,31 @@ import { ExcelImportModal } from "@/components/ExcelImportModal";
 import { BulkDebtEditor } from "@/components/BulkDebtEditor";
 
 export default function DebtsPage() {
-  const { debtsUsed, settingsUsed } = useUnifiedPlan();
+  const planData = useUnifiedPlan();
   const { updateDebts, reset } = usePlan();
+  const navigate = useNavigate();
   
+  // Handle null plan data
+  if (!planData) {
+    return (
+      <div className="relative min-h-screen w-full bg-finityo-bg p-4 md:p-8">
+        <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6 md:p-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-sm text-finityo-textBody hover:text-white transition mb-4"
+          >
+            ← Back
+          </button>
+          <h1 className="text-3xl font-semibold text-white drop-shadow-md">My Debts</h1>
+          <p className="text-white/70 mt-4">Loading debts...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  const { debtsUsed, settingsUsed } = planData;
   const debts = debtsUsed;
   const settings = settingsUsed;
-  const navigate = useNavigate();
 
   const [quickEditDebt, setQuickEditDebt] = useState<DebtInput | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
