@@ -435,7 +435,7 @@ export default function DebtsPage() {
                       </td>
 
                       {/* APR */}
-                      <td className="py-3 text-right">{debt.apr.toFixed(1)}%</td>
+                      <td className="py-3 text-right">{Number(debt.apr).toFixed(2)}%</td>
 
                       {/* Min */}
                       <td className="py-3 text-right">
@@ -583,7 +583,7 @@ function DebtForm({ debt, onChange, onSubmit }: DebtFormProps) {
           <Input
             type="number"
             value={local.apr}
-            onChange={(e) => handleChange("apr", Number(e.target.value || 0))}
+            onChange={(e) => handleChange("apr", Number(e.target.value))}
           />
         </div>
         <div className="space-y-1">
