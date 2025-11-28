@@ -459,7 +459,9 @@ export default function DebtsPage() {
                       </td>
 
                       {/* APR */}
-                      <td className="py-3 text-right">{formatAprDisplay(debt.apr)}%</td>
+                      <td className="px-3 py-2 text-right text-sm tabular-nums">
+                        {formatAprDisplay(debt.apr)}%
+                      </td>
 
                       {/* Min */}
                       <td className="py-3 text-right">
