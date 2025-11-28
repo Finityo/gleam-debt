@@ -197,9 +197,16 @@ export function AppRoutes() {
           <Route path="/team/analytics" element={<TeamAnalytics />} />
           <Route path="/team/settings" element={<TeamSettings />} />
           
+          {/* ===== SETUP REDIRECTS (legacy/demo routes) ===== */}
+          <Route path="/setup/start" element={<Navigate to="/onboarding" replace />} />
+          <Route path="/setup/debts" element={<Navigate to="/debts" replace />} />
+          <Route path="/setup/plan" element={<Navigate to="/debt-plan" replace />} />
+          <Route path="/setup/chart" element={<Navigate to="/debt-chart" replace />} />
+          <Route path="/setup/*" element={<Navigate to="/onboarding" replace />} />
+          
           {/* ===== DEMO REDIRECTS (legacy routes) ===== */}
           <Route path="/demo/debts" element={<Navigate to="/debts" replace />} />
-          <Route path="/demo/start" element={<Navigate to="/setup/start" replace />} />
+          <Route path="/demo/start" element={<Navigate to="/onboarding" replace />} />
           <Route path="/demo/plan" element={<Navigate to="/debt-plan" replace />} />
           <Route path="/demo/chart" element={<Navigate to="/debt-chart" replace />} />
           <Route path="/demo/*" element={<Navigate to="/" replace />} />

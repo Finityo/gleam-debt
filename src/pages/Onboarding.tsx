@@ -87,10 +87,10 @@ const Onboarding: React.FC = () => {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => navigate("/setup/start")}
+                    onClick={() => navigate("/debts")}
                     className="rounded-lg border border-cyan-400/80 bg-cyan-500/20 px-3 py-1.5 text-[11px] font-semibold text-cyan-100"
                   >
-                    Connect a bank now
+                    Start adding debts
                   </button>
                   <button type="button" onClick={next} className="rounded-lg border border-border bg-card px-3 py-1.5 text-[11px]">
                     Skip for now
