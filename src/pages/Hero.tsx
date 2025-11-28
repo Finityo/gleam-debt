@@ -160,7 +160,7 @@ const Hero = () => {
                 size="lg"
                 variant="outline"
                 className="border-2 text-lg px-8 py-6 font-semibold backdrop-blur-sm hover:scale-[1.03] active:scale-95 transition-all duration-300"
-                onClick={() => navigate('/demo/start')}
+                onClick={() => navigate('/setup/start')}
               >
                 See How It Works
               </Button>

@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { Suspense, lazy } from "react";
-import { DemoPlanProvider } from "@/context/DemoPlanContext";
 import { RequireAuth } from "@/components/RequireAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
@@ -57,17 +56,6 @@ const Loader = () => (
     <p className="text-gray-500 dark:text-gray-300">Loading Finityo...</p>
   </div>
 );
-
-// ===== DEMO (PUBLIC) =====
-const DemoStart = lazy(() => import("@/pages/demo/start"));
-const DemoDebts = lazy(() => import("@/pages/demo/debts"));
-const DemoPlan = lazy(() => import("@/pages/demo/plan"));
-const DemoChart = lazy(() => import("@/pages/demo/chart"));
-const DemoPowerPack = lazy(() => import("@/pages/demo/DemoPlanPowerPack"));
-const DemoCalendar = lazy(() => import("@/pages/demo/plan/calendar"));
-const DemoSummary = lazy(() => import("@/pages/demo/plan/summary"));
-const DemoCompare = lazy(() => import("@/pages/demo/plan/compare"));
-const DemoImportExport = lazy(() => import("@/pages/demo/plan/import"));
 
 // ===== CORE (PUBLIC) =====
 const Index = lazy(() => import("@/pages/index"));
@@ -132,17 +120,6 @@ const SignIn = lazy(() => import("@/pages/auth/SignIn"));
 const SignUp = lazy(() => import("@/pages/auth/SignUp"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
-// Demo layout wrapper (PUBLIC + isolated)
-// - No access to core PlanContext
-// - No auth dependencies
-const DemoLayoutWrapper = () => (
-  <DemoPlanProvider>
-    <Suspense fallback={<Loader />}>
-      <Outlet />
-    </Suspense>
-  </DemoPlanProvider>
-);
-
 export function AppRoutes() {
   return (
     <>
@@ -169,20 +146,6 @@ export function AppRoutes() {
           
           {/* ===== ONBOARDING ===== */}
           <Route path="/onboarding" element={<Onboarding />} />
-          
-          {/* ===== SETUP FLOW (PUBLIC) ===== */}
-          <Route path="/setup" element={<DemoLayoutWrapper />}>
-            <Route index element={<DemoStart />} />
-            <Route path="start" element={<DemoStart />} />
-            <Route path="debts" element={<DemoDebts />} />
-            <Route path="plan" element={<DemoPlan />} />
-            <Route path="plan/calendar" element={<DemoCalendar />} />
-            <Route path="plan/summary" element={<DemoSummary />} />
-            <Route path="plan/compare" element={<DemoCompare />} />
-            <Route path="plan/import" element={<DemoImportExport />} />
-            <Route path="chart" element={<DemoChart />} />
-            <Route path="power-pack" element={<DemoPowerPack />} />
-          </Route>
           
           {/* ===== SHARED PLANS (PUBLIC) ===== */}
           <Route path="/p/:id" element={<SharedPlanPage />} />
