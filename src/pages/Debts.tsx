@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedPlan } from "@/engine/useUnifiedPlan";
-import { usePlan } from "@/context/PlanContext";
+import { useDebtEngine } from "@/engine/DebtEngineContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -60,7 +60,7 @@ import { BulkDebtEditor } from "@/components/BulkDebtEditor";
 
 export default function DebtsPage() {
   const planData = useUnifiedPlan();
-  const { updateDebts, reset } = usePlan();
+  const { setDebts, reset } = useDebtEngine();
   const navigate = useNavigate();
   
   // Handle null plan data
@@ -132,7 +132,7 @@ export default function DebtsPage() {
     next[targetIndex] = next[index];
     next[index] = temp;
 
-    updateDebts(next);
+    setDebts(next);
   };
 
   // ---------------------------------------------------------------------------
@@ -150,7 +150,7 @@ export default function DebtsPage() {
       category: "",
     };
 
-    updateDebts([...debts, newDebt]);
+    setDebts([...debts, newDebt]);
     toast.success("Debt added");
     setIsAddOpen(false);
   };
@@ -159,14 +159,14 @@ export default function DebtsPage() {
     if (!confirm("Delete this debt?")) return;
 
     const next = debts.filter(d => d.id !== id);
-    updateDebts(next);
+    setDebts(next);
     setSelectedIds(prev => prev.filter(x => x !== id));
     toast.success("Debt deleted");
   };
 
   const handleQuickEditSave = (updated: DebtInput) => {
     const next = debts.map(d => (d.id === updated.id ? { ...d, ...updated } : d));
-    updateDebts(next);
+    setDebts(next);
     toast.success("Debt updated");
     setQuickEditDebt(null);
   };
@@ -238,7 +238,7 @@ export default function DebtsPage() {
       }));
 
       const next = [...debts, ...importedDebts];
-      updateDebts(next);
+      setDebts(next);
 
       setShowImport(false);
       toast.success(
@@ -452,7 +452,7 @@ export default function DebtsPage() {
                                 ? { ...d, category: e.target.value }
                                 : d
                             );
-                            updateDebts(next);
+                            setDebts(next);
                           }}
                           className="bg-transparent border border-white/20 text-white p-1 rounded-md text-xs w-full placeholder-white/30"
                           placeholder="e.g., Auto, Credit"
@@ -505,7 +505,7 @@ export default function DebtsPage() {
           onClose={() => setShowBulk(false)}
           onClearSelection={clearSelection}
           onApply={(updated) => {
-            updateDebts(updated);
+            setDebts(updated);
             clearSelection();
           }}
         />
