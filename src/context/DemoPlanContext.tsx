@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { type Strategy, type PlanResult, type DebtInput } from "@/lib/debtPlan";
-import { computeDebtPlan } from "@/lib/debtPlan";
+import { computeDebtPlanUnified } from "@/engine/unified-engine";
+import type { DebtInput, PlanResult, Strategy } from "@/engine/plan-types";
 
 // Demo debts (clean set; tweak freely)
 const seedDebts: DebtInput[] = [
@@ -91,7 +91,7 @@ export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const computed = computeDebtPlan({
+    const computed = computeDebtPlanUnified({
       debts: inputs.debts,
       strategy: inputs.strategy,
       extraMonthly: inputs.extraMonthly,
