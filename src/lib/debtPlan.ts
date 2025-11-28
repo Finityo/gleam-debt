@@ -114,13 +114,15 @@ export function computeDebtPlan(args: ComputeParams): PlanResult {
   const maxMonths = args.maxMonths ?? 600;
 
   // normalize + include filter
+  // CRITICAL: APR should already be normalized by unified-engine before reaching here
+  // Do NOT normalize APR here - it creates double-normalization bugs
   const included = (args.debts ?? [])
     .map((d, idx) => ({
       ...d,
       id: d.id ?? String(idx),
       name: d.name ?? d.creditor ?? `Debt ${idx + 1}`,
       balance: toNum(d.balance),
-      apr: safeAPR(d.apr),
+      apr: toNum(d.apr), // CHANGED: Use raw APR (already normalized upstream)
       minPayment: clamp(toNum(d.minPayment), 0, 1e9),
       include: d.include !== false,
       order: toNum(d.order, idx + 1),

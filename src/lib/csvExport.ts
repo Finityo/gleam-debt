@@ -67,14 +67,18 @@ export async function parseExcelFile(file: File): Promise<DebtExportRow[]> {
           // Skip empty rows or sample row
           if (!creditor || creditor === "" || creditor.toLowerCase().includes("sample")) continue;
           
-          parsed.push({
-            name: creditor,
-            balance: parseFloat(balance) || 0,
-            apr: parseFloat(apr) || 0,
-            minPayment: parseFloat(minPayment) || 0,
-            dueDate: dueDate || undefined,
-            notes: notes || undefined,
-          });
+        // Validate APR: must be between 0 and 100 (as percent)
+        const parsedAPR = parseFloat(apr) || 0;
+        const validatedAPR = Math.max(0, Math.min(100, parsedAPR));
+        
+        parsed.push({
+          name: creditor,
+          balance: parseFloat(balance) || 0,
+          apr: validatedAPR, // CRITICAL: Validate APR range on import
+          minPayment: parseFloat(minPayment) || 0,
+          dueDate: dueDate || undefined,
+          notes: notes || undefined,
+        });
         }
         
         resolve(parsed);
@@ -97,10 +101,15 @@ export function parseExcelPaste(pasteText: string): DebtExportRow[] {
     if (cols.length < 3) continue;
 
     const [name, balance, apr, minPay, dueDay, category] = cols;
+    
+    // Validate APR range
+    const rawAPR = Number(apr || 0);
+    const validatedAPR = Math.max(0, Math.min(100, rawAPR));
+    
     parsed.push({
       name: name?.trim() || "Unnamed Debt",
       balance: Number(balance || 0),
-      apr: Number(apr || 0),
+      apr: validatedAPR, // CRITICAL: Validate APR range
       minPayment: Number(minPay || 0),
       dueDay: dueDay ? Number(dueDay) : undefined,
       category: category?.trim() || undefined

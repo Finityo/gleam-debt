@@ -102,21 +102,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [user]);
 
-  // Central recompute
+  // CRITICAL FIX: AppStore should NOT compute plans independently
+  // Delegate to DebtEngineProvider to avoid dual state management
   const computeNow = () => {
-    if (!state.debts.length) {
-      setState((s) => ({ ...s, plan: null }));
-      return;
-    }
-    const plan = computeDebtPlanUnified({
-      debts: state.debts as DebtInput[],
-      strategy: state.settings.strategy || "snowball",
-      extraMonthly: state.settings.extraMonthly || 0,
-      oneTimeExtra: state.settings.oneTimeExtra || 0,
-      startDate: state.settings.startDate || new Date().toISOString().slice(0, 10),
-      maxMonths: state.settings.maxMonths,
-    });
-    setState((s) => ({ ...s, plan }));
+    // This is now a no-op - plan computation happens in DebtEngineProvider
+    // Pages should use useUnifiedPlan() to access the computed plan
+    console.warn("AppStore.computeNow() is deprecated - use useUnifiedPlan() instead");
   };
 
   // Debts CRUD
@@ -150,15 +141,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setState((s) => {
       const newState = { ...s, debts: [...s.debts, newDebt] };
-      const plan = computeDebtPlanUnified({
-        debts: newState.debts as DebtInput[],
-        strategy: newState.settings.strategy || "snowball",
-        extraMonthly: newState.settings.extraMonthly || 0,
-        oneTimeExtra: newState.settings.oneTimeExtra || 0,
-        startDate: newState.settings.startDate || new Date().toISOString().slice(0, 10),
-        maxMonths: newState.settings.maxMonths,
-      });
       
+      // CRITICAL FIX: Do NOT compute plan here - let DebtEngineProvider handle it
       // Sync with PlanAPI for Plan page
       PlanAPI.writeAndCompute(user.id, {
         debts: newState.debts,
@@ -167,7 +151,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.error("Error syncing with PlanAPI:", err)
       );
       
-      return { ...newState, plan };
+      return { ...newState, plan: null }; // Plan will be computed by engine
     });
   };
 
@@ -198,15 +182,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setState((s) => {
       const newDebts = s.debts.map((d) => (d.id === id ? { ...d, ...patch } : d));
-      const plan = computeDebtPlanUnified({
-        debts: newDebts as DebtInput[],
-        strategy: s.settings.strategy || "snowball",
-        extraMonthly: s.settings.extraMonthly || 0,
-        oneTimeExtra: s.settings.oneTimeExtra || 0,
-        startDate: s.settings.startDate || new Date().toISOString().slice(0, 10),
-        maxMonths: s.settings.maxMonths,
-      });
       
+      // CRITICAL FIX: Do NOT compute plan here - let DebtEngineProvider handle it
       // Sync with PlanAPI for Plan page
       PlanAPI.writeAndCompute(user.id, {
         debts: newDebts,
@@ -215,7 +192,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.error("Error syncing with PlanAPI:", err)
       );
       
-      return { ...s, debts: newDebts, plan };
+      return { ...s, debts: newDebts, plan: null }; // Plan will be computed by engine
     });
   };
 
@@ -235,15 +212,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setState((s) => {
       const newDebts = s.debts.filter((d) => d.id !== id);
-      const plan = newDebts.length ? computeDebtPlanUnified({
-        debts: newDebts as DebtInput[],
-        strategy: s.settings.strategy || "snowball",
-        extraMonthly: s.settings.extraMonthly || 0,
-        oneTimeExtra: s.settings.oneTimeExtra || 0,
-        startDate: s.settings.startDate || new Date().toISOString().slice(0, 10),
-        maxMonths: s.settings.maxMonths,
-      }) : null;
       
+      // CRITICAL FIX: Do NOT compute plan here - let DebtEngineProvider handle it
       // Sync with PlanAPI for Plan page
       PlanAPI.writeAndCompute(user.id, {
         debts: newDebts,
@@ -252,7 +222,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.error("Error syncing with PlanAPI:", err)
       );
       
-      return { ...s, debts: newDebts, plan };
+      return { ...s, debts: newDebts, plan: null }; // Plan will be computed by engine
     });
   };
 
@@ -285,15 +255,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const updateDebts = (debts: Debt[]) => {
     setState((s) => {
-      const plan = debts.length ? computeDebtPlanUnified({
-        debts: debts as DebtInput[],
-        strategy: s.settings.strategy || "snowball",
-        extraMonthly: s.settings.extraMonthly || 0,
-        oneTimeExtra: s.settings.oneTimeExtra || 0,
-        startDate: s.settings.startDate || new Date().toISOString().slice(0, 10),
-        maxMonths: s.settings.maxMonths,
-      }) : null;
-      return { ...s, debts, plan };
+      // CRITICAL FIX: Do NOT compute plan here - let DebtEngineProvider handle it
+      return { ...s, debts, plan: null }; // Plan will be computed by engine
     });
   };
 
@@ -320,15 +283,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     setState((s) => {
-      const plan = s.debts.length ? computeDebtPlanUnified({
-        debts: s.debts as DebtInput[],
-        strategy: newSettings.strategy || "snowball",
-        extraMonthly: newSettings.extraMonthly || 0,
-        oneTimeExtra: newSettings.oneTimeExtra || 0,
-        startDate: newSettings.startDate || new Date().toISOString().slice(0, 10),
-        maxMonths: newSettings.maxMonths,
-      }) : null;
-      return { ...s, settings: newSettings, plan };
+      // CRITICAL FIX: Do NOT compute plan here - let DebtEngineProvider handle it
+      return { ...s, settings: newSettings, plan: null }; // Plan will be computed by engine
     });
   };
 
