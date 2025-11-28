@@ -9,11 +9,10 @@ import { Btn } from "@/components/Btn";
 import { format, addMonths } from "date-fns";
 
 export default function DemoPayoffCalendarPage() {
-  const { plan, inputs } = useDemoPlan();
+  const { demoPlan, demoDebts } = useDemoPlan();
   const navigate = useNavigate();
-  const debts = inputs.debts;
 
-  if (!plan) {
+  if (!demoPlan) {
     return (
       <PageShell>
         <div className="p-4 pb-24">
@@ -68,7 +67,7 @@ export default function DemoPayoffCalendarPage() {
 
         <PopIn>
           <div className="space-y-4">
-            {plan.months.map((m, idx) => {
+            {demoPlan.months.map((m, idx) => {
               const totalBalance = m.payments.reduce(
                 (sum, p) => sum + p.endingBalance,
                 0
@@ -98,7 +97,7 @@ export default function DemoPayoffCalendarPage() {
                     </summary>
                     <ul className="mt-2 space-y-1">
                       {m.payments.map((p) => {
-                        const debt = debts.find(d => d.id === p.debtId);
+                        const debt = demoDebts.find(d => d.id === p.debtId);
                         return (
                           <li key={p.debtId} className="text-finityo-textBody">
                             {debt?.name || 'Unknown'}: ${Math.round(p.endingBalance).toLocaleString()}

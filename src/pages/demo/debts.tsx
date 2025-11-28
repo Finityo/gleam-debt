@@ -1,40 +1,57 @@
-import { PageShell } from "@/components/PageShell";
-import NextBack from "@/components/NextBack";
 import { useDemoPlan } from "@/context/DemoPlanContext";
-import { PopIn } from "@/components/Animate";
+import { PageShell } from "@/components/PageShell";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Plus, Trash2, DollarSign, ArrowLeft } from "lucide-react";
-import { z } from "zod";
+import { ArrowLeft, Plus, Trash2, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NextBack from "@/components/NextBack";
+import { PopIn } from "@/components/Animate";
+import { z } from "zod";
 
-// Validation schemas
 const debtNameSchema = z.string().trim().max(100, "Name must be less than 100 characters");
 const balanceSchema = z.number().min(0, "Balance must be positive").max(1000000000, "Balance too large");
 const aprSchema = z.number().min(0, "APR must be positive").max(100, "APR must be 100% or less");
 const minPaymentSchema = z.number().min(0, "Minimum payment must be positive").max(1000000000, "Payment too large");
 
 export default function DemoDebts() {
-  const { inputs, setInputs, updateDebt: updateSingleDebt, addDebt: addNewDebt, removeDebt } = useDemoPlan();
-  const navigate = useNavigate();
-  const debts = inputs.debts;
+  const nav = useNavigate();
+  const { demoDebts, setDemoDebts } = useDemoPlan();
 
-  const addDebt = () => addNewDebt();
-
-  const update = (id: string, patch: any) => {
-    updateSingleDebt(id, patch);
+  const updateField = (id: string, field: string, value: any) => {
+    setDemoDebts(prev =>
+      prev.map(d => (d.id === id ? { ...d, [field]: value } : d))
+    );
   };
 
-  // Helper to display number value (empty string if 0)
+  const addDebt = () => {
+    if (demoDebts.length >= 5) return;
+    setDemoDebts(prev => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        name: "New Debt",
+        balance: 500,
+        apr: 12,
+        minPayment: 25,
+        include: true,
+      },
+    ]);
+  };
+
+  const removeDebt = (id: string) => {
+    if (demoDebts.length <= 1) return;
+    setDemoDebts(prev => prev.filter(d => d.id !== id));
+  };
+
   const displayValue = (val: number) => val === 0 ? "" : val.toString();
 
   return (
     <PageShell>
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+        <Button variant="ghost" onClick={() => nav(-1)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          ← Back
+          Back
         </Button>
         
         <h1 className="text-3xl font-bold text-finityo-textMain mb-2">
@@ -51,14 +68,14 @@ export default function DemoDebts() {
                 Current Debts
               </h2>
 
-              <Button onClick={addDebt} size="sm" variant="outline">
+              <Button onClick={addDebt} size="sm" variant="outline" disabled={demoDebts.length >= 5}>
                 <Plus className="w-4 h-4 mr-2" />
-                Add Debt
+                Add Debt {demoDebts.length >= 5 && "(Max 5)"}
               </Button>
             </div>
 
             <div className="space-y-4">
-              {debts.map((d) => (
+              {demoDebts.map((d) => (
                 <div key={d.id} className="rounded-xl bg-card border p-4 space-y-3">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
@@ -70,7 +87,7 @@ export default function DemoDebts() {
                           const val = e.target.value;
                           const validated = debtNameSchema.safeParse(val);
                           if (validated.success || val === "") {
-                            update(d.id, { name: val });
+                            updateField(d.id, "name", val);
                           }
                         }}
                       />
@@ -90,7 +107,7 @@ export default function DemoDebts() {
                             if (!isNaN(val)) {
                               const validated = balanceSchema.safeParse(val);
                               if (validated.success) {
-                                update(d.id, { balance: val });
+                                updateField(d.id, "balance", val);
                               }
                             }
                           }}
@@ -110,7 +127,7 @@ export default function DemoDebts() {
                           if (!isNaN(val)) {
                             const validated = aprSchema.safeParse(val);
                             if (validated.success) {
-                              update(d.id, { apr: val });
+                              updateField(d.id, "apr", val);
                             }
                           }
                         }}
@@ -131,7 +148,7 @@ export default function DemoDebts() {
                             if (!isNaN(val)) {
                               const validated = minPaymentSchema.safeParse(val);
                               if (validated.success) {
-                                update(d.id, { minPayment: val });
+                                updateField(d.id, "minPayment", val);
                               }
                             }
                           }}
@@ -140,7 +157,7 @@ export default function DemoDebts() {
                     </div>
                   </div>
 
-                  {debts.length > 1 && (
+                  {demoDebts.length > 1 && (
                     <Button
                       variant="ghost"
                       size="sm"

@@ -19,25 +19,17 @@ import { useNavigate } from "react-router-dom";
 
 export default function DemoPlanPowerPack() {
   const navigate = useNavigate();
-  const { plan, inputs, setInputs } = useDemoPlan();
-  const { createScenario, scenarios } = useScenarios();
-  const debts = inputs.debts;
-  const settings = { strategy: inputs.strategy, extraMonthly: inputs.extraMonthly, oneTimeExtra: inputs.oneTimeExtra };
-  const notes = "";
-  const [income, setIncome] = useState(5000);
-  const [bills, setBills] = useState<{ name: string; amount: number }[]>([
-    { name: "Rent", amount: 1800 }, 
-    { name: "Utilities", amount: 250 }, 
-    { name: "Phone", amount: 75 },
-  ]);
+  const { demoPlan, demoDebts } = useDemoPlan();
+  const { createScenario } = useScenarios();
 
-  if (!plan) {
+  if (!demoPlan) {
     return (
       <AppLayout>
         <OnboardingWizard
           onFinish={(d, s) => {
             createScenario("My First Plan", d, s);
-            toast.success("Scenario created! Open Scenarios page to view.");
+            toast.success("Scenario created!");
+            navigate("/scenarios");
           }}
         />
       </AppLayout>

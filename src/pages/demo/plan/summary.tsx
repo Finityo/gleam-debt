@@ -8,10 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { Btn } from "@/components/Btn";
 
 export default function DemoSummaryPage() {
-  const { plan } = useDemoPlan();
+  const { demoPlan } = useDemoPlan();
   const navigate = useNavigate();
 
-  if (!plan) {
+  if (!demoPlan) {
     return (
       <PageShell>
         <div className="max-w-3xl mx-auto px-4 py-12 text-center text-finityo-textBody">
@@ -41,27 +41,27 @@ export default function DemoSummaryPage() {
             <div>
               <div className="text-sm text-finityo-textBody">Debt-Free Date</div>
               <div className="text-2xl font-bold text-finityo-textMain">
-                {plan.startDateISO && plan.months.length > 0 
-                  ? new Date(new Date(plan.startDateISO).setMonth(new Date(plan.startDateISO).getMonth() + plan.months.length - 1)).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                {demoPlan.startDateISO && demoPlan.months.length > 0 
+                  ? new Date(new Date(demoPlan.startDateISO).setMonth(new Date(demoPlan.startDateISO).getMonth() + demoPlan.months.length - 1)).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
                   : 'N/A'}
               </div>
             </div>
             <div>
               <div className="text-sm text-finityo-textBody">Months to Freedom</div>
               <div className="text-2xl font-bold text-finityo-textMain">
-                {plan.totals.monthsToDebtFree}
+                {demoPlan.totals.monthsToDebtFree}
               </div>
             </div>
             <div>
               <div className="text-sm text-finityo-textBody">Total Interest</div>
               <div className="text-2xl font-bold text-finityo-textMain">
-                ${Math.round(plan.totals.interest).toLocaleString()}
+                ${Math.round(demoPlan.totals.interest).toLocaleString()}
               </div>
             </div>
             <div>
               <div className="text-sm text-finityo-textBody">Total Paid</div>
               <div className="text-2xl font-bold text-finityo-textMain">
-                ${Math.round(plan.totals.totalPaid).toLocaleString()}
+                ${Math.round(demoPlan.totals.totalPaid).toLocaleString()}
               </div>
             </div>
           </Card>

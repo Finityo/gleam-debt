@@ -19,15 +19,15 @@ import {
 import { format } from "date-fns";
 
 export default function DemoChart() {
-  const { plan } = useDemoPlan();
+  const { demoPlan } = useDemoPlan();
   const navigate = useNavigate();
 
   const data = useMemo(() => {
-    if (!plan) return [];
+    if (!demoPlan) return [];
     let cumulative = 0;
     const startDate = new Date();
 
-    return plan.months.map((m) => {
+    return demoPlan.months.map((m) => {
       cumulative += m.totals.outflow;
       const totalBalance = m.payments.reduce(
         (sum, p) => sum + p.endingBalance,
@@ -40,9 +40,9 @@ export default function DemoChart() {
         paid: cumulative,
       };
     });
-  }, [plan]);
+  }, [demoPlan]);
 
-  if (!plan) {
+  if (!demoPlan) {
     return (
       <PageShell>
         <div className="max-w-5xl mx-auto px-4 py-12 text-center text-finityo-textBody">

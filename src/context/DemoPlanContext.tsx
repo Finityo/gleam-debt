@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { computeDebtPlanUnified } from "@/engine/unified-engine";
-import type { DebtInput, PlanResult, Strategy } from "@/engine/plan-types";
+import type { DebtInput, PlanResult } from "@/engine/plan-types";
 
-// Demo debts (clean set; tweak freely)
+// Seed debts for demo mode
 const seedDebts: DebtInput[] = [
   { id: "store4231", name: "Store Credit Card", balance: 850, apr: 24.99, minPayment: 35, dueDay: 15, include: true },
   { id: "medical9801", name: "Medical Bill", balance: 450, apr: 0, minPayment: 25, dueDay: 5, include: true },
@@ -10,125 +10,48 @@ const seedDebts: DebtInput[] = [
   { id: "personal7892", name: "Personal Loan", balance: 5200, apr: 8.5, minPayment: 185, dueDay: 1, include: true },
 ];
 
-type Inputs = {
-  debts: DebtInput[];
-  extraMonthly: number;
-  oneTimeExtra: number;
-  strategy: Strategy;
-  startDate?: string;
-};
-
-type Ctx = {
-  inputs: Inputs;
-  setInputs: (patch: Partial<Inputs>) => void;
-  updateDebt: (id: string, patch: Partial<DebtInput>) => void;
-  addDebt: () => void;
-  removeDebt: (id: string) => void;
-  plan: PlanResult | null;
-  debtsUsed: DebtInput[];
-  settingsUsed: any;
-  compute: () => void;
-  recompute: () => void;
+type DemoPlanContextType = {
+  demoDebts: DebtInput[];
+  setDemoDebts: React.Dispatch<React.SetStateAction<DebtInput[]>>;
+  demoPlan: PlanResult | null;
   reset: () => void;
 };
 
-export const DemoPlanContext = createContext<Ctx | null>(null);
-
-export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
-  const [inputs, setInputsState] = useState<Inputs>({
-    debts: seedDebts,
-    extraMonthly: 200,
-    oneTimeExtra: 1000,
-    strategy: "snowball",
-  });
-
-  const setInputs = (patch: Partial<Inputs>) =>
-    setInputsState(prev => ({ ...prev, ...patch }));
-
-  const updateDebt = (id: string, patch: Partial<DebtInput>) =>
-    setInputsState(prev => ({
-      ...prev,
-      debts: prev.debts.map(d => (d.id === id ? { ...d, ...patch } : d)),
-    }));
-
-  const addDebt = () =>
-    setInputsState(prev => ({
-      ...prev,
-      debts:
-        prev.debts.length >= 5
-          ? prev.debts
-          : [
-              ...prev.debts,
-              {
-                id: crypto.randomUUID(),
-                name: "New Debt",
-                balance: 500,
-                apr: 12.99,
-                minPayment: 25,
-                include: true,
-              } as DebtInput,
-            ],
-    }));
-
-  const removeDebt = (id: string) =>
-    setInputsState(prev => ({ ...prev, debts: prev.debts.filter(d => d.id !== id) }));
-
-  const reset = () => {
-    setInputsState({
-      debts: seedDebts,
-      extraMonthly: 200,
-      oneTimeExtra: 1000,
-      strategy: "snowball",
-      startDate: undefined,
-    });
-  };
-
-  const [plan, setPlan] = useState<PlanResult | null>(null);
-
-  useEffect(() => {
-    if (inputs.debts.length === 0) {
-      setPlan(null);
-      return;
-    }
-
-    const computed = computeDebtPlanUnified({
-      debts: inputs.debts,
-      strategy: inputs.strategy,
-      extraMonthly: inputs.extraMonthly,
-      oneTimeExtra: inputs.oneTimeExtra,
-      startDate: inputs.startDate || new Date().toISOString().slice(0, 10),
-    });
-    setPlan(computed);
-  }, [inputs]);
-
-  const compute = () => {
-    console.log("✅ DEMO PLAN", plan?.totals);
-  };
-
-  const value = {
-    inputs,
-    setInputs,
-    updateDebt,
-    addDebt,
-    removeDebt,
-    plan,
-    debtsUsed: inputs.debts,
-    settingsUsed: {
-      strategy: inputs.strategy,
-      extraMonthly: inputs.extraMonthly,
-      oneTimeExtra: inputs.oneTimeExtra,
-      startDate: inputs.startDate,
-    },
-    compute,
-    recompute: compute,
-    reset,
-  };
-
-  return <DemoPlanContext.Provider value={value}>{children}</DemoPlanContext.Provider>;
-}
+const DemoPlanContext = createContext<DemoPlanContextType | null>(null);
 
 export function useDemoPlan() {
   const ctx = useContext(DemoPlanContext);
   if (!ctx) throw new Error("useDemoPlan must be used inside DemoPlanProvider");
   return ctx;
+}
+
+export function DemoPlanProvider({ children }: { children: React.ReactNode }) {
+  const [demoDebts, setDemoDebts] = useState<DebtInput[]>(seedDebts);
+  const [demoPlan, setDemoPlan] = useState<PlanResult | null>(null);
+
+  useEffect(() => {
+    if (demoDebts.length === 0) {
+      setDemoPlan(null);
+      return;
+    }
+
+    const computed = computeDebtPlanUnified({
+      debts: demoDebts,
+      strategy: "snowball",
+      extraMonthly: 200,
+      oneTimeExtra: 1000,
+      startDate: new Date().toISOString().slice(0, 10),
+    });
+    setDemoPlan(computed);
+  }, [demoDebts]);
+
+  const reset = () => {
+    setDemoDebts(seedDebts);
+  };
+
+  return (
+    <DemoPlanContext.Provider value={{ demoDebts, setDemoDebts, demoPlan, reset }}>
+      {children}
+    </DemoPlanContext.Provider>
+  );
 }
