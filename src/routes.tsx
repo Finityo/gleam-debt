@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { RequireAuth } from "@/components/RequireAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -196,6 +196,13 @@ export function AppRoutes() {
           <Route path="/team/logs" element={<TeamLogs />} />
           <Route path="/team/analytics" element={<TeamAnalytics />} />
           <Route path="/team/settings" element={<TeamSettings />} />
+          
+          {/* ===== DEMO REDIRECTS (legacy routes) ===== */}
+          <Route path="/demo/debts" element={<Navigate to="/debts" replace />} />
+          <Route path="/demo/start" element={<Navigate to="/setup/start" replace />} />
+          <Route path="/demo/plan" element={<Navigate to="/debt-plan" replace />} />
+          <Route path="/demo/chart" element={<Navigate to="/debt-chart" replace />} />
+          <Route path="/demo/*" element={<Navigate to="/" replace />} />
           
           {/* ===== FALLBACK ===== */}
           <Route path="*" element={<NotFound />} />
