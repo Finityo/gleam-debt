@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useDebtEngineFromStore } from "@/engine/useDebtEngineFromStore";
+import { usePlanCharts } from "@/engine/usePlanCharts";
 
 // ---------- hardening utils ----------
 const toNum = (v: any, def = 0) => {
@@ -17,7 +17,7 @@ const safeAPR = (apr: any) => clamp(toNum(apr, 0), 0, 100); // 0–100% sanity w
  * - Strips noisy console logs in prod
  */
 export function useNormalizedPlan() {
-  const { plan, debtsUsed, settingsUsed, recompute } = useDebtEngineFromStore();
+  const { plan, debtsUsed, settingsUsed, recompute } = usePlanCharts();
 
   const months = useMemo(() => {
     const raw = plan?.months ?? [];

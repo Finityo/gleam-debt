@@ -51,15 +51,23 @@ export default function PlanPage() {
   if (scenario === "minimum") {
     currentPlan = computeMinimumOnly(debts);
   } else if (scenario === "avalanche") {
-    currentPlan = computeDebtPlan(debts, {
-      ...settings,
+    currentPlan = computeDebtPlan({
+      debts,
       strategy: "avalanche",
+      extraMonthly: settings.extraMonthly || 0,
+      oneTimeExtra: settings.oneTimeExtra || 0,
+      startDate: settings.startDate || new Date().toISOString().slice(0, 10),
+      maxMonths: settings.maxMonths,
     });
   } else {
     // snowball → already computed + stored
-    currentPlan = computeDebtPlan(debts, {
-      ...settings,
+    currentPlan = computeDebtPlan({
+      debts,
       strategy: "snowball",
+      extraMonthly: settings.extraMonthly || 0,
+      oneTimeExtra: settings.oneTimeExtra || 0,
+      startDate: settings.startDate || new Date().toISOString().slice(0, 10),
+      maxMonths: settings.maxMonths,
     });
   }
 

@@ -1,11 +1,13 @@
-// ============================================================================
-// FILE: src/lib/computeDebtPlan.ts - Legacy Compatibility Wrapper
-// ============================================================================
-import { computeDebtPlan as compute } from "@/lib/debtPlan";
-import type { DebtInput, PlanResult as NewPlanResult, Strategy } from "@/engine/plan-types";
+// ⚠️ DEPRECATED — for compatibility only
+// All types moved to @/lib/debtPlan
+// All logic forwarded to unified engine
 
-// Legacy type exports for backward compatibility
+import type { DebtInput, PlanResult, Strategy } from "./debtPlan";
+export { computeDebtPlan } from "./debtPlan";
+
+// Legacy type aliases for backward compatibility
 export type Debt = DebtInput;
+export type DebtPlan = PlanResult;
 export type Scenario = Strategy | "minimum";
 export type UserSettings = {
   strategy?: Strategy;
@@ -15,21 +17,5 @@ export type UserSettings = {
   maxMonths?: number;
 };
 
-export type DebtPlan = NewPlanResult;
-export type PlanResult = NewPlanResult;
-export type { DebtInput, Strategy };
-
-// Legacy function signature (2 params)
-export function computeDebtPlan(
-  debts: DebtInput[],
-  settings?: UserSettings
-): PlanResult {
-  return compute({
-    debts,
-    strategy: settings?.strategy ?? "snowball",
-    extraMonthly: settings?.extraMonthly ?? 0,
-    oneTimeExtra: settings?.oneTimeExtra ?? 0,
-    startDate: settings?.startDate ?? new Date().toISOString().slice(0, 10),
-    maxMonths: settings?.maxMonths,
-  });
-}
+// Re-export core types
+export type { DebtInput, PlanResult, Strategy };
