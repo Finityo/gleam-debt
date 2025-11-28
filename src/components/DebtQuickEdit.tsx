@@ -89,7 +89,7 @@ export function DebtQuickEdit({
             <Input
               type="number"
               value={local.apr}
-              onChange={(e) => update("apr", Number(e.target.value) || 0)}
+              onChange={(e) => update("apr", Number(e.target.value))}
             />
           </div>
 
