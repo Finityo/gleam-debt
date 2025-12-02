@@ -21,6 +21,7 @@ export const ROUTE_META = [
   { path: "/scenarios", title: "Scenarios", protected: true },
   { path: "/financial-insights", title: "Financial Insights", protected: true },
   { path: "/settings", title: "Settings", protected: true },
+  { path: "/audit-dashboard", title: "Audit Dashboard", protected: true },
 ];
 
 // ===== ROUTE SEARCH UTILITY =====
@@ -107,6 +108,7 @@ const SupportDashboard = lazy(() => import("@/pages/SupportDashboard"));
 const SecurityAudit = lazy(() => import("@/pages/SecurityAudit"));
 const UserRoleManagement = lazy(() => import("@/pages/UserRoleManagement"));
 const MyLogs = lazy(() => import("@/pages/MyLogs"));
+const AuditDashboard = lazy(() => import("@/pages/AuditDashboard"));
 
 // ===== OTHER =====
 const TeamAccess = lazy(() => import("@/pages/TeamAccess"));
@@ -179,6 +181,7 @@ export function AppRoutes() {
           <Route path="/admin/documents" element={<RequireAuth><DocumentExport /></RequireAuth>} />
           <Route path="/support-dashboard" element={<RequireAuth><SupportDashboard /></RequireAuth>} />
           <Route path="/security-audit" element={<RequireAuth><SecurityAudit /></RequireAuth>} />
+          <Route path="/audit-dashboard" element={<RequireAuth><AuditDashboard /></RequireAuth>} />
           
           {/* ===== OTHER PROTECTED ===== */}
           <Route path="/team-access" element={<RequireAuth><TeamAccess /></RequireAuth>} />
