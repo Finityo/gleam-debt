@@ -2,6 +2,9 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
+// Initialize domain agents (must run before app)
+import "@/agents/DebtIntegrityAgent";
+
 // Force dark theme globally (ignore system preferences)
 document.documentElement.classList.add("dark");
 document.documentElement.style.colorScheme = "dark";

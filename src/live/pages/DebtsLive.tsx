@@ -20,6 +20,8 @@ import { PlaidLink } from "@/components/PlaidLink";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
 import type { DebtInput } from "@/lib/debtPlan";
 import * as XLSX from "xlsx";
+import { emitDomainEvent } from "@/domain/domainEvents";
+import "@/agents/DebtIntegrityAgent"; // Initialize agent
 
 export default function DebtsLive() {
   const { inputs, setInputs, refreshFromBackend } = usePlanLive();
@@ -98,14 +100,29 @@ export default function DebtsLive() {
         include: true,
       }));
 
+      // 🔔 Emit domain event for integrity agent validation
+      await emitDomainEvent({
+        type: "DebtBatchImported",
+        debts: imported.map((d) => ({
+          id: d.id,
+          name: d.name,
+          balance: d.balance,
+          minPayment: d.minPayment,
+          apr: d.apr,
+          source: "excel",
+        })),
+        source: "excel",
+        userId: undefined, // Add user ID if available
+      });
+
       setInputs({ debts: [...inputs.debts, ...imported] });
       setShowImport(false);
       toast.success(
         `Imported ${parsed.length} debt(s) sorted by ${inputs.strategy} method`
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Import error:", error);
-      toast.error("Failed to import Excel file");
+      toast.error(error?.message || "Failed to import Excel file");
     }
   }
 
