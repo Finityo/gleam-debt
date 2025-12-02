@@ -20,7 +20,7 @@ import { PlaidLink } from "@/components/PlaidLink";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
 import type { DebtInput } from "@/lib/debtPlan";
 import * as XLSX from "xlsx";
-import { emitDomainEvent } from "@/domain/domainEvents";
+import { importDebtsFromExcel } from "@/lib/import/importDebtsFromExcel";
 import "@/agents/DebtIntegrityAgent"; // Initialize agent
 
 export default function DebtsLive() {
@@ -100,20 +100,8 @@ export default function DebtsLive() {
         include: true,
       }));
 
-      // 🔔 Emit domain event for integrity agent validation
-      await emitDomainEvent({
-        type: "DebtBatchImported",
-        debts: imported.map((d) => ({
-          id: d.id,
-          name: d.name,
-          balance: d.balance,
-          minPayment: d.minPayment,
-          apr: d.apr,
-          source: "excel",
-        })),
-        source: "excel",
-        userId: undefined, // Add user ID if available
-      });
+      // Use dedicated import function with integrity validation
+      await importDebtsFromExcel(imported as any, undefined);
 
       setInputs({ debts: [...inputs.debts, ...imported] });
       setShowImport(false);
