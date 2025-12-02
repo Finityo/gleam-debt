@@ -21,6 +21,7 @@ import { ExcelImportModal } from "@/components/ExcelImportModal";
 import type { DebtInput } from "@/lib/debtPlan";
 import * as XLSX from "xlsx";
 import { importDebtsFromExcel } from "@/lib/import/importDebtsFromExcel";
+import { emitDomainEvent } from "@/domain/domainEvents";
 import "@/agents/DebtIntegrityAgent"; // Initialize agent
 
 export default function DebtsLive() {
@@ -50,9 +51,24 @@ export default function DebtsLive() {
     setIsOpen(false);
   }
 
-  function handleUpdate(debt: DebtInput) {
+  async function handleUpdate(debt: DebtInput) {
     const updated = inputs.debts.map((d) => (d.id === debt.id ? debt : d));
     setInputs({ debts: updated });
+    
+    // Emit domain event for integrity validation
+    await emitDomainEvent({
+      type: "DebtEdited",
+      debt: {
+        id: debt.id,
+        name: debt.name,
+        balance: debt.balance,
+        minPayment: debt.minPayment,
+        apr: debt.apr,
+        source: "manual",
+      },
+      userId: undefined,
+    });
+    
     toast.success("Debt updated");
     setEditingDebt(null);
   }
