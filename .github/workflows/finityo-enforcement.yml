@@ -1,0 +1,71 @@
+# .github/workflows/finityo-enforcement.yml
+# Finityo Architectural Enforcement Pipeline
+# This CI job HARD FAILS on any guard or audit violation
+
+name: Finityo Enforcement Gate
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+  enforcement:
+    name: Runtime Guards + Wiring Audit Enforcement
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ✅ Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: ✅ Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: ✅ Install Dependencies
+        run: npm ci
+
+      # ----------------------------------------
+      # 1️⃣ Type Safety (Catches Guard Drift)
+      # ----------------------------------------
+      - name: ✅ Type Check
+        run: npm run typecheck
+
+      # ----------------------------------------
+      # 2️⃣ Lint (Catches Illegal Direct Routing)
+      # ----------------------------------------
+      - name: ✅ Lint
+        run: npm run lint
+
+      # ----------------------------------------
+      # 3️⃣ Run Guard + Audit Smoke Tests
+      # ----------------------------------------
+      - name: 🧪 Run Enforcement Smoke Test
+        run: |
+          echo "Running Finityo Enforcement Smoke Test..."
+          npm test -- tests/finityoViolationSmokeTest.ts
+
+      # ----------------------------------------
+      # 4️⃣ HARD FAIL ON ANY VIOLATION OUTPUT
+      # ----------------------------------------
+      - name: 🚨 Block on Guard or Audit Failure
+        if: failure()
+        run: |
+          echo "❌ FINITYO ARCHITECTURE VIOLATION DETECTED"
+          echo "❌ Guards, Audit, or Agents flagged illegal behavior."
+          echo "❌ Deployment is BLOCKED."
+          exit 1
+
+      # ----------------------------------------
+      # 5️⃣ PASS CONFIRMATION
+      # ----------------------------------------
+      - name: ✅ Enforcement Passed
+        if: success()
+        run: |
+          echo "✅ Finityo Enforcement Passed"
+          echo "✅ Guards OK"
+          echo "✅ Wiring Audit OK"
+          echo "✅ Navigation Authority OK"
+          echo "✅ Compare Sandbox OK"
