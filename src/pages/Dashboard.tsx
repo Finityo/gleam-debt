@@ -259,27 +259,6 @@ const Dashboard = () => {
           {/* Plaid Re-authentication Card */}
           <ReauthPlaidCard />
 
-          {/* Quick Stats */}
-          {planData?.debts?.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-3 mb-6">
-              <div className="bg-gradient-to-br from-cyan-950/40 via-teal-950/30 to-cyan-900/40 backdrop-blur-sm border border-cyan-500/30 rounded-xl p-6 shadow-lg hover:shadow-cyan-500/20 hover:border-cyan-400/50 transition-all duration-300 hover:bg-gradient-to-br hover:from-cyan-900/50 hover:via-teal-900/40 hover:to-cyan-800/50">
-                <div className="text-sm font-medium text-cyan-300 mb-2">Total Debt</div>
-                <div className="text-3xl font-bold bg-gradient-to-r from-cyan-200 to-teal-200 bg-clip-text text-transparent">
-                  {formatCurrency(planData.debts.reduce((sum: number, d: any) => sum + (d.balance || 0), 0))}
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-950/40 via-fuchsia-950/30 to-purple-900/40 backdrop-blur-sm border border-purple-500/30 rounded-xl p-6 shadow-lg hover:shadow-purple-500/20 hover:border-purple-400/50 transition-all duration-300 hover:bg-gradient-to-br hover:from-purple-900/50 hover:via-fuchsia-900/40 hover:to-purple-800/50">
-                <div className="text-sm font-medium text-purple-300 mb-2">Active Debts</div>
-                <div className="text-3xl font-bold bg-gradient-to-r from-purple-200 to-fuchsia-200 bg-clip-text text-transparent">{planData.debts.length}</div>
-              </div>
-              <div className="bg-gradient-to-br from-pink-950/40 via-rose-950/30 to-pink-900/40 backdrop-blur-sm border border-pink-500/30 rounded-xl p-6 shadow-lg hover:shadow-pink-500/20 hover:border-pink-400/50 transition-all duration-300 hover:bg-gradient-to-br hover:from-pink-900/50 hover:via-rose-900/40 hover:to-pink-800/50">
-                <div className="text-sm font-medium text-pink-300 mb-2">Strategy</div>
-                <div className="text-3xl font-bold bg-gradient-to-r from-pink-200 to-rose-200 bg-clip-text text-transparent capitalize">
-                  {planData.settings?.strategy || 'Snowball'}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         <PlaidUpdateBanner />
