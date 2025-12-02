@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "@/context/AppStore";
 import { useAuth } from "@/hooks/useAuth";
+import { checkAdminAccess } from "@/guards/adminGuard";
 import AppLayout from "@/layouts/AppLayout";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,18 @@ export default function SettingsPage() {
   const [localSettings, setLocalSettings] = useState(state.settings);
   const { settings: appearanceSettings, saveSettings: saveAppearanceSettings } = useAppearance();
   const [localAppearance, setLocalAppearance] = useState(appearanceSettings);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check admin access
+  useEffect(() => {
+    async function loadAdminStatus() {
+      if (user) {
+        const adminStatus = await checkAdminAccess();
+        setIsAdmin(adminStatus);
+      }
+    }
+    loadAdminStatus();
+  }, [user]);
 
   // Fix: Do NOT redirect until auth state has fully resolved
   
@@ -315,36 +328,38 @@ export default function SettingsPage() {
           </div>
         </Card>
 
-        {/* Developer Tools */}
-        <Card className="p-6 border-amber-500/20 bg-amber-500/5">
-          <div className="space-y-6">
-            {/* Header */}
-            <div>
-              <h2 className="text-xl font-semibold flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                <Settings className="h-5 w-5" />
-                Developer Tools
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Advanced monitoring and debugging utilities
-              </p>
-            </div>
+        {/* Developer Tools - Admin Only */}
+        {isAdmin && (
+          <Card className="p-6 border-amber-500/20 bg-amber-500/5">
+            <div className="space-y-6">
+              {/* Header */}
+              <div>
+                <h2 className="text-xl font-semibold flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                  <Settings className="h-5 w-5" />
+                  Developer Tools
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Advanced monitoring and debugging utilities
+                </p>
+              </div>
 
-            {/* Audit Dashboard Link */}
-            <div className="space-y-3">
-              <Button
-                variant="outline"
-                className="w-full justify-start border-amber-500/30 hover:bg-amber-500/10"
-                onClick={() => navigate('/audit-dashboard')}
-              >
-                <Activity className="mr-2 h-4 w-4" />
-                Architecture Audit Dashboard
-              </Button>
-              <p className="text-xs text-muted-foreground px-1">
-                Real-time wiring audit, guard enforcement, and violation tracking
-              </p>
+              {/* Audit Dashboard Link */}
+              <div className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start border-amber-500/30 hover:bg-amber-500/10"
+                  onClick={() => navigate('/audit-dashboard')}
+                >
+                  <Activity className="mr-2 h-4 w-4" />
+                  Architecture Audit Dashboard
+                </Button>
+                <p className="text-xs text-muted-foreground px-1">
+                  Real-time wiring audit, guard enforcement, and violation tracking
+                </p>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        )}
       </div>
     </AppLayout>
   );
