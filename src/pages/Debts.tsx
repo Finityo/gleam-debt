@@ -59,7 +59,7 @@ import { DebtQuickEdit } from "@/components/DebtQuickEdit";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
 import { BulkDebtEditor } from "@/components/BulkDebtEditor";
 import { NumericInput } from "@/components/ui/numeric-input";
-import { emitDomainEvent } from "@/domain/domainEvents";
+import { importDebtsFromExcel } from "@/lib/import/importDebtsFromExcel";
 import "@/agents/DebtIntegrityAgent"; // Initialize agent
 
 export default function DebtsPage() {
@@ -244,20 +244,8 @@ export default function DebtsPage() {
         dueDay: d.dueDay,
       }));
 
-      // 🔔 Emit domain event for integrity agent validation
-      await emitDomainEvent({
-        type: "DebtBatchImported",
-        debts: importedDebts.map((d) => ({
-          id: d.id,
-          name: d.name,
-          balance: d.balance,
-          minPayment: d.minPayment,
-          apr: d.apr,
-          source: "excel",
-        })),
-        source: "excel",
-        userId: undefined, // Add user ID if available
-      });
+      // Use dedicated import function with integrity validation
+      await importDebtsFromExcel(importedDebts as any, undefined);
 
       const next = [...debts, ...importedDebts];
       setDebts(next);
