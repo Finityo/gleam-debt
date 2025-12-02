@@ -21,7 +21,7 @@ import { ExcelImportModal } from "@/components/ExcelImportModal";
 import type { DebtInput } from "@/lib/debtPlan";
 import * as XLSX from "xlsx";
 import { importDebtsFromExcel } from "@/lib/import/importDebtsFromExcel";
-import { emitDomainEvent } from "@/domain/domainEvents";
+import { emitDomainEvent } from "@/agents/DebtIntegrityAgent";
 import "@/agents/DebtIntegrityAgent"; // Initialize agent
 
 export default function DebtsLive() {

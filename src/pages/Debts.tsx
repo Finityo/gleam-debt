@@ -60,7 +60,7 @@ import { ExcelImportModal } from "@/components/ExcelImportModal";
 import { BulkDebtEditor } from "@/components/BulkDebtEditor";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { importDebtsFromExcel } from "@/lib/import/importDebtsFromExcel";
-import { emitDomainEvent } from "@/domain/domainEvents";
+import { emitDomainEvent } from "@/agents/DebtIntegrityAgent";
 import "@/agents/DebtIntegrityAgent"; // Initialize agent
 
 export default function DebtsPage() {

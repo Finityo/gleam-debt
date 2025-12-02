@@ -1,14 +1,75 @@
 // ============================================================
 // FILE: src/agents/DebtIntegrityAgent.ts
-// Debt-aware integrity agent that enforces:
-// - Realistic APR ranges (no "100% for every debt" nonsense)
-// - Valid debt structure (no phantom rows)
-// - Sane numeric relationships (no negative values, zero min with balance)
-// - Batch-level anomaly detection (identical APR across all imports)
+// Debt-aware integrity agent with embedded domain event bus
+// Enforces: realistic APR ranges, valid debt structure, sane numeric relationships
 // ============================================================
 
-import { DomainEvent, Debt, subscribeToDomainEvents } from "@/domain/domainEvents";
 import { supabase } from "@/integrations/supabase/client";
+
+/* ---------- EMBEDDED DOMAIN EVENT BUS ---------- */
+
+export type Debt = {
+  id: string;
+  name?: string;
+  balance: number | null;
+  minPayment: number | null;
+  apr: number | null;
+  source?: "excel" | "plaid" | "manual";
+};
+
+export type DomainEvent =
+  | {
+      type: "DebtBatchImported";
+      debts: Debt[];
+      source: "excel" | "plaid";
+      userId?: string;
+      timestamp?: number;
+    }
+  | {
+      type: "DebtEdited";
+      debt: Debt;
+      userId?: string;
+      timestamp?: number;
+    }
+  | {
+      type: "PlanComputed";
+      planId?: string;
+      debts: Debt[];
+      userId?: string;
+      timestamp?: number;
+    };
+
+type Subscriber = (e: DomainEvent) => void | Promise<void>;
+
+const subscribers: Subscriber[] = [];
+
+/**
+ * Subscribe once, agent-style
+ * Subscribers are called synchronously in order
+ */
+export function subscribeToDomainEvents(fn: Subscriber) {
+  subscribers.push(fn);
+}
+
+/**
+ * Emit from UI / server actions around sensitive edges (import, edit, compute)
+ * All subscribers are called synchronously; if any throws, emission is blocked
+ */
+export async function emitDomainEvent(e: DomainEvent): Promise<void> {
+  const evtWithTs: DomainEvent = {
+    ...e,
+    timestamp: e.timestamp ?? Date.now(),
+  };
+
+  for (const sub of subscribers) {
+    try {
+      await sub(evtWithTs);
+    } catch (err) {
+      console.error("[DomainEvents] Subscriber threw - blocking event:", err);
+      throw err; // Re-throw to block the operation
+    }
+  }
+}
 
 /* ---------- CONFIG: Protection Goals ---------- */
 
@@ -247,5 +308,50 @@ subscribeToDomainEvents(async (event) => {
     throw err; // Re-throw to block the operation
   }
 });
+
+/* ---------- PUBLIC HELPER FUNCTIONS ---------- */
+
+/**
+ * Call after Excel/Plaid import completes
+ */
+export function reportDebtBatchImported(
+  debts: Debt[],
+  source: "excel" | "plaid",
+  userId?: string
+) {
+  return emitDomainEvent({
+    type: "DebtBatchImported",
+    debts,
+    source,
+    userId,
+  });
+}
+
+/**
+ * Call after user edits a single debt
+ */
+export function reportDebtEdited(debt: Debt, userId?: string) {
+  return emitDomainEvent({
+    type: "DebtEdited",
+    debt,
+    userId,
+  });
+}
+
+/**
+ * Call after plan is computed
+ */
+export function reportPlanComputed(
+  debts: Debt[],
+  planId?: string,
+  userId?: string
+) {
+  return emitDomainEvent({
+    type: "PlanComputed",
+    debts,
+    planId,
+    userId,
+  });
+}
 
 console.log("🔒 [DebtIntegrityAgent] Agent initialized and monitoring");

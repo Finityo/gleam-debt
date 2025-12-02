@@ -3,7 +3,7 @@
 // Excel import orchestration with domain event emission
 // ============================================================
 
-import { emitDomainEvent } from "@/domain/domainEvents";
+import { emitDomainEvent } from "@/agents/DebtIntegrityAgent";
 import { normalizeImportedDebt } from "@/lib/import/normalizeImportedDebt";
 import { supabase } from "@/integrations/supabase/client";
 
