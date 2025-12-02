@@ -13,6 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { NumericInput } from "@/components/ui/numeric-input";
 import type { DebtInput } from "@/lib/debtPlan";
 
 type DebtQuickEditProps = {
@@ -74,34 +75,34 @@ export function DebtQuickEdit({
           {/* Balance */}
           <div className="space-y-1">
             <Label>Balance ($)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={local.balance}
-              onChange={(e) =>
-                update("balance", Number(e.target.value) || 0)
-              }
+              placeholder="0.00"
+              onChange={(val) => update("balance", val)}
+              min={0}
             />
           </div>
 
           {/* APR */}
           <div className="space-y-1">
             <Label>APR (%)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={local.apr}
-              onChange={(e) => update("apr", Number(e.target.value))}
+              placeholder="0.00"
+              onChange={(val) => update("apr", val)}
+              min={0}
+              max={100}
             />
           </div>
 
           {/* Minimum Payment */}
           <div className="space-y-1">
             <Label>Minimum Payment ($)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={local.minPayment}
-              onChange={(e) =>
-                update("minPayment", Number(e.target.value) || 0)
-              }
+              placeholder="0.00"
+              onChange={(val) => update("minPayment", val)}
+              min={0}
             />
           </div>
 

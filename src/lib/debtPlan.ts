@@ -101,8 +101,9 @@ export type ComputeArgs = ComputeParams;
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-export function formatAPR(apr: number): string {
-  return `${apr.toFixed(2)}%`;
+export function formatAPR(apr: number | null | undefined): string {
+  if (apr === null || apr === undefined || isNaN(apr)) return "—";
+  return `${Number(apr).toFixed(2)}%`;
 }
 
 // Placeholder for legacy compatibility

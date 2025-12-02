@@ -1,13 +1,33 @@
+// ============================================================
+// src/lib/import/normalizeImportedDebt.ts
+// APR/Balance/MinPayment import normalization with null safety
+// ============================================================
+
 export function normalizeImportedDebt(row: any) {
   return {
-    id: row.id || crypto.randomUUID(),
+    // ✅ HARD ID SAFETY — PREVENTS PHANTOM CARDS
+    id: row.id ?? crypto.randomUUID(),
+    
     name: row.name || "Imported Debt",
-    balance: Number(row.balance) || 0,
+    
+    // ✅ BALANCE FIX — NO forced zero, allows null
+    balance:
+      row.balance === "" || row.balance === null || row.balance === undefined
+        ? null
+        : Number(row.balance),
 
-    // Store APR EXACTLY AS USER ENTERED (real percent, not decimal)
-    apr: Number(row.apr) || 0,
+    // ✅ APR FIX — NO Boolean fallback, NO forced zero or 1
+    apr:
+      row.apr === "" || row.apr === null || row.apr === undefined
+        ? null
+        : Number(row.apr),
 
-    minPayment: Number(row.minPayment) || 0,
+    // ✅ MIN PAYMENT FIX — NO forced zero
+    minPayment:
+      row.minPayment === "" || row.minPayment === null || row.minPayment === undefined
+        ? null
+        : Number(row.minPayment),
+
     include: row.include !== "no",
     category: row.category || "",
     dueDay: row.dueDay ? Number(row.dueDay) : undefined,
