@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Settings, DollarSign, TrendingUp, Palette } from "lucide-react";
+import { Settings, DollarSign, TrendingUp, Palette, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { useAppearance } from "@/hooks/useAppearance";
 
@@ -311,6 +311,37 @@ export default function SettingsPage() {
               <Button onClick={handleSave} className="w-full sm:w-auto">
                 Save Settings
               </Button>
+            </div>
+          </div>
+        </Card>
+
+        {/* Developer Tools */}
+        <Card className="p-6 border-amber-500/20 bg-amber-500/5">
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <h2 className="text-xl font-semibold flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                <Settings className="h-5 w-5" />
+                Developer Tools
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Advanced monitoring and debugging utilities
+              </p>
+            </div>
+
+            {/* Audit Dashboard Link */}
+            <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full justify-start border-amber-500/30 hover:bg-amber-500/10"
+                onClick={() => navigate('/audit-dashboard')}
+              >
+                <Activity className="mr-2 h-4 w-4" />
+                Architecture Audit Dashboard
+              </Button>
+              <p className="text-xs text-muted-foreground px-1">
+                Real-time wiring audit, guard enforcement, and violation tracking
+              </p>
             </div>
           </div>
         </Card>
