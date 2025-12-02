@@ -59,6 +59,8 @@ import { DebtQuickEdit } from "@/components/DebtQuickEdit";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
 import { BulkDebtEditor } from "@/components/BulkDebtEditor";
 import { NumericInput } from "@/components/ui/numeric-input";
+import { emitDomainEvent } from "@/domain/domainEvents";
+import "@/agents/DebtIntegrityAgent"; // Initialize agent
 
 export default function DebtsPage() {
   const planData = useUnifiedPlan();
@@ -242,6 +244,21 @@ export default function DebtsPage() {
         dueDay: d.dueDay,
       }));
 
+      // 🔔 Emit domain event for integrity agent validation
+      await emitDomainEvent({
+        type: "DebtBatchImported",
+        debts: importedDebts.map((d) => ({
+          id: d.id,
+          name: d.name,
+          balance: d.balance,
+          minPayment: d.minPayment,
+          apr: d.apr,
+          source: "excel",
+        })),
+        source: "excel",
+        userId: undefined, // Add user ID if available
+      });
+
       const next = [...debts, ...importedDebts];
       setDebts(next);
 
@@ -249,9 +266,9 @@ export default function DebtsPage() {
       toast.success(
         `Imported ${parsed.length} debt(s) sorted by ${settings.strategy} method`,
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Import error:", error);
-      toast.error("Failed to import Excel/CSV file");
+      toast.error(error?.message || "Failed to import Excel/CSV file");
     }
   };
 

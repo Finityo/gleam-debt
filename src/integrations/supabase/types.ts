@@ -236,6 +236,33 @@ export type Database = {
         }
         Relationships: []
       }
+      debt_integrity_logs: {
+        Row: {
+          context: string
+          created_at: string
+          id: string
+          issues: Json
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          context: string
+          created_at?: string
+          id?: string
+          issues?: Json
+          source: string
+          user_id?: string | null
+        }
+        Update: {
+          context?: string
+          created_at?: string
+          id?: string
+          issues?: Json
+          source?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       debt_plans: {
         Row: {
           created_at: string
