@@ -23,3 +23,26 @@ export const safeAPR = (value: number): number => {
   // NEVER multiply by 100 here — let unified engine handle normalization
   return n;
 };
+
+// ============================================================
+// PHANTOM DEBT FILTER — prevents empty debts from rendering
+// ============================================================
+export function filterRenderableDebts(debts: any[]): any[] {
+  return debts.filter(
+    (d) =>
+      d &&
+      d.id &&
+      (d.balance !== null ||
+        d.minPayment !== null ||
+        d.apr !== null ||
+        (d.name && d.name.trim() !== ""))
+  );
+}
+
+// ============================================================
+// APR FORMAT GUARD — Display only, no transformation
+// ============================================================
+export function formatAPRDisplay(apr: any): string {
+  if (apr === null || apr === undefined || isNaN(apr)) return "—";
+  return `${Number(apr).toFixed(2)}%`;
+}

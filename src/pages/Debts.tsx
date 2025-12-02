@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { filterRenderableDebts, formatAPRDisplay } from "@/lib/number";
 import {
   Dialog,
   DialogContent,
@@ -45,30 +46,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-// APR display formatter – handles basis points, decimals, and normal percents
-function formatAprDisplay(raw: number | null | undefined): string {
-  const value = Number(raw ?? 0);
-  if (!Number.isFinite(value) || value === 0) return "0.0";
-
-  const abs = Math.abs(value);
-  let percent: number;
-
-  // If it's clearly in basis points (e.g. 1492.7 → 14.9%)
-  if (abs > 100) {
-    percent = abs / 100;
-  }
-  // If it's a decimal (0.149 → 14.9%)
-  else if (abs <= 1) {
-    percent = abs * 100;
-  }
-  // Already a normal percent (e.g. 14.9)
-  else {
-    percent = abs;
-  }
-
-  return percent.toFixed(1);
-}
-
 import {
   debtToCSV,
   downloadCSV,
@@ -81,6 +58,7 @@ import type { DebtInput } from "@/lib/debtPlan";
 import { DebtQuickEdit } from "@/components/DebtQuickEdit";
 import { ExcelImportModal } from "@/components/ExcelImportModal";
 import { BulkDebtEditor } from "@/components/BulkDebtEditor";
+import { NumericInput } from "@/components/ui/numeric-input";
 
 export default function DebtsPage() {
   const planData = useUnifiedPlan();
@@ -108,6 +86,9 @@ export default function DebtsPage() {
   const { debtsUsed, settingsUsed } = planData;
   const debts = debtsUsed;
   const settings = settingsUsed;
+  
+  // ✅ PHANTOM DEBT FILTER — only render valid debts
+  const renderableDebts = filterRenderableDebts(debts);
 
   const [quickEditDebt, setQuickEditDebt] = useState<DebtInput | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -126,13 +107,13 @@ export default function DebtsPage() {
     );
   };
 
-  const isAllSelected = debts.length > 0 && selectedIds.length === debts.length;
+  const isAllSelected = renderableDebts.length > 0 && selectedIds.length === renderableDebts.length;
 
   const toggleSelectAll = () => {
     if (isAllSelected) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(debts.map(d => d.id));
+      setSelectedIds(renderableDebts.map(d => d.id));
     }
   };
 
@@ -399,7 +380,7 @@ export default function DebtsPage() {
         </div>
 
         {/* Empty State */}
-        {debts.length === 0 && (
+        {renderableDebts.length === 0 && (
           <div className="
             bg-white/10 backdrop-blur-xl 
             border border-white/20 
@@ -412,7 +393,7 @@ export default function DebtsPage() {
         )}
 
         {/* Debts Table */}
-        {debts.length > 0 && (
+        {renderableDebts.length > 0 && (
           <div className="overflow-x-auto mt-6">
             <table className="min-w-full glass-table">
               <thead>
@@ -428,7 +409,7 @@ export default function DebtsPage() {
               </thead>
 
               <tbody>
-                {debts.map((debt, index) => {
+                {renderableDebts.map((debt, index) => {
                   const selected = selectedIds.includes(debt.id);
 
                   return (
@@ -460,7 +441,7 @@ export default function DebtsPage() {
 
                       {/* APR */}
                       <td className="px-3 py-2 text-right text-sm tabular-nums">
-                        {formatAprDisplay(debt.apr)}%
+                        {formatAPRDisplay(debt.apr)}
                       </td>
 
                       {/* Min */}
@@ -596,35 +577,30 @@ function DebtForm({ debt, onChange, onSubmit }: DebtFormProps) {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="space-y-1">
           <label className="text-sm font-medium">Balance ($)</label>
-          <Input
-            type="number"
+          <NumericInput
             value={local.balance}
-            onChange={(e) =>
-              handleChange("balance", Number(e.target.value || 0))
-            }
+            placeholder="0.00"
+            onChange={(val) => handleChange("balance", val ?? 0)}
+            min={0}
           />
         </div>
         <div className="space-y-1">
           <label className="text-sm font-medium">APR (%)</label>
-          <Input
-            type="number"
+          <NumericInput
             value={local.apr}
-            onChange={(e) => {
-              const val = e.target.value;
-              const num = Number(val);
-              // Store raw percent, not normalized
-              handleChange("apr", isNaN(num) ? 0 : num);
-            }}
+            placeholder="0.00"
+            onChange={(val) => handleChange("apr", val ?? 0)}
+            min={0}
+            max={100}
           />
         </div>
         <div className="space-y-1">
           <label className="text-sm font-medium">Minimum Payment ($)</label>
-          <Input
-            type="number"
+          <NumericInput
             value={local.minPayment}
-            onChange={(e) =>
-              handleChange("minPayment", Number(e.target.value || 0))
-            }
+            placeholder="0.00"
+            onChange={(val) => handleChange("minPayment", val ?? 0)}
+            min={0}
           />
         </div>
       </div>
