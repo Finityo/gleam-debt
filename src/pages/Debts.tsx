@@ -60,6 +60,7 @@ import { ExcelImportModal } from "@/components/ExcelImportModal";
 import { BulkDebtEditor } from "@/components/BulkDebtEditor";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { importDebtsFromExcel } from "@/lib/import/importDebtsFromExcel";
+import { emitDomainEvent } from "@/domain/domainEvents";
 import "@/agents/DebtIntegrityAgent"; // Initialize agent
 
 export default function DebtsPage() {
@@ -171,9 +172,24 @@ export default function DebtsPage() {
     toast.success("Debt deleted");
   };
 
-  const handleQuickEditSave = (updated: DebtInput) => {
+  const handleQuickEditSave = async (updated: DebtInput) => {
     const next = debts.map(d => (d.id === updated.id ? { ...d, ...updated } : d));
     setDebts(next);
+    
+    // Emit domain event for integrity validation
+    await emitDomainEvent({
+      type: "DebtEdited",
+      debt: {
+        id: updated.id,
+        name: updated.name,
+        balance: updated.balance,
+        minPayment: updated.minPayment,
+        apr: updated.apr,
+        source: "manual",
+      },
+      userId: undefined,
+    });
+    
     toast.success("Debt updated");
     setQuickEditDebt(null);
   };
@@ -458,13 +474,27 @@ export default function DebtsPage() {
                       <td className="py-3">
                         <input
                           value={debt.category || ""}
-                          onChange={(e) => {
+                          onChange={async (e) => {
                             const next = debts.map((d) =>
                               d.id === debt.id
                                 ? { ...d, category: e.target.value }
                                 : d
                             );
                             setDebts(next);
+                            
+                            // Emit domain event for integrity validation
+                            await emitDomainEvent({
+                              type: "DebtEdited",
+                              debt: {
+                                id: debt.id,
+                                name: debt.name,
+                                balance: debt.balance,
+                                minPayment: debt.minPayment,
+                                apr: debt.apr,
+                                source: "manual",
+                              },
+                              userId: undefined,
+                            });
                           }}
                           className="bg-transparent border border-white/20 text-white p-1 rounded-md text-xs w-full placeholder-white/30"
                           placeholder="e.g., Auto, Credit"
