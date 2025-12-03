@@ -32,7 +32,10 @@ import type { DebtInput } from "@/engine/plan-types";
 
 import { useAuth } from "@/context/AuthContext";
 import { PlanAPI, type VersionRecord } from "@/lib/planAPI";
-import { loadActivePlan, loadUserDebts, loadPlanSettings, savePlanSettings } from "@/lib/planStore";
+import {
+  loadActivePlan,
+  savePlanSettings,
+} from "@/lib/planStore";
 import { supabase } from "@/integrations/supabase/client";
 
 // ---- local storage helpers (demo only) ----
