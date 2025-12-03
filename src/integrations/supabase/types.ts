@@ -236,6 +236,33 @@ export type Database = {
         }
         Relationships: []
       }
+      debt_imports: {
+        Row: {
+          created_at: string | null
+          id: string
+          raw_data: Json
+          source: string
+          used: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          raw_data?: Json
+          source?: string
+          used?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          raw_data?: Json
+          source?: string
+          used?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       debt_integrity_logs: {
         Row: {
           context: string
@@ -1298,6 +1325,7 @@ export type Database = {
         Row: {
           created_at: string
           debts: Json
+          is_historical: boolean | null
           notes: string | null
           plan: Json | null
           settings: Json
@@ -1308,6 +1336,7 @@ export type Database = {
         Insert: {
           created_at?: string
           debts?: Json
+          is_historical?: boolean | null
           notes?: string | null
           plan?: Json | null
           settings?: Json
@@ -1318,11 +1347,48 @@ export type Database = {
         Update: {
           created_at?: string
           debts?: Json
+          is_historical?: boolean | null
           notes?: string | null
           plan?: Json | null
           settings?: Json
           updated_at?: string
           user_id?: string
+          versions?: Json | null
+        }
+        Relationships: []
+      }
+      user_plan_data_backup: {
+        Row: {
+          created_at: string | null
+          debts: Json | null
+          is_historical: boolean | null
+          notes: string | null
+          plan: Json | null
+          settings: Json | null
+          updated_at: string | null
+          user_id: string | null
+          versions: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          debts?: Json | null
+          is_historical?: boolean | null
+          notes?: string | null
+          plan?: Json | null
+          settings?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          versions?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          debts?: Json | null
+          is_historical?: boolean | null
+          notes?: string | null
+          plan?: Json | null
+          settings?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
           versions?: Json | null
         }
         Relationships: []
