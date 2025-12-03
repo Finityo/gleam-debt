@@ -43,14 +43,17 @@ const TeamAnalytics = () => {
 
       // Load funnel data
       const { data: profiles } = await supabase.from('profiles').select('onboarding_completed');
-      const { data: plans } = await supabase.from('user_plan_data').select('user_id');
+      const { data: usersWithDebts } = await supabase.from('debts').select('user_id');
       const { data: plaidItems } = await supabase.from('plaid_items').select('user_id');
+
+      // Count unique users with debts
+      const uniqueDebtUsers = new Set(usersWithDebts?.map(d => d.user_id) || []).size;
 
       setFunnelData([
         { step: 'Visited Landing', count: visits?.length || 0 },
         { step: 'Began Onboarding', count: profiles?.length || 0 },
         { step: 'Completed Onboarding', count: profiles?.filter(p => p.onboarding_completed).length || 0 },
-        { step: 'Created Debt Plan', count: plans?.length || 0 },
+        { step: 'Created Debt Plan', count: uniqueDebtUsers },
         { step: 'Linked Bank', count: plaidItems?.length || 0 },
       ]);
 

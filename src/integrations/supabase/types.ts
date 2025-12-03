@@ -169,6 +169,7 @@ export type Database = {
           created_at: string
           extra_monthly: number | null
           id: string
+          notes: string | null
           one_time: number | null
           strategy: string
           updated_at: string
@@ -178,6 +179,7 @@ export type Database = {
           created_at?: string
           extra_monthly?: number | null
           id?: string
+          notes?: string | null
           one_time?: number | null
           strategy?: string
           updated_at?: string
@@ -187,6 +189,7 @@ export type Database = {
           created_at?: string
           extra_monthly?: number | null
           id?: string
+          notes?: string | null
           one_time?: number | null
           strategy?: string
           updated_at?: string

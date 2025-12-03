@@ -39,12 +39,14 @@ export type PlanSnapshot = {
     oneTimeExtra: number;
     generatedAt: string;
   };
+  notes: string;
 };
 
 export type PlanSettingsInput = {
   strategy: "snowball" | "avalanche";
   extraPayment: number;
   oneTimePayment?: number;
+  notes?: string;
 };
 
 /**
@@ -68,10 +70,10 @@ export async function loadUserDebts(userId: string): Promise<DebtRecord[]> {
 /**
  * Load plan settings from debt_calculator_settings table.
  */
-export async function loadPlanSettings(userId: string): Promise<PlanSettingsInput> {
+export async function loadPlanSettings(userId: string): Promise<PlanSettingsInput & { notes: string }> {
   const { data, error } = await supabase
     .from("debt_calculator_settings")
-    .select("strategy, extra_monthly, one_time")
+    .select("strategy, extra_monthly, one_time, notes")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -84,6 +86,7 @@ export async function loadPlanSettings(userId: string): Promise<PlanSettingsInpu
     strategy: (data?.strategy as "snowball" | "avalanche") || "snowball",
     extraPayment: data?.extra_monthly ?? 0,
     oneTimePayment: data?.one_time ?? 0,
+    notes: (data as any)?.notes ?? "",
   };
 }
 
@@ -114,6 +117,7 @@ export async function loadActivePlan(userId: string): Promise<PlanSnapshot> {
         oneTimeExtra: settings.oneTimePayment ?? 0,
         generatedAt: new Date().toISOString(),
       },
+      notes: settings.notes,
     };
   }
 
@@ -158,11 +162,12 @@ export async function loadActivePlan(userId: string): Promise<PlanSnapshot> {
       oneTimeExtra: settings.oneTimePayment ?? 0,
       generatedAt: new Date().toISOString(),
     },
+    notes: settings.notes,
   };
 }
 
 /**
- * Save plan settings (strategy, extra payment, etc.) to debt_calculator_settings.
+ * Save plan settings (strategy, extra payment, notes, etc.) to debt_calculator_settings.
  * Does NOT touch user_plan_data (which is now read-only).
  */
 export async function savePlanSettings(
@@ -177,13 +182,35 @@ export async function savePlanSettings(
         strategy: settings.strategy,
         extra_monthly: settings.extraPayment,
         one_time: settings.oneTimePayment ?? 0,
+        notes: settings.notes ?? "",
         updated_at: new Date().toISOString(),
-      },
+      } as any,
       { onConflict: "user_id" }
     );
 
   if (error) {
     console.error("❌ savePlanSettings error:", error);
+    throw error;
+  }
+}
+
+/**
+ * Save just the notes field to debt_calculator_settings.
+ */
+export async function saveNotes(userId: string, notes: string): Promise<void> {
+  const { error } = await supabase
+    .from("debt_calculator_settings")
+    .upsert(
+      {
+        user_id: userId,
+        notes,
+        updated_at: new Date().toISOString(),
+      } as any,
+      { onConflict: "user_id" }
+    );
+
+  if (error) {
+    console.error("❌ saveNotes error:", error);
     throw error;
   }
 }

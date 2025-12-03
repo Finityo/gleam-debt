@@ -15,8 +15,9 @@ const TeamPlans = () => {
 
   const loadPlans = async () => {
     try {
+      // Load debt calculator settings as "plans" since user_plan_data is now historical
       const { data, error } = await supabase
-        .from('user_plan_data')
+        .from('debt_calculator_settings')
         .select('*')
         .order('updated_at', { ascending: false })
         .limit(100);

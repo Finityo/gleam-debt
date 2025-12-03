@@ -32,6 +32,7 @@ import type { DebtInput } from "@/engine/plan-types";
 
 import { useAuth } from "@/context/AuthContext";
 import { PlanAPI, type VersionRecord } from "@/lib/planAPI";
+import { loadActivePlan, loadUserDebts, loadPlanSettings, savePlanSettings } from "@/lib/planStore";
 import { supabase } from "@/integrations/supabase/client";
 
 // ---- local storage helpers (demo only) ----
@@ -135,13 +136,41 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // LIVE
-      const row = await PlanAPI.get(user.id);
-      if (row) {
-        setDebts(row.debts ?? []);
-        setSettings(row.settings ?? settings);
-        setNotes(row.notes ?? "");
-        setPlan(row.plan ?? null);
+      // LIVE - Load from debts table + debt_calculator_settings (NEW SOURCE OF TRUTH)
+      try {
+        const snapshot = await loadActivePlan(user.id);
+        
+        // Convert snapshot to local state format
+        const loadedDebts: Debt[] = snapshot.debts.map(d => ({
+          id: d.id,
+          name: d.name,
+          balance: d.balance,
+          apr: d.apr,
+          minPayment: d.min_payment,
+          category: d.debt_type || "",
+        }));
+        
+        setDebts(loadedDebts);
+        setSettings({
+          strategy: snapshot.meta.strategy as "snowball" | "avalanche",
+          extraMonthly: snapshot.meta.extraMonthly,
+          oneTimeExtra: snapshot.meta.oneTimeExtra,
+        });
+        setNotes(snapshot.notes || "");
+        
+        // Compute plan from loaded data
+        if (loadedDebts.length > 0) {
+          const p = computeDebtPlanUnified({
+            debts: loadedDebts as DebtInput[],
+            strategy: snapshot.meta.strategy as "snowball" | "avalanche",
+            extraMonthly: snapshot.meta.extraMonthly,
+            oneTimeExtra: snapshot.meta.oneTimeExtra,
+            startDate: new Date().toISOString().slice(0, 10),
+          });
+          setPlan(p);
+        }
+      } catch (err) {
+        console.error('Failed to load plan data:', err);
       }
 
       // Load version history
@@ -168,24 +197,38 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         {
           event: '*',  // Listen to all events (INSERT, UPDATE, DELETE)
           schema: 'public',
-          table: 'user_plan_data',
+          table: 'debts',  // NEW: Listen to debts table instead of user_plan_data
           filter: `user_id=eq.${user.id}`,
         },
         async (payload) => {
-          console.log('📊 Plan data changed, reloading...', payload.eventType);
+          console.log('📊 Debts changed, reloading...', payload.eventType);
           try {
-            // Reload full plan data
-            const row = await PlanAPI.get(user.id);
-            if (row) {
-              setDebts(row.debts ?? []);
-              setSettings(row.settings ?? settings);
-              setNotes(row.notes ?? "");
-              setPlan(row.plan ?? null);
-            }
+            // Reload from new source of truth
+            const snapshot = await loadActivePlan(user.id);
             
-            // Reload version history
-            const versions = await PlanAPI.listVersions(user.id);
-            setHistory(versions.reverse());
+            const loadedDebts: Debt[] = snapshot.debts.map(d => ({
+              id: d.id,
+              name: d.name,
+              balance: d.balance,
+              apr: d.apr,
+              minPayment: d.min_payment,
+              category: d.debt_type || "",
+            }));
+            
+            setDebts(loadedDebts);
+            setNotes(snapshot.notes || "");
+            
+            // Recompute plan
+            if (loadedDebts.length > 0) {
+              const p = computeDebtPlanUnified({
+                debts: loadedDebts as DebtInput[],
+                strategy: settings.strategy || "snowball",
+                extraMonthly: settings.extraMonthly || 0,
+                oneTimeExtra: settings.oneTimeExtra || 0,
+                startDate: new Date().toISOString().slice(0, 10),
+              });
+              setPlan(p);
+            }
           } catch (err) {
             console.error('Failed to reload plan data:', err);
           }
@@ -200,7 +243,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
 
   // --------------------------------------------------------------------------
-  // SAVE PLAN: DEMO → localStorage | LIVE → PlanAPI.save + smart auto-version
+  // SAVE PLAN: DEMO → localStorage | LIVE → debts table + debt_calculator_settings
   // --------------------------------------------------------------------------
   const persist = useCallback(
     async (nextDebts: Debt[], nextSettings: UserSettings, nextPlan: DebtPlan | null, changeDesc?: string) => {
@@ -213,26 +256,21 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // LIVE
-      const planData = {
-        debts: nextDebts,
-        settings: nextSettings,
-        notes,
-        plan: nextPlan,
-        updatedAt: new Date().toISOString(),
-      };
-
-      await PlanAPI.save(user.id, planData);
-
-      // Auto-log version (deduplication handled internally)
-      if (changeDesc) {
-        try {
-          await PlanAPI.logVersion(user.id);
-          console.log('✅ Version logged:', changeDesc);
-        } catch (err) {
-          console.error('Failed to log version:', err);
-        }
+      // LIVE - Save settings to debt_calculator_settings (user_plan_data is now read-only)
+      try {
+        await savePlanSettings(user.id, {
+          strategy: nextSettings.strategy,
+          extraPayment: nextSettings.extraMonthly,
+          oneTimePayment: nextSettings.oneTimeExtra,
+          notes,
+        });
+        console.log('✅ Settings saved to debt_calculator_settings');
+      } catch (err) {
+        console.error('Failed to save settings:', err);
       }
+
+      // Note: Debts are saved directly via the debts table in updateDebts/addDebt operations
+      // Version history still available via PlanAPI for historical versions in user_plan_versions table
     },
     [demoMode, notes, user?.id]
   );

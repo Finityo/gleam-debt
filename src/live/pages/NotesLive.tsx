@@ -4,45 +4,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { loadPlanSettings, saveNotes } from "@/lib/planStore";
 
 export default function NotesLive() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadNotes();
+    loadNotesFromStore();
   }, []);
 
-  async function loadNotes() {
+  async function loadNotesFromStore() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from("user_plan_data")
-        .select("notes")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error && error.code !== "PGRST116") throw error;
-      if (data?.notes) setNotes(data.notes);
+      const settings = await loadPlanSettings(user.id);
+      setNotes(settings.notes || "");
     } catch (error) {
       console.error("Failed to load notes:", error);
     }
   }
 
-  async function saveNotes() {
+  async function handleSaveNotes() {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase
-        .from("user_plan_data")
-        .upsert({ user_id: user.id, notes, updated_at: new Date().toISOString() })
-        .eq("user_id", user.id);
-
-      if (error) throw error;
+      await saveNotes(user.id, notes);
       toast.success("Notes saved");
     } catch (error: any) {
       console.error("Failed to save notes:", error);
@@ -67,7 +57,7 @@ export default function NotesLive() {
           className="min-h-[300px] text-finityo-textMain"
         />
         <div className="mt-4 flex justify-end">
-          <Button onClick={saveNotes} disabled={loading}>
+          <Button onClick={handleSaveNotes} disabled={loading}>
             {loading ? "Saving..." : "Save Notes"}
           </Button>
         </div>

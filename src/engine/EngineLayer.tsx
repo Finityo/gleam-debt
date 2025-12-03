@@ -5,6 +5,7 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import { DebtEngineProvider, useDebtEngine } from "@/engine/DebtEngineContext";
 import { useAuth } from "@/context/AuthContext";
 import { PlanAPI } from "@/lib/planAPI";
+import { loadActivePlan, savePlanSettings } from "@/lib/planStore";
 import type { DebtInput, Strategy } from "@/engine/plan-types";
 
 const DEMO_KEY = "finityo_demo_plan_v1";
@@ -63,12 +64,12 @@ function PersistBridge({ userId }: { userId?: string }) {
         return;
       }
       try {
-        await PlanAPI.save(userId, {
-          debts: debtsUsed,
-          settings: settingsUsed,
+        // Save settings to debt_calculator_settings (user_plan_data is now read-only)
+        await savePlanSettings(userId, {
+          strategy: settingsUsed.strategy as "snowball" | "avalanche",
+          extraPayment: settingsUsed.extraMonthly || 0,
+          oneTimePayment: settingsUsed.oneTimeExtra || 0,
           notes,
-          plan,
-          updatedAt: new Date().toISOString(),
         });
       } catch (e) {
         console.error("Persist failed:", e);
@@ -129,12 +130,29 @@ export function EngineLayer({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // live
-      const row = await PlanAPI.get(userId);
-      if (row) {
-        setInitialDebts(row.debts ?? []);
-        setInitialSettings(row.settings ?? {});
-        setNotes(row.notes ?? "");
+      // live - Load from debts table + debt_calculator_settings (NEW SOURCE OF TRUTH)
+      try {
+        const snapshot = await loadActivePlan(userId);
+        
+        const loadedDebts: DebtInput[] = snapshot.debts.map(d => ({
+          id: d.id,
+          name: d.name,
+          balance: d.balance,
+          apr: d.apr,
+          minPayment: d.min_payment,
+          include: true,
+          category: d.debt_type || "",
+        }));
+        
+        setInitialDebts(loadedDebts);
+        setInitialSettings({
+          strategy: snapshot.meta.strategy,
+          extraMonthly: snapshot.meta.extraMonthly,
+          oneTimeExtra: snapshot.meta.oneTimeExtra,
+        });
+        setNotes(snapshot.notes ?? "");
+      } catch (err) {
+        console.error('Failed to load plan data:', err);
       }
     })();
   }, [userId]);
