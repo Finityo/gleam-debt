@@ -45,9 +45,32 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     logStep("Authenticating user with token");
     
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    // Retry logic for transient network errors
+    let userData;
+    let userError;
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      const result = await supabaseClient.auth.getUser(token);
+      userData = result.data;
+      userError = result.error;
+      
+      if (!userError) break;
+      
+      // Check if it's a transient network error worth retrying
+      const isNetworkError = userError.message?.includes("Connection reset") || 
+                             userError.message?.includes("client error") ||
+                             userError.message?.includes("error sending request");
+      
+      if (isNetworkError && attempt < maxRetries) {
+        logStep(`Auth attempt ${attempt} failed, retrying...`, { error: userError.message });
+        await new Promise(r => setTimeout(r, 100 * attempt)); // exponential backoff
+        continue;
+      }
+      break;
+    }
+    
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
+    const user = userData?.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
