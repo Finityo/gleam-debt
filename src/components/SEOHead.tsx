@@ -12,8 +12,8 @@ interface SEOHeadProps {
 export const SEOHead = ({
   title = 'Finityo – Debt Simplified',
   description = 'AI-powered debt payoff plans personalized to your life. Snowball, Avalanche, or Smart Hybrid—your debt freedom starts here.',
-  canonical = 'https://www.finityo-debt.com/',
-  ogImage = 'https://www.finityo-debt.com/og-image.png',
+  canonical = 'https://finityo-debt.com/',
+  ogImage = 'https://finityo-debt.com/og-image.png',
   ogType = 'website',
   structuredData
 }: SEOHeadProps) => {
