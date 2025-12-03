@@ -152,44 +152,47 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       try {
         const snapshot = await loadActivePlan(user!.id);
 
-        // Convert snapshot to local state format
+        console.log("🟩 Snapshot loaded:", snapshot);
+
+        if (!snapshot.debts || snapshot.debts.length === 0) {
+          console.warn("❌ No debts found in snapshot, cannot compute plan");
+          setDebts([]);
+          setPlan(null);
+          return;
+        }
+
         const loadedDebts: Debt[] = snapshot.debts.map((d: any) => ({
           id: d.id,
           name: d.name,
           balance: d.balance,
           apr: d.apr,
-          minPayment: d.minPayment ?? d.min_payment ?? 0,
-          category: d.category ?? d.debt_type ?? "",
+          minPayment: d.min_payment,
+          category: d.debt_type || "",
         }));
 
         setDebts(loadedDebts);
+
         setSettings({
           strategy: snapshot.meta.strategy as "snowball" | "avalanche",
           extraMonthly: snapshot.meta.extraMonthly,
           oneTimeExtra: snapshot.meta.oneTimeExtra,
         });
+
         setNotes(snapshot.notes || "");
 
-        // Compute plan from loaded data
-        if (loadedDebts.length > 0) {
-          const engineDebts: DebtInput[] = loadedDebts.map((d) => ({
-            ...d,
-            include: true,
-          }));
+        const p = computeDebtPlanUnified({
+          debts: loadedDebts,
+          strategy: snapshot.meta.strategy as "snowball" | "avalanche",
+          extraMonthly: snapshot.meta.extraMonthly,
+          oneTimeExtra: snapshot.meta.oneTimeExtra,
+          startDate: new Date().toISOString().slice(0, 10),
+        });
 
-          const p = computeDebtPlanUnified({
-            debts: engineDebts,
-            strategy: snapshot.meta.strategy as "snowball" | "avalanche",
-            extraMonthly: snapshot.meta.extraMonthly,
-            oneTimeExtra: snapshot.meta.oneTimeExtra,
-            startDate: new Date().toISOString().slice(0, 10),
-          });
-          setPlan(p);
-        } else {
-          setPlan(null);
-        }
+        console.log("🟦 Computed plan:", p);
+
+        setPlan(p);
       } catch (err) {
-        console.error("Failed to load plan data:", err);
+        console.error("❌ Failed to load plan data:", err);
       }
 
       // Load version history (still using historical table)
