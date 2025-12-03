@@ -3,7 +3,7 @@
 // Finityo — 2025
 //
 // DEMO MODE  → localStorage only
-// LIVE MODE  → AppDB (Lovable Cloud) + fallback local
+// LIVE MODE  → debts + debt_calculator_settings (Lovable Cloud)
 //
 // - Debts
 // - Settings
@@ -18,7 +18,7 @@ import React, {
   useContext,
   useEffect,
   useState,
-  useCallback
+  useCallback,
 } from "react";
 
 import {
@@ -63,7 +63,6 @@ function clearLocal() {
   } catch {}
 }
 
-
 // ============================================================================
 // CONTEXT SHAPE
 // ============================================================================
@@ -86,7 +85,6 @@ type PlanContextType = {
 };
 
 const PlanContext = createContext<PlanContextType | null>(null);
-
 
 // ============================================================================
 // PROVIDER
@@ -124,35 +122,46 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       if (demoMode) {
         const saved = loadLocal();
         if (saved) {
-          setDebts(saved.debts ?? []);
-          setSettings(saved.settings ?? settings);
+          const savedDebts: Debt[] = saved.debts ?? [];
+          const savedSettings: UserSettings = saved.settings ?? settings;
+
+          setDebts(savedDebts);
+          setSettings(savedSettings);
+
+          const engineDebts: DebtInput[] = savedDebts.map((d) => ({
+            ...d,
+            include: true,
+          }));
+
           const p = computeDebtPlanUnified({
-            debts: (saved.debts ?? []) as DebtInput[],
-            strategy: (saved.settings ?? settings).strategy || "snowball",
-            extraMonthly: (saved.settings ?? settings).extraMonthly || 0,
-            oneTimeExtra: (saved.settings ?? settings).oneTimeExtra || 0,
-            startDate: (saved.settings ?? settings).startDate || new Date().toISOString().slice(0, 10),
-            maxMonths: (saved.settings ?? settings).maxMonths,
+            debts: engineDebts,
+            strategy: savedSettings.strategy || "snowball",
+            extraMonthly: savedSettings.extraMonthly || 0,
+            oneTimeExtra: savedSettings.oneTimeExtra || 0,
+            startDate:
+              savedSettings.startDate ||
+              new Date().toISOString().slice(0, 10),
+            maxMonths: savedSettings.maxMonths,
           });
           setPlan(p);
         }
         return;
       }
 
-      // LIVE - Load from debts table + debt_calculator_settings (NEW SOURCE OF TRUTH)
+      // LIVE - Load from debts table + debt_calculator_settings
       try {
-        const snapshot = await loadActivePlan(user.id);
-        
+        const snapshot = await loadActivePlan(user!.id);
+
         // Convert snapshot to local state format
-        const loadedDebts: Debt[] = snapshot.debts.map(d => ({
+        const loadedDebts: Debt[] = snapshot.debts.map((d: any) => ({
           id: d.id,
           name: d.name,
           balance: d.balance,
           apr: d.apr,
-          minPayment: d.min_payment,
-          category: d.debt_type || "",
+          minPayment: d.minPayment ?? d.min_payment ?? 0,
+          category: d.category ?? d.debt_type ?? "",
         }));
-        
+
         setDebts(loadedDebts);
         setSettings({
           strategy: snapshot.meta.strategy as "snowball" | "avalanche",
@@ -160,80 +169,92 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
           oneTimeExtra: snapshot.meta.oneTimeExtra,
         });
         setNotes(snapshot.notes || "");
-        
+
         // Compute plan from loaded data
         if (loadedDebts.length > 0) {
+          const engineDebts: DebtInput[] = loadedDebts.map((d) => ({
+            ...d,
+            include: true,
+          }));
+
           const p = computeDebtPlanUnified({
-            debts: loadedDebts as DebtInput[],
+            debts: engineDebts,
             strategy: snapshot.meta.strategy as "snowball" | "avalanche",
             extraMonthly: snapshot.meta.extraMonthly,
             oneTimeExtra: snapshot.meta.oneTimeExtra,
             startDate: new Date().toISOString().slice(0, 10),
           });
           setPlan(p);
+        } else {
+          setPlan(null);
         }
       } catch (err) {
-        console.error('Failed to load plan data:', err);
+        console.error("Failed to load plan data:", err);
       }
 
-      // Load version history
+      // Load version history (still using historical table)
       try {
-        const versions = await PlanAPI.listVersions(user.id);
+        const versions = await PlanAPI.listVersions(user!.id);
         setHistory(versions.reverse()); // newest first
       } catch (err) {
-        console.error('Failed to load version history:', err);
+        console.error("Failed to load version history:", err);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demoMode, user?.id]);
 
   // --------------------------------------------------------------------------
-  // REALTIME PLAN DATA SYNC
+  // REALTIME PLAN DATA SYNC (debts table only)
   // --------------------------------------------------------------------------
   useEffect(() => {
     if (demoMode || !user?.id) return;
 
     const channel = supabase
-      .channel('plan-data-realtime-full')
+      .channel("plan-data-realtime-full")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',  // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'debts',  // NEW: Listen to debts table instead of user_plan_data
+          event: "*", // INSERT, UPDATE, DELETE
+          schema: "public",
+          table: "debts",
           filter: `user_id=eq.${user.id}`,
         },
         async (payload) => {
-          console.log('📊 Debts changed, reloading...', payload.eventType);
+          console.log("📊 Debts changed, reloading...", payload.eventType);
           try {
-            // Reload from new source of truth
             const snapshot = await loadActivePlan(user.id);
-            
-            const loadedDebts: Debt[] = snapshot.debts.map(d => ({
+
+            const loadedDebts: Debt[] = snapshot.debts.map((d: any) => ({
               id: d.id,
               name: d.name,
               balance: d.balance,
               apr: d.apr,
-              minPayment: d.min_payment,
-              category: d.debt_type || "",
+              minPayment: d.minPayment ?? d.min_payment ?? 0,
+              category: d.category ?? d.debt_type ?? "",
             }));
-            
+
             setDebts(loadedDebts);
             setNotes(snapshot.notes || "");
-            
-            // Recompute plan
+
             if (loadedDebts.length > 0) {
+              const engineDebts: DebtInput[] = loadedDebts.map((d) => ({
+                ...d,
+                include: true,
+              }));
+
               const p = computeDebtPlanUnified({
-                debts: loadedDebts as DebtInput[],
+                debts: engineDebts,
                 strategy: settings.strategy || "snowball",
                 extraMonthly: settings.extraMonthly || 0,
                 oneTimeExtra: settings.oneTimeExtra || 0,
                 startDate: new Date().toISOString().slice(0, 10),
               });
               setPlan(p);
+            } else {
+              setPlan(null);
             }
           } catch (err) {
-            console.error('Failed to reload plan data:', err);
+            console.error("Failed to reload plan data:", err);
           }
         }
       )
@@ -244,12 +265,16 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     };
   }, [demoMode, user?.id, settings]);
 
-
   // --------------------------------------------------------------------------
-  // SAVE PLAN: DEMO → localStorage | LIVE → debts table + debt_calculator_settings
+  // SAVE PLAN: DEMO → localStorage | LIVE → settings table
   // --------------------------------------------------------------------------
   const persist = useCallback(
-    async (nextDebts: Debt[], nextSettings: UserSettings, nextPlan: DebtPlan | null, changeDesc?: string) => {
+    async (
+      nextDebts: Debt[],
+      nextSettings: UserSettings,
+      nextPlan: DebtPlan | null,
+      changeDesc?: string
+    ) => {
       // DEMO
       if (demoMode) {
         saveLocal({
@@ -259,48 +284,54 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // LIVE - Save settings to debt_calculator_settings (user_plan_data is now read-only)
+      // LIVE - Save settings to debt_calculator_settings
       try {
-        await savePlanSettings(user.id, {
+        await savePlanSettings(user!.id, {
           strategy: nextSettings.strategy,
           extraPayment: nextSettings.extraMonthly,
           oneTimePayment: nextSettings.oneTimeExtra,
           notes,
         });
-        console.log('✅ Settings saved to debt_calculator_settings');
+        console.log("✅ Settings saved to debt_calculator_settings");
       } catch (err) {
-        console.error('Failed to save settings:', err);
+        console.error("Failed to save settings:", err);
       }
 
-      // Note: Debts are saved directly via the debts table in updateDebts/addDebt operations
-      // Version history still available via PlanAPI for historical versions in user_plan_versions table
+      // Note: debts are saved via debts table (Debts page CRUD).
+      // Version history still uses PlanAPI + user_plan_versions.
     },
     [demoMode, notes, user?.id]
   );
-
 
   // --------------------------------------------------------------------------
   // COMPUTE + SYNC
   // --------------------------------------------------------------------------
   const compute = useCallback(async () => {
     try {
-      console.log('🔄 Computing plan with', debts.length, 'debts');
+      console.log("🔄 Computing plan with", debts.length, "debts");
+
+      const engineDebts: DebtInput[] = debts.map((d) => ({
+        ...d,
+        include: true,
+      }));
+
       const p = computeDebtPlanUnified({
-        debts: debts as DebtInput[],
+        debts: engineDebts,
         strategy: settings.strategy || "snowball",
         extraMonthly: settings.extraMonthly || 0,
         oneTimeExtra: settings.oneTimeExtra || 0,
-        startDate: settings.startDate || new Date().toISOString().slice(0, 10),
+        startDate:
+          settings.startDate || new Date().toISOString().slice(0, 10),
         maxMonths: settings.maxMonths,
       });
+
       setPlan(p);
       await persist(debts, settings, p);
-      console.log('✅ Plan computed successfully');
+      console.log("✅ Plan computed successfully");
     } catch (err) {
       console.error("❌ compute error:", err);
     }
   }, [debts, settings, persist]);
-
 
   // --------------------------------------------------------------------------
   // UPDATE DEBTS
@@ -309,23 +340,28 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     async (next: Debt[]) => {
       setDebts(next);
       try {
+        const engineDebts: DebtInput[] = next.map((d) => ({
+          ...d,
+          include: true,
+        }));
+
         const p = computeDebtPlanUnified({
-          debts: next as DebtInput[],
+          debts: engineDebts,
           strategy: settings.strategy || "snowball",
           extraMonthly: settings.extraMonthly || 0,
           oneTimeExtra: settings.oneTimeExtra || 0,
-          startDate: settings.startDate || new Date().toISOString().slice(0, 10),
+          startDate:
+            settings.startDate || new Date().toISOString().slice(0, 10),
           maxMonths: settings.maxMonths,
         });
         setPlan(p);
-        await persist(next, settings, p, 'Updated debts');
+        await persist(next, settings, p, "Updated debts");
       } catch (err) {
         console.error("❌ compute error:", err);
       }
     },
     [settings, persist]
   );
-
 
   // --------------------------------------------------------------------------
   // UPDATE SETTINGS
@@ -335,23 +371,28 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       const next = { ...settings, ...patch };
       setSettings(next);
       try {
+        const engineDebts: DebtInput[] = debts.map((d) => ({
+          ...d,
+          include: true,
+        }));
+
         const p = computeDebtPlanUnified({
-          debts: debts as DebtInput[],
+          debts: engineDebts,
           strategy: next.strategy || "snowball",
           extraMonthly: next.extraMonthly || 0,
           oneTimeExtra: next.oneTimeExtra || 0,
-          startDate: next.startDate || new Date().toISOString().slice(0, 10),
+          startDate:
+            next.startDate || new Date().toISOString().slice(0, 10),
           maxMonths: next.maxMonths,
         });
         setPlan(p);
-        await persist(debts, next, p, 'Updated settings');
+        await persist(debts, next, p, "Updated settings");
       } catch (err) {
         console.error("❌ compute error:", err);
       }
     },
     [debts, settings, persist]
   );
-
 
   // --------------------------------------------------------------------------
   // RESET
@@ -371,36 +412,44 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    await PlanAPI.clear(user.id);
+    // This still clears historical versions only
+    await PlanAPI.clear(user!.id);
   }, [demoMode, user?.id]);
 
   // --------------------------------------------------------------------------
-  // RESTORE VERSION
+  // RESTORE VERSION (historical only)
   // --------------------------------------------------------------------------
-  const restore = useCallback(async (versionId: string) => {
-    if (demoMode) {
-      console.warn('Version restore not available in demo mode');
-      return;
-    }
-
-    try {
-      const restored = await PlanAPI.restoreVersion(user.id, versionId);
-      if (restored) {
-        setDebts(restored.debts ?? []);
-        setSettings(restored.settings ?? { extraMonthly: 0, oneTimeExtra: 0, strategy: 'snowball' });
-        setNotes(restored.notes ?? '');
-        setPlan(restored.plan ?? null);
-        
-        // Reload version history
-        const versions = await PlanAPI.listVersions(user.id);
-        setHistory(versions.reverse());
+  const restore = useCallback(
+    async (versionId: string) => {
+      if (demoMode) {
+        console.warn("Version restore not available in demo mode");
+        return;
       }
-    } catch (err) {
-      console.error('Failed to restore version:', err);
-      throw err;
-    }
-  }, [demoMode, user?.id]);
 
+      try {
+        const restored = await PlanAPI.restoreVersion(user!.id, versionId);
+        if (restored) {
+          setDebts(restored.debts ?? []);
+          setSettings(
+            restored.settings ?? {
+              extraMonthly: 0,
+              oneTimeExtra: 0,
+              strategy: "snowball",
+            }
+          );
+          setNotes(restored.notes ?? "");
+          setPlan(restored.plan ?? null);
+
+          const versions = await PlanAPI.listVersions(user!.id);
+          setHistory(versions.reverse());
+        }
+      } catch (err) {
+        console.error("Failed to restore version:", err);
+        throw err;
+      }
+    },
+    [demoMode, user?.id]
+  );
 
   // --------------------------------------------------------------------------
   // FINAL VALUE
@@ -429,7 +478,6 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     </PlanContext.Provider>
   );
 }
-
 
 // ============================================================================
 // HOOK
