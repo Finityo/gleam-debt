@@ -1401,10 +1401,12 @@ export type Database = {
           change_description: string | null
           created_at: string
           debts: Json
+          description: string | null
           id: string
           notes: string | null
           plan: Json | null
           settings: Json
+          snapshot: Json | null
           user_id: string
           version_id: string
         }
@@ -1412,10 +1414,12 @@ export type Database = {
           change_description?: string | null
           created_at?: string
           debts?: Json
+          description?: string | null
           id?: string
           notes?: string | null
           plan?: Json | null
           settings?: Json
+          snapshot?: Json | null
           user_id: string
           version_id: string
         }
@@ -1423,10 +1427,12 @@ export type Database = {
           change_description?: string | null
           created_at?: string
           debts?: Json
+          description?: string | null
           id?: string
           notes?: string | null
           plan?: Json | null
           settings?: Json
+          snapshot?: Json | null
           user_id?: string
           version_id?: string
         }
