@@ -66,16 +66,14 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (!session) {
-          navigate('/auth');
-        } else if (event === 'SIGNED_IN' && !isFetching) {
-          // Defer fetches to avoid blocking the callback
+        // RequireAuth handles redirects - only fetch data on sign in
+        if (session && event === 'SIGNED_IN' && !isFetching) {
           setTimeout(() => {
             fetchAccounts();
             loadPlanData(session.user.id);
@@ -84,14 +82,13 @@ const Dashboard = () => {
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session and load data
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
-      if (!session) {
-        navigate('/auth');
-      } else if (!isFetching) {
+      // RequireAuth handles auth redirects - just load data if authenticated
+      if (session && !isFetching) {
         fetchAccounts();
         loadPlanData(session.user.id);
       }
@@ -99,7 +96,7 @@ const Dashboard = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const loadPlanData = async (userId: string) => {
     try {
