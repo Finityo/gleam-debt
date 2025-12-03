@@ -15,7 +15,7 @@ import { PrintExportButton } from '@/components/PrintExportButton';
 import { PlanVersionHistory } from '@/components/PlanVersionHistory';
 import type { User, Session } from '@supabase/supabase-js';
 import { logError } from '@/utils/logger';
-import { AppDB } from '@/live/lovableCloudDB';
+import { loadActivePlan, type PlanSnapshot } from '@/lib/planStore';
 import { useSubscription } from '@/hooks/useSubscription';
 import FinancialDashboardExtras from '@/features/FinancialDashboardExtras';
 import AdvancedInsightsSection from '@/features/AdvancedInsightsSection';
@@ -55,7 +55,7 @@ const Dashboard = () => {
   const [unmigratedItemIds, setUnmigratedItemIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const [planData, setPlanData] = useState<any>(null);
+  const [planData, setPlanData] = useState<PlanSnapshot | null>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -103,7 +103,7 @@ const Dashboard = () => {
 
   const loadPlanData = async (userId: string) => {
     try {
-      const data = await AppDB.get(userId);
+      const data = await loadActivePlan(userId);
       setPlanData(data);
       
       // Load profile data

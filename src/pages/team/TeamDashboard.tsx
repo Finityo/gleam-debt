@@ -48,10 +48,11 @@ const TeamDashboard = () => {
         .from('profiles')
         .select('*', { count: 'exact', head: true });
 
-      // Get total plans
-      const { count: planCount } = await supabase
-        .from('user_plan_data')
-        .select('*', { count: 'exact', head: true });
+      // Get users with debt plans (count distinct user_ids from debts table)
+      const { data: usersWithDebts } = await supabase
+        .from('debts')
+        .select('user_id');
+      const planCount = new Set(usersWithDebts?.map(d => d.user_id) || []).size;
 
       // Get visits from last 30 days
       const thirtyDaysAgo = new Date();
