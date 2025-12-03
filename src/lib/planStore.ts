@@ -320,6 +320,33 @@ export async function updateDebt(
   return data as DebtRecord;
 }
 
+// ===============================
+// FIX: Ensure user_id stays intact on update
+// ===============================
+export async function updateDebtDB(id: string, changes: any) {
+  const { data, error } = await supabase
+    .from("debts")
+    .update({
+      name: changes.name,
+      balance: changes.balance,
+      apr: changes.apr,
+      min_payment: changes.min_payment,
+      debt_type: changes.debt_type ?? "",
+      notes: changes.notes ?? "",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("❌ updateDebtDB failed:", error);
+    throw error;
+  }
+
+  return data;
+}
+
 /**
  * Delete a debt from the debts table.
  */
