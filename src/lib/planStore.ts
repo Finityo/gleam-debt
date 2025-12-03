@@ -91,15 +91,61 @@ export async function loadPlanSettings(userId: string): Promise<PlanSettingsInpu
 }
 
 /**
- * Build the current plan snapshot from debts + engine, without touching user_plan_data.
+ * Unified loader for live mode.
+ * Pulls debts + calculator settings from DB and returns a full snapshot
+ * for PlanContext + EngineLayer.
  */
 export async function loadActivePlan(userId: string): Promise<PlanSnapshot> {
-  const [debts, settings] = await Promise.all([
-    loadUserDebts(userId),
-    loadPlanSettings(userId),
-  ]);
+  // -------------------------------------------
+  // Load debts
+  // -------------------------------------------
+  const { data: debtRows, error: debtErr } = await supabase
+    .from("debts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
 
-  // Guard: if no debts, return empty snapshot instead of blowing up pages.
+  if (debtErr) {
+    console.error("❌ loadActivePlan: debt load error", debtErr);
+    throw debtErr;
+  }
+
+  const debts: DebtRecord[] = (debtRows || []).map((d) => ({
+    id: d.id,
+    user_id: d.user_id,
+    name: d.name,
+    balance: d.balance ?? 0,
+    apr: d.apr ?? 0,
+    min_payment: d.min_payment ?? 0,
+    due_date: d.due_date,
+    debt_type: d.debt_type,
+    notes: d.notes,
+    last4: d.last4,
+    created_at: d.created_at,
+    updated_at: d.updated_at,
+  }));
+
+  // -------------------------------------------
+  // Load settings
+  // -------------------------------------------
+  const { data: settings, error: settingsErr } = await supabase
+    .from("debt_calculator_settings")
+    .select("strategy, extra_monthly, one_time, notes")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (settingsErr) {
+    console.error("❌ loadActivePlan: settings load error", settingsErr);
+    throw settingsErr;
+  }
+
+  const strategy =
+    (settings?.strategy as "snowball" | "avalanche") || "snowball";
+  const extraMonthly = settings?.extra_monthly ?? 0;
+  const oneTimeExtra = settings?.one_time ?? 0;
+  const notes = settings?.notes ?? "";
+
+  // Guard: if no debts, return empty snapshot
   if (!debts.length) {
     return {
       debts: [],
@@ -112,12 +158,12 @@ export async function loadActivePlan(userId: string): Promise<PlanSnapshot> {
         payoffDate: null,
       },
       meta: {
-        strategy: settings.strategy,
-        extraMonthly: settings.extraPayment,
-        oneTimeExtra: settings.oneTimePayment ?? 0,
+        strategy,
+        extraMonthly,
+        oneTimeExtra,
         generatedAt: new Date().toISOString(),
       },
-      notes: settings.notes,
+      notes,
     };
   }
 
@@ -133,12 +179,14 @@ export async function loadActivePlan(userId: string): Promise<PlanSnapshot> {
     dueDay: d.due_date ? new Date(d.due_date).getDate() : undefined,
   }));
 
-  // Run unified engine
+  // -------------------------------------------
+  // Compute plan using unified engine
+  // -------------------------------------------
   const plan = computeDebtPlanUnified({
     debts: debtInputs,
-    extraMonthly: settings.extraPayment,
-    oneTimeExtra: settings.oneTimePayment ?? 0,
-    strategy: settings.strategy,
+    strategy,
+    extraMonthly,
+    oneTimeExtra,
     startDate: new Date().toISOString().slice(0, 10),
   });
 
@@ -152,17 +200,18 @@ export async function loadActivePlan(userId: string): Promise<PlanSnapshot> {
       activeDebts: debts.length,
       totalInterest: plan.totals.interest,
       totalMonths: plan.months.length,
-      payoffDate: plan.months.length > 0
-        ? plan.months[plan.months.length - 1].dateISO
-        : null,
+      payoffDate:
+        plan.months.length > 0
+          ? plan.months[plan.months.length - 1].dateISO
+          : null,
     },
     meta: {
-      strategy: settings.strategy,
-      extraMonthly: settings.extraPayment,
-      oneTimeExtra: settings.oneTimePayment ?? 0,
+      strategy,
+      extraMonthly,
+      oneTimeExtra,
       generatedAt: new Date().toISOString(),
     },
-    notes: settings.notes,
+    notes,
   };
 }
 
