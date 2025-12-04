@@ -7,6 +7,18 @@ import { useNavigate } from "react-router-dom";
 import { blogPosts } from "@/data/blogPosts";
 import { loadAllMarkdownPosts, MarkdownPost } from "@/lib/markdownLoader";
 
+// Import blog thumbnail images
+import snowballVsAvalancheImg from "@/assets/blog/snowball-vs-avalanche.jpg";
+import creditReportGuideImg from "@/assets/blog/credit-report-guide.jpg";
+import debtMistakesImg from "@/assets/blog/debt-mistakes.jpg";
+
+// Map slugs to imported images
+const blogImages: Record<string, string> = {
+  "snowball-vs-avalanche": snowballVsAvalancheImg,
+  "how-to-read-your-credit-report": creditReportGuideImg,
+  "7-mistakes-that-delay-debt-freedom": debtMistakesImg,
+};
+
 export default function BlogList() {
   const navigate = useNavigate();
   const [markdownPosts, setMarkdownPosts] = useState<MarkdownPost[]>([]);
@@ -27,7 +39,7 @@ export default function BlogList() {
       date: post.date,
       readTime: post.readTime || "5 min read",
       category: post.category,
-      image: post.image,
+      image: blogImages[post.slug] || post.image,
       source: 'markdown' as const,
     })),
     ...blogPosts.map(post => ({
@@ -37,7 +49,7 @@ export default function BlogList() {
       date: post.date,
       readTime: post.readTime,
       category: "Article",
-      image: "/images/blog-default.png",
+      image: blogImages[post.slug],
       source: 'tsx' as const,
     }))
   ].sort((a, b) => {
