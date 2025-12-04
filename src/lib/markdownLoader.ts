@@ -70,7 +70,10 @@ export async function loadAllMarkdownPosts(): Promise<MarkdownPost[]> {
   const postSlugs = [
     'snowball-vs-avalanche',
     'how-to-read-your-credit-report',
-    '7-mistakes-that-delay-debt-freedom'
+    '7-mistakes-that-delay-debt-freedom',
+    'debt-consolidation-options',
+    'debt-payoff-budget-guide',
+    'tracking-debt-progress'
   ];
 
   for (const slug of postSlugs) {
