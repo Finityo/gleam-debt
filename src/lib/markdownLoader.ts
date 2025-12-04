@@ -1,5 +1,3 @@
-import matter from 'gray-matter';
-
 export interface MarkdownPost {
   slug: string;
   title: string;
@@ -11,25 +9,51 @@ export interface MarkdownPost {
   content: string;
 }
 
-// This function would typically use dynamic imports or a bundler plugin
-// For now, we'll manually import the markdown files
-const markdownFiles: Record<string, string> = {};
+// Simple browser-compatible frontmatter parser (no Buffer dependency)
+function parseFrontmatter(fileContent: string): { data: Record<string, string>; content: string } {
+  const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
+  const match = fileContent.match(frontmatterRegex);
+  
+  if (!match) {
+    return { data: {}, content: fileContent };
+  }
+  
+  const frontmatterBlock = match[1];
+  const content = match[2];
+  
+  const data: Record<string, string> = {};
+  const lines = frontmatterBlock.split('\n');
+  
+  for (const line of lines) {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex > 0) {
+      const key = line.slice(0, colonIndex).trim();
+      let value = line.slice(colonIndex + 1).trim();
+      // Remove surrounding quotes if present
+      if ((value.startsWith('"') && value.endsWith('"')) || 
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      data[key] = value;
+    }
+  }
+  
+  return { data, content };
+}
 
 export async function loadMarkdownPost(slug: string): Promise<MarkdownPost | null> {
   try {
-    // In a real implementation, this would dynamically import markdown files
-    // For now, we'll return null and fall back to TSX posts
-    const fileContent = markdownFiles[slug];
-    if (!fileContent) return null;
-
-    const { data, content } = matter(fileContent);
+    const module = await import(`../../content/blog/${slug}.mdx?raw`);
+    const fileContent = module.default;
+    
+    const { data, content } = parseFrontmatter(fileContent);
     
     return {
       slug: data.slug || slug,
-      title: data.title,
-      description: data.description,
-      date: data.date,
-      category: data.category,
+      title: data.title || '',
+      description: data.description || '',
+      date: data.date || '',
+      category: data.category || '',
       image: data.image,
       readTime: data.readTime,
       content,
@@ -41,8 +65,6 @@ export async function loadMarkdownPost(slug: string): Promise<MarkdownPost | nul
 }
 
 export async function loadAllMarkdownPosts(): Promise<MarkdownPost[]> {
-  // This would typically scan the content/blog directory
-  // For now, we'll manually define the posts we created
   const posts: MarkdownPost[] = [];
 
   const postSlugs = [
@@ -52,25 +74,9 @@ export async function loadAllMarkdownPosts(): Promise<MarkdownPost[]> {
   ];
 
   for (const slug of postSlugs) {
-    try {
-      // Import the markdown content
-      const module = await import(`../../content/blog/${slug}.mdx?raw`);
-      const fileContent = module.default;
-      
-      const { data, content } = matter(fileContent);
-      
-      posts.push({
-        slug: data.slug || slug,
-        title: data.title,
-        description: data.description,
-        date: data.date,
-        category: data.category,
-        image: data.image,
-        readTime: data.readTime,
-        content,
-      });
-    } catch (error) {
-      console.error(`Error loading markdown post: ${slug}`, error);
+    const post = await loadMarkdownPost(slug);
+    if (post) {
+      posts.push(post);
     }
   }
 
