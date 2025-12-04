@@ -1,5 +1,6 @@
 import { Calendar, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 interface BlogCardProps {
   slug: string;
@@ -21,6 +22,9 @@ export const BlogCard = ({
   image,
 }: BlogCardProps) => {
   const navigate = useNavigate();
+  const [imageError, setImageError] = useState(false);
+  
+  const showFallback = !image || imageError;
 
   return (
     <article
@@ -28,11 +32,12 @@ export const BlogCard = ({
       className="glass rounded-xl border border-border/50 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_hsl(var(--primary)/0.2)] group"
     >
       <div className="aspect-video overflow-hidden bg-muted relative">
-        {image ? (
+        {!showFallback ? (
           <img
             src={image}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={() => setImageError(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 via-primary/10 to-background">
