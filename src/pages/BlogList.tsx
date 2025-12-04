@@ -7,16 +7,44 @@ import { useNavigate } from "react-router-dom";
 import { blogPosts } from "@/data/blogPosts";
 import { loadAllMarkdownPosts, MarkdownPost } from "@/lib/markdownLoader";
 
-// Import blog thumbnail images
+// Import blog thumbnail images - MDX posts
 import snowballVsAvalancheImg from "@/assets/blog/snowball-vs-avalanche.jpg";
 import creditReportGuideImg from "@/assets/blog/credit-report-guide.jpg";
 import debtMistakesImg from "@/assets/blog/debt-mistakes.jpg";
 
+// Import blog thumbnail images - TSX posts
+import debtPayoffPlanImg from "@/assets/blog/debt-payoff-plan.jpg";
+import aprInterestRatesImg from "@/assets/blog/apr-interest-rates.jpg";
+import psychologySmallWinsImg from "@/assets/blog/psychology-small-wins.jpg";
+import emergencyFundImg from "@/assets/blog/emergency-fund.jpg";
+import balanceTransferImg from "@/assets/blog/balance-transfer.jpg";
+import sideHustleImg from "@/assets/blog/side-hustle.jpg";
+import motivationStrategiesImg from "@/assets/blog/motivation-strategies.jpg";
+import creditScoreImg from "@/assets/blog/credit-score.jpg";
+import preventingRelapseImg from "@/assets/blog/preventing-relapse.jpg";
+import automationImg from "@/assets/blog/automation.jpg";
+import windfallsBonusesImg from "@/assets/blog/windfalls-bonuses.jpg";
+import snowballAvalancheMethodImg from "@/assets/blog/snowball-avalanche-method.jpg";
+
 // Map slugs to imported images
 const blogImages: Record<string, string> = {
+  // MDX posts
   "snowball-vs-avalanche": snowballVsAvalancheImg,
   "how-to-read-your-credit-report": creditReportGuideImg,
   "7-mistakes-that-delay-debt-freedom": debtMistakesImg,
+  // TSX posts
+  "snowball-vs-avalanche-method": snowballAvalancheMethodImg,
+  "create-debt-payoff-plan-5-steps": debtPayoffPlanImg,
+  "understanding-apr-interest-rates": aprInterestRatesImg,
+  "psychology-of-debt-small-wins": psychologySmallWinsImg,
+  "emergency-fund-while-paying-debt": emergencyFundImg,
+  "balance-transfer-strategy-guide": balanceTransferImg,
+  "side-hustle-debt-payoff-acceleration": sideHustleImg,
+  "debt-free-date-motivation-strategies": motivationStrategiesImg,
+  "credit-score-during-debt-payoff": creditScoreImg,
+  "preventing-debt-relapse": preventingRelapseImg,
+  "automating-debt-payoff-success": automationImg,
+  "debt-payoff-windfalls-bonuses": windfallsBonusesImg,
 };
 
 export default function BlogList() {
