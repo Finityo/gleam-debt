@@ -14,6 +14,8 @@ import debtMistakesImg from "@/assets/blog/debt-mistakes.jpg";
 import debtConsolidationImg from "@/assets/blog/debt-consolidation.jpg";
 import budgetGuideImg from "@/assets/blog/budget-guide.jpg";
 import trackingProgressImg from "@/assets/blog/tracking-progress.jpg";
+import negotiatingCreditorsImg from "@/assets/blog/negotiating-creditors.jpg";
+import debtCollectorsImg from "@/assets/blog/debt-collectors.jpg";
 
 // Import blog thumbnail images - TSX posts
 import debtPayoffPlanImg from "@/assets/blog/debt-payoff-plan.jpg";
@@ -38,6 +40,8 @@ const blogImages: Record<string, string> = {
   "debt-consolidation-options": debtConsolidationImg,
   "debt-payoff-budget-guide": budgetGuideImg,
   "tracking-debt-progress": trackingProgressImg,
+  "negotiating-with-creditors": negotiatingCreditorsImg,
+  "dealing-with-debt-collectors": debtCollectorsImg,
   // TSX posts
   "snowball-vs-avalanche-method": snowballAvalancheMethodImg,
   "create-debt-payoff-plan-5-steps": debtPayoffPlanImg,

@@ -73,7 +73,9 @@ export async function loadAllMarkdownPosts(): Promise<MarkdownPost[]> {
     '7-mistakes-that-delay-debt-freedom',
     'debt-consolidation-options',
     'debt-payoff-budget-guide',
-    'tracking-debt-progress'
+    'tracking-debt-progress',
+    'negotiating-with-creditors',
+    'dealing-with-debt-collectors'
   ];
 
   for (const slug of postSlugs) {
