@@ -4,28 +4,28 @@
   <!-- Main Pages -->
   <url>
     <loc>https://finityo-debt.com/</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   
   <url>
     <loc>https://finityo-debt.com/about</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
     <loc>https://finityo-debt.com/pricing</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   
   <url>
     <loc>https://finityo-debt.com/resources</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -33,28 +33,63 @@
   <!-- Blog -->
   <url>
     <loc>https://finityo-debt.com/blog</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
     <loc>https://finityo-debt.com/blog/snowball-vs-avalanche</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>https://finityo-debt.com/blog/7-mistakes-that-delay-debt-freedom</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>https://finityo-debt.com/blog/how-to-read-your-credit-report</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://finityo-debt.com/blog/debt-consolidation-options</loc>
+    <lastmod>2025-12-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://finityo-debt.com/blog/debt-payoff-budget-guide</loc>
+    <lastmod>2025-12-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://finityo-debt.com/blog/tracking-debt-progress</loc>
+    <lastmod>2025-12-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://finityo-debt.com/blog/negotiating-with-creditors</loc>
+    <lastmod>2025-12-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://finityo-debt.com/blog/dealing-with-debt-collectors</loc>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -62,7 +97,7 @@
   <!-- Mobile & PWA -->
   <url>
     <loc>https://finityo-debt.com/install</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -70,21 +105,21 @@
   <!-- Legal & Compliance -->
   <url>
     <loc>https://finityo-debt.com/privacy</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://finityo-debt.com/terms</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://finityo-debt.com/disclosures</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -92,7 +127,7 @@
   <!-- Sitemap Page -->
   <url>
     <loc>https://finityo-debt.com/sitemap</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
@@ -100,14 +135,14 @@
   <!-- Auth Pages (for organic discovery) -->
   <url>
     <loc>https://finityo-debt.com/auth/signin</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://finityo-debt.com/auth/signup</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
