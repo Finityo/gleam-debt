@@ -11,6 +11,9 @@ import { loadAllMarkdownPosts, MarkdownPost } from "@/lib/markdownLoader";
 import snowballVsAvalancheImg from "@/assets/blog/snowball-vs-avalanche.jpg";
 import creditReportGuideImg from "@/assets/blog/credit-report-guide.jpg";
 import debtMistakesImg from "@/assets/blog/debt-mistakes.jpg";
+import debtConsolidationImg from "@/assets/blog/debt-consolidation.jpg";
+import budgetGuideImg from "@/assets/blog/budget-guide.jpg";
+import trackingProgressImg from "@/assets/blog/tracking-progress.jpg";
 
 // Import blog thumbnail images - TSX posts
 import debtPayoffPlanImg from "@/assets/blog/debt-payoff-plan.jpg";
@@ -32,6 +35,9 @@ const blogImages: Record<string, string> = {
   "snowball-vs-avalanche": snowballVsAvalancheImg,
   "how-to-read-your-credit-report": creditReportGuideImg,
   "7-mistakes-that-delay-debt-freedom": debtMistakesImg,
+  "debt-consolidation-options": debtConsolidationImg,
+  "debt-payoff-budget-guide": budgetGuideImg,
+  "tracking-debt-progress": trackingProgressImg,
   // TSX posts
   "snowball-vs-avalanche-method": snowballAvalancheMethodImg,
   "create-debt-payoff-plan-5-steps": debtPayoffPlanImg,
