@@ -1,3 +1,4 @@
+import React from "react";
 import { Check, X } from "lucide-react";
 
 interface ComparisonFeature {
@@ -37,11 +38,11 @@ export const PricingComparisonCard = () => {
 
           {/* Features */}
           {features.map((feature, idx) => (
-            <>
-              <div key={`label-${idx}`} className="bg-background/80 backdrop-blur-xl p-4">
+            <React.Fragment key={idx}>
+              <div className="bg-background/80 backdrop-blur-xl p-4">
                 <span className="text-sm text-foreground">{feature.label}</span>
               </div>
-              <div key={`essentials-${idx}`} className="bg-background/80 backdrop-blur-xl p-4 flex items-center justify-center">
+              <div className="bg-background/80 backdrop-blur-xl p-4 flex items-center justify-center">
                 {typeof feature.essentials === "boolean" ? (
                   feature.essentials ? (
                     <Check className="w-5 h-5 text-success" />
@@ -52,7 +53,7 @@ export const PricingComparisonCard = () => {
                   <span className="text-sm text-muted-foreground">{feature.essentials}</span>
                 )}
               </div>
-              <div key={`ultimate-${idx}`} className="bg-gradient-to-br from-primary/5 to-accent/5 backdrop-blur-xl p-4 flex items-center justify-center">
+              <div className="bg-gradient-to-br from-primary/5 to-accent/5 backdrop-blur-xl p-4 flex items-center justify-center">
                 {typeof feature.ultimate === "boolean" ? (
                   feature.ultimate ? (
                     <Check className="w-5 h-5 text-primary" />
@@ -63,7 +64,7 @@ export const PricingComparisonCard = () => {
                   <span className="text-sm text-foreground">{feature.ultimate}</span>
                 )}
               </div>
-            </>
+            </React.Fragment>
           ))}
         </div>
       </div>
