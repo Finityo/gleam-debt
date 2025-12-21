@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card } from "./Card";
 import { Btn } from "./Btn";
-import { SectionLabel } from "./SectionLabel";
 import { coachAdd, coachGet, coachToggle, CoachComment } from "@/lib/coach";
 
 type Props = {
@@ -50,7 +49,7 @@ export function CoachPanel({ planId, coachName }: Props) {
 
         <Btn onClick={submit}>Add Suggestion</Btn>
 
-        <SectionLabel>All Suggestions</SectionLabel>
+        <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">All Suggestions</div>
         <div className="space-y-2">
           {comments.map((c) => (
             <div

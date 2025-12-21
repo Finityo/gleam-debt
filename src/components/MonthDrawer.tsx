@@ -1,5 +1,6 @@
 import React from "react";
-import { Btn, Card } from "@/components/ui";
+import { Btn } from "@/components/Btn";
+import { Card } from "@/components/Card";
 
 const money = (n: number) => "$" + (n ?? 0).toLocaleString();
 
@@ -21,7 +22,7 @@ export function MonthDrawer({
           <div className="font-semibold text-white text-lg">
             Month {month.monthIndex + 1}
           </div>
-          <Btn variant="ghost" onClick={onClose}>
+          <Btn variant="subtle" onClick={onClose}>
             Close
           </Btn>
         </div>
