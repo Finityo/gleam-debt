@@ -32,15 +32,13 @@ export default function Profile() {
     if (!user) return;
 
     try {
-      // Load profile
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      // Load profile with decrypted PII fields
+      const { data: profiles, error: profileError } = await supabase
+        .rpc("get_my_profile_decrypted");
 
       if (profileError) throw profileError;
 
+      const profile = profiles?.[0];
       if (profile) {
         setFirstName(profile.first_name || "");
         setLastName(profile.last_name || "");
