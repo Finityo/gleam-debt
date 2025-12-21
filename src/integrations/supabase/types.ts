@@ -964,6 +964,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          address_encrypted: string | null
           appearance_settings: Json | null
           created_at: string
           first_name: string
@@ -971,6 +972,7 @@ export type Database = {
           last_name: string
           onboarding_completed: boolean | null
           phone: string | null
+          phone_encrypted: string | null
           subscription_price_id: string | null
           subscription_product_id: string | null
           subscription_status: string | null
@@ -979,9 +981,11 @@ export type Database = {
           updated_at: string
           user_id: string
           zip_code: string | null
+          zip_code_encrypted: string | null
         }
         Insert: {
           address?: string | null
+          address_encrypted?: string | null
           appearance_settings?: Json | null
           created_at?: string
           first_name: string
@@ -989,6 +993,7 @@ export type Database = {
           last_name: string
           onboarding_completed?: boolean | null
           phone?: string | null
+          phone_encrypted?: string | null
           subscription_price_id?: string | null
           subscription_product_id?: string | null
           subscription_status?: string | null
@@ -997,9 +1002,11 @@ export type Database = {
           updated_at?: string
           user_id: string
           zip_code?: string | null
+          zip_code_encrypted?: string | null
         }
         Update: {
           address?: string | null
+          address_encrypted?: string | null
           appearance_settings?: Json | null
           created_at?: string
           first_name?: string
@@ -1007,6 +1014,7 @@ export type Database = {
           last_name?: string
           onboarding_completed?: boolean | null
           phone?: string | null
+          phone_encrypted?: string | null
           subscription_price_id?: string | null
           subscription_product_id?: string | null
           subscription_status?: string | null
@@ -1015,6 +1023,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           zip_code?: string | null
+          zip_code_encrypted?: string | null
         }
         Relationships: []
       }
@@ -1553,6 +1562,63 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles_decrypted: {
+        Row: {
+          address: string | null
+          appearance_settings: Json | null
+          created_at: string | null
+          first_name: string | null
+          id: string | null
+          last_name: string | null
+          onboarding_completed: boolean | null
+          phone: string | null
+          subscription_price_id: string | null
+          subscription_product_id: string | null
+          subscription_status: string | null
+          subscription_tier: string | null
+          trial_end_date: string | null
+          updated_at: string | null
+          user_id: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: never
+          appearance_settings?: Json | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          onboarding_completed?: boolean | null
+          phone?: never
+          subscription_price_id?: string | null
+          subscription_product_id?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          trial_end_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          zip_code?: never
+        }
+        Update: {
+          address?: never
+          appearance_settings?: Json | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          onboarding_completed?: boolean | null
+          phone?: never
+          subscription_price_id?: string | null
+          subscription_product_id?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          trial_end_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          zip_code?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_otp_rate_limit: {
@@ -1564,6 +1630,8 @@ export type Database = {
         }[]
       }
       cleanup_old_analytics: { Args: never; Returns: undefined }
+      decrypt_pii: { Args: { ciphertext: string }; Returns: string }
+      encrypt_pii: { Args: { plaintext: string }; Returns: string }
       get_plaid_token_from_vault: {
         Args: { p_function_name?: string; p_item_id: string }
         Returns: string
@@ -1627,6 +1695,7 @@ export type Database = {
         Returns: string
       }
       migrate_single_plaid_token: { Args: { p_item_id: string }; Returns: Json }
+      private_get_encryption_key: { Args: never; Returns: string }
       search_all_tables: {
         Args: { search_query: string; search_type?: string }
         Returns: Json
