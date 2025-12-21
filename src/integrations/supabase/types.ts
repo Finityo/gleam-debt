@@ -1632,6 +1632,27 @@ export type Database = {
       cleanup_old_analytics: { Args: never; Returns: undefined }
       decrypt_pii: { Args: { ciphertext: string }; Returns: string }
       encrypt_pii: { Args: { plaintext: string }; Returns: string }
+      get_my_profile_decrypted: {
+        Args: never
+        Returns: {
+          address: string
+          appearance_settings: Json
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          onboarding_completed: boolean
+          phone: string
+          subscription_price_id: string
+          subscription_product_id: string
+          subscription_status: string
+          subscription_tier: string
+          trial_end_date: string
+          updated_at: string
+          user_id: string
+          zip_code: string
+        }[]
+      }
       get_plaid_token_from_vault: {
         Args: { p_function_name?: string; p_item_id: string }
         Returns: string
