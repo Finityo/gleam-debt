@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
-import { RequireAuth } from "@/components/RequireAuth";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 
 // ===== ROUTE METADATA =====
