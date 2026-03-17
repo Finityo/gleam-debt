@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
-import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 
 // ===== ROUTE METADATA =====
 export const ROUTE_META = [
