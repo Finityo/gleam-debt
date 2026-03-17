@@ -154,46 +154,39 @@ export function AppRoutes() {
           {/* ===== SHARED PLANS (PUBLIC) ===== */}
           <Route path="/p/:id" element={<SharedPlanPage />} />
           
-          {/* ===== PROTECTED ROUTES ===== */}
-          <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-          <Route path="/debts" element={<RequireAuth><Debts /></RequireAuth>} />
-          <Route path="/debt-plan" element={<RequireAuth><DebtPlan /></RequireAuth>} />
-          <Route path="/debt-chart" element={<RequireAuth><DebtChart /></RequireAuth>} />
-          <Route path="/visualization" element={<RequireAuth><DebtVisualization /></RequireAuth>} />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
-          <Route path="/scenarios" element={<RequireAuth><Scenarios /></RequireAuth>} />
-          <Route path="/financial-insights" element={<RequireAuth><FinancialInsights /></RequireAuth>} />
-          <Route path="/ai-advisor" element={<RequireAuth><AIAdvisor /></RequireAuth>} />
-          <Route path="/payoff-calendar" element={<RequireAuth><PayoffCalendar /></RequireAuth>} />
-          <Route path="/share/history" element={<RequireAuth><ShareHistory /></RequireAuth>} />
-          <Route path="/plan/share" element={<RequireAuth><SharePreview /></RequireAuth>} />
-          <Route path="/plan" element={<RequireAuth><PlanPage /></RequireAuth>} />
+          {/* ===== APP ROUTES ===== */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/debts" element={<Debts />} />
+          <Route path="/debt-plan" element={<DebtPlan />} />
+          <Route path="/debt-chart" element={<DebtChart />} />
+          <Route path="/visualization" element={<DebtVisualization />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/scenarios" element={<Scenarios />} />
+          <Route path="/financial-insights" element={<FinancialInsights />} />
+          <Route path="/ai-advisor" element={<AIAdvisor />} />
+          <Route path="/payoff-calendar" element={<PayoffCalendar />} />
+          <Route path="/share/history" element={<ShareHistory />} />
+          <Route path="/plan/share" element={<SharePreview />} />
+          <Route path="/plan" element={<PlanPage />} />
           
           {/* ===== ADMIN ROUTES ===== */}
-          <Route path="/admin" element={<RequireAuth><AdminDashboard /></RequireAuth>} />
-          <Route path="/admin/roles" element={<RequireAuth><UserRoleManagement /></RequireAuth>} />
-          <Route path="/admin/documents" element={<RequireAuth><DocumentExport /></RequireAuth>} />
-          <Route path="/support-dashboard" element={<RequireAuth><SupportDashboard /></RequireAuth>} />
-          <Route path="/security-audit" element={<RequireAuth><SecurityAudit /></RequireAuth>} />
-          <Route path="/audit-dashboard" element={<RequireAuth><AuditDashboard /></RequireAuth>} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/roles" element={<UserRoleManagement />} />
+          <Route path="/admin/documents" element={<DocumentExport />} />
+          <Route path="/support-dashboard" element={<SupportDashboard />} />
+          <Route path="/security-audit" element={<SecurityAudit />} />
+          <Route path="/audit-dashboard" element={<AuditDashboard />} />
           
-          {/* ===== OTHER PROTECTED ===== */}
-          <Route path="/team-access" element={<RequireAuth><TeamAccess /></RequireAuth>} />
-          <Route path="/plaid-submission" element={<RequireAuth><PlaidSubmission /></RequireAuth>} />
-          <Route path="/plaid-proposal" element={<RequireAuth><DownloadPlaidProposal /></RequireAuth>} />
-          <Route path="/plaid-connect" element={<RequireAuth><PlaidConnect /></RequireAuth>} />
-          <Route path="/oauth-redirect" element={<RequireAuth><OAuthRedirect /></RequireAuth>} />
-          <Route path="/printable-summary" element={<RequireAuth><PrintableSummary /></RequireAuth>} />
-          <Route path="/debts-new" element={<RequireAuth><DebtsNew /></RequireAuth>} />
-          <Route path="/my-logs" element={<RequireAuth><MyLogs /></RequireAuth>} />
+          {/* ===== OTHER ===== */}
+          <Route path="/team-access" element={<TeamAccess />} />
+          <Route path="/plaid-submission" element={<PlaidSubmission />} />
+          <Route path="/plaid-proposal" element={<DownloadPlaidProposal />} />
+          <Route path="/plaid-connect" element={<PlaidConnect />} />
+          <Route path="/oauth-redirect" element={<OAuthRedirect />} />
+          <Route path="/printable-summary" element={<PrintableSummary />} />
+          <Route path="/debts-new" element={<DebtsNew />} />
+          <Route path="/my-logs" element={<MyLogs />} />
           
           {/* ===== TEAM PORTAL ROUTES ===== */}
           <Route path="/team/login" element={<TeamLogin />} />
