@@ -21,7 +21,7 @@ const Auth = () => {
   
   useEffect(() => {
     if (DEMO) {
-      navigate("/dashboard?demo=true");
+      navigate("/demo", { replace: true });
     }
   }, [navigate]);
   

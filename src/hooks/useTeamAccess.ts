@@ -1,73 +1,47 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
-type TeamRole = 'admin' | 'support' | 'readonly';
+export type TeamRole = "admin" | "support" | "readonly";
 
-interface TeamAccess {
-  hasAccess: boolean;
-  role: TeamRole | null;
-  loading: boolean;
-}
-
-export const useTeamAccess = (requiredRole?: TeamRole): TeamAccess => {
-  const [hasAccess, setHasAccess] = useState(false);
-  const [role, setRole] = useState<TeamRole | null>(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+export function useTeamAccess() {
+  const { user, loading: authLoading } = useAuth();
+  const { pathname } = useLocation();
+  const [access, setAccess] = useState<{ user: typeof user; pathname: string; role: TeamRole | null }>();
 
   useEffect(() => {
-    checkAccess();
-  }, []);
+    if (authLoading || !user?.email) return;
 
-  const checkAccess = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user?.email) {
-        setHasAccess(false);
-        setLoading(false);
-        navigate('/team/login');
-        return;
-      }
+    let active = true;
 
-      const { data, error } = await supabase
-        .from('team_access')
-        .select('role')
-        .eq('email', user.email)
-        .single();
-
-      if (error || !data) {
-        setHasAccess(false);
-        setRole(null);
-        setLoading(false);
-        navigate('/team/login');
-        return;
-      }
-
-      const userRole = data.role as TeamRole;
-      setRole(userRole);
-
-      // Check if user has required role
-      if (requiredRole) {
-        const hasRequiredRole = userRole === requiredRole || userRole === 'admin';
-        setHasAccess(hasRequiredRole);
-        
-        if (!hasRequiredRole) {
-          navigate('/team/dashboard');
+    async function checkAccess() {
+      try {
+        const { data: { user: verifiedUser }, error: authError } = await supabase.auth.getUser();
+        if (authError || verifiedUser?.id !== user.id || verifiedUser.email !== user.email) {
+          if (active) setAccess({ user, pathname, role: null });
+          return;
         }
-      } else {
-        setHasAccess(true);
+
+        const { data, error } = await supabase
+          .from("team_access")
+          .select("role")
+          .eq("email", verifiedUser.email)
+          .single();
+
+        const role = data?.role;
+        const allowed = !error && (role === "admin" || role === "support" || role === "readonly");
+        if (active) setAccess({ user, pathname, role: allowed ? role : null });
+      } catch {
+        if (active) setAccess({ user, pathname, role: null });
       }
-
-      setLoading(false);
-    } catch (error) {
-      console.error('Error checking team access:', error);
-      setHasAccess(false);
-      setLoading(false);
-      navigate('/team/login');
     }
-  };
 
-  return { hasAccess, role, loading };
-};
+    void checkAccess();
+    return () => { active = false; };
+  }, [authLoading, pathname, user]);
+
+  const checked = access?.user === user && access?.pathname === pathname;
+  const role = checked ? access.role : null;
+  return { role, loading: authLoading || (!!user?.email && !checked) };
+}

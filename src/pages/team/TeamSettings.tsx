@@ -7,10 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useTeamAccess } from "@/hooks/useTeamAccess";
 
 const TeamSettings = () => {
-  const { role } = useTeamAccess('admin');
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("readonly");
   const [loading, setLoading] = useState(false);
@@ -39,18 +37,6 @@ const TeamSettings = () => {
       setLoading(false);
     }
   };
-
-  if (role !== 'admin') {
-    return (
-      <TeamLayout>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
-            Admin access required to view settings
-          </p>
-        </div>
-      </TeamLayout>
-    );
-  }
 
   return (
     <TeamLayout>

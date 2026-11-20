@@ -1,5 +1,8 @@
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
+import { Routes, Route, Outlet, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
+import { RequireAuth } from "@/components/RequireAuth";
+import { RequireAdmin } from "@/components/RequireAdmin";
+import { RequireTeamAccess, RequireTeamAdmin } from "@/components/RequireTeamAccess";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 
 // ===== ROUTE METADATA =====
@@ -72,6 +75,9 @@ const BlogList = lazy(() => import("@/pages/BlogList"));
 const Resources = lazy(() => import("@/pages/Resources"));
 const Sitemap = lazy(() => import("@/pages/Sitemap"));
 const Install = lazy(() => import("@/pages/Install"));
+const InteractiveDemo = lazy(() =>
+  import("@/components/InteractiveDemo").then(({ InteractiveDemo }) => ({ default: InteractiveDemo }))
+);
 
 // ===== SHARE (PUBLIC) =====
 const SharedPlanPage = lazy(() => import("@/pages/p/[id]"));
@@ -152,49 +158,54 @@ export function AppRoutes() {
           {/* ===== SHARED PLANS (PUBLIC) ===== */}
           <Route path="/p/:id" element={<SharedPlanPage />} />
           
-          {/* ===== APP ROUTES ===== */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/debts" element={<Debts />} />
-          <Route path="/debt-plan" element={<DebtPlan />} />
-          <Route path="/debt-chart" element={<DebtChart />} />
-          <Route path="/visualization" element={<DebtVisualization />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/scenarios" element={<Scenarios />} />
-          <Route path="/financial-insights" element={<FinancialInsights />} />
-          <Route path="/ai-advisor" element={<AIAdvisor />} />
-          <Route path="/payoff-calendar" element={<PayoffCalendar />} />
-          <Route path="/share/history" element={<ShareHistory />} />
-          <Route path="/plan/share" element={<SharePreview />} />
-          <Route path="/plan" element={<PlanPage />} />
-          
-          {/* ===== ADMIN ROUTES ===== */}
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/roles" element={<UserRoleManagement />} />
-          <Route path="/admin/documents" element={<DocumentExport />} />
-          <Route path="/support-dashboard" element={<SupportDashboard />} />
-          <Route path="/security-audit" element={<SecurityAudit />} />
-          <Route path="/audit-dashboard" element={<AuditDashboard />} />
-          
-          {/* ===== OTHER ===== */}
-          <Route path="/team-access" element={<TeamAccess />} />
-          <Route path="/plaid-submission" element={<PlaidSubmission />} />
-          <Route path="/plaid-proposal" element={<DownloadPlaidProposal />} />
-          <Route path="/plaid-connect" element={<PlaidConnect />} />
+          {/* Bank OAuth callback and staff sign-in must be reachable before sign-in. */}
           <Route path="/oauth-redirect" element={<OAuthRedirect />} />
-          <Route path="/printable-summary" element={<PrintableSummary />} />
-          <Route path="/debts-new" element={<DebtsNew />} />
-          <Route path="/my-logs" element={<MyLogs />} />
-          
-          {/* ===== TEAM PORTAL ROUTES ===== */}
+          <Route path="/team-access" element={<TeamAccess />} />
           <Route path="/team/login" element={<TeamLogin />} />
-          <Route path="/team/dashboard" element={<TeamDashboard />} />
-          <Route path="/team/users" element={<TeamUsers />} />
-          <Route path="/team/plans" element={<TeamPlans />} />
-          <Route path="/team/logs" element={<TeamLogs />} />
-          <Route path="/team/analytics" element={<TeamAnalytics />} />
-          <Route path="/team/settings" element={<TeamSettings />} />
-          
+
+          <Route element={<RequireAuth><Outlet /></RequireAuth>}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/debts" element={<Debts />} />
+            <Route path="/debt-plan" element={<DebtPlan />} />
+            <Route path="/debt-chart" element={<DebtChart />} />
+            <Route path="/visualization" element={<DebtVisualization />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/scenarios" element={<Scenarios />} />
+            <Route path="/financial-insights" element={<FinancialInsights />} />
+            <Route path="/ai-advisor" element={<AIAdvisor />} />
+            <Route path="/payoff-calendar" element={<PayoffCalendar />} />
+            <Route path="/share/history" element={<ShareHistory />} />
+            <Route path="/plan/share" element={<SharePreview />} />
+            <Route path="/plan" element={<PlanPage />} />
+            <Route path="/plaid-submission" element={<PlaidSubmission />} />
+            <Route path="/plaid-proposal" element={<DownloadPlaidProposal />} />
+            <Route path="/plaid-connect" element={<PlaidConnect />} />
+            <Route path="/printable-summary" element={<PrintableSummary />} />
+            <Route path="/debts-new" element={<DebtsNew />} />
+            <Route path="/my-logs" element={<MyLogs />} />
+
+            <Route element={<RequireAdmin />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/roles" element={<UserRoleManagement />} />
+              <Route path="/admin/documents" element={<DocumentExport />} />
+              <Route path="/support-dashboard" element={<SupportDashboard />} />
+              <Route path="/security-audit" element={<SecurityAudit />} />
+              <Route path="/audit-dashboard" element={<AuditDashboard />} />
+            </Route>
+          </Route>
+
+          <Route element={<RequireTeamAccess />}>
+            <Route path="/team/dashboard" element={<TeamDashboard />} />
+            <Route path="/team/users" element={<TeamUsers />} />
+            <Route path="/team/plans" element={<TeamPlans />} />
+            <Route path="/team/logs" element={<TeamLogs />} />
+            <Route path="/team/analytics" element={<TeamAnalytics />} />
+            <Route element={<RequireTeamAdmin />}>
+              <Route path="/team/settings" element={<TeamSettings />} />
+            </Route>
+          </Route>
+
           {/* ===== SETUP REDIRECTS (legacy/demo routes) ===== */}
           <Route path="/setup/start" element={<Navigate to="/onboarding" replace />} />
           <Route path="/setup/debts" element={<Navigate to="/debts" replace />} />
@@ -202,13 +213,14 @@ export function AppRoutes() {
           <Route path="/setup/chart" element={<Navigate to="/debt-chart" replace />} />
           <Route path="/setup/*" element={<Navigate to="/onboarding" replace />} />
           
-          {/* ===== DEMO REDIRECTS (legacy routes) ===== */}
-          <Route path="/demo/debts" element={<Navigate to="/debts" replace />} />
+          {/* Public demo uses sample data and never mounts account pages. */}
+          <Route path="/demo" element={<InteractiveDemo />} />
           <Route path="/demo/start" element={<Navigate to="/onboarding" replace />} />
-          <Route path="/demo/plan" element={<Navigate to="/debt-plan" replace />} />
-          <Route path="/demo/chart" element={<Navigate to="/debt-chart" replace />} />
+          <Route path="/demo/debts" element={<Navigate to="/demo" replace />} />
+          <Route path="/demo/plan" element={<Navigate to="/demo" replace />} />
+          <Route path="/demo/chart" element={<Navigate to="/demo" replace />} />
           <Route path="/demo/*" element={<Navigate to="/" replace />} />
-          
+
           {/* ===== FALLBACK ===== */}
           <Route path="*" element={<NotFound />} />
         </Routes>

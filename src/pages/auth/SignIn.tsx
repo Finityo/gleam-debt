@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Btn } from "@/components/Btn";
 import { Card } from "@/components/Card";
@@ -13,6 +13,7 @@ const signInSchema = z.object({
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +36,14 @@ export default function SignIn() {
     try {
       await signIn(email, password);
       toast.success("Signed in successfully");
-      navigate("/dashboard");
+      const returnTo = searchParams.get("returnTo");
+      const destination = returnTo?.startsWith("/") && !returnTo.startsWith("//") &&
+        !/[\\\s]/.test(returnTo) ? new URL(returnTo, window.location.origin) : null;
+      if (destination?.origin === window.location.origin) {
+        navigate({ pathname: destination.pathname, search: destination.search, hash: destination.hash }, { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     } catch (error: any) {
       console.error("Sign in error:", error);
       if (error.message?.includes("Invalid login credentials")) {

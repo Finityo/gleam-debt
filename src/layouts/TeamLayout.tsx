@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import type { ReactNode } from "react";
+import { useNavigate, useLocation, useOutletContext } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useTeamAccess } from "@/hooks/useTeamAccess";
+import type { TeamRole } from "@/hooks/useTeamAccess";
 import { 
   LayoutDashboard, 
   Users, 
@@ -14,32 +14,16 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface TeamLayoutProps {
-  children: ReactNode;
-}
-
-const TeamLayout = ({ children }: TeamLayoutProps) => {
+const TeamLayout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hasAccess, role, loading } = useTeamAccess();
+  const role = useOutletContext<TeamRole>();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast.success("Logged out successfully");
     navigate('/team/login');
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (!hasAccess) {
-    return null;
-  }
 
   const navItems = [
     { path: '/team/dashboard', icon: LayoutDashboard, label: 'Dashboard' },

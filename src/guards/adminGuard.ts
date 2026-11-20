@@ -7,12 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
  * Checks if the current user has admin role
  * Uses server-side validation via Supabase RLS and has_role function
  */
-export async function checkAdminAccess(): Promise<boolean> {
+export async function checkAdminAccess(expectedUserId?: string): Promise<boolean> {
   try {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
     
-    if (!user) {
+    if (!user || (expectedUserId && user.id !== expectedUserId)) {
       return false;
     }
 
